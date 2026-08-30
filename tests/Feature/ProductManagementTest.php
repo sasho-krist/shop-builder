@@ -70,6 +70,44 @@ class ProductManagementTest extends TestCase
             ->assertSessionHasErrors(['title', 'variants']);
     }
 
+    public function test_a_product_stores_options_and_variant_option_maps(): void
+    {
+        $this->actingAs($this->user)->post(route('products.store'), [
+            'title' => 'T-Shirt',
+            'status' => 'active',
+            'options' => [
+                ['name' => 'Size', 'values' => ['S', 'M']],
+                ['name' => 'Colour', 'values' => ['Red']],
+            ],
+            'variants' => [
+                ['name' => 'S / Red', 'price' => '20.00', 'stock_quantity' => '3', 'options' => ['Size' => 'S', 'Colour' => 'Red']],
+                ['name' => 'M / Red', 'price' => '20.00', 'stock_quantity' => '2', 'options' => ['Size' => 'M', 'Colour' => 'Red']],
+            ],
+        ])->assertRedirect(route('products.index', absolute: false));
+
+        $product = Product::firstWhere('slug', 't-shirt');
+        $this->assertSame('Size', $product->options[0]['name']);
+        $this->assertSame(
+            ['Size' => 'S', 'Colour' => 'Red'],
+            $product->variants()->firstWhere('name', 'S / Red')->options,
+        );
+    }
+
+    public function test_options_are_capped_at_three(): void
+    {
+        $this->actingAs($this->user)->post(route('products.store'), [
+            'title' => 'Too many',
+            'status' => 'draft',
+            'options' => [
+                ['name' => 'A', 'values' => ['1']],
+                ['name' => 'B', 'values' => ['1']],
+                ['name' => 'C', 'values' => ['1']],
+                ['name' => 'D', 'values' => ['1']],
+            ],
+            'variants' => [['name' => 'x', 'price' => '1', 'stock_quantity' => '0']],
+        ])->assertSessionHasErrors('options');
+    }
+
     public function test_a_variant_requires_a_price(): void
     {
         $this->actingAs($this->user)

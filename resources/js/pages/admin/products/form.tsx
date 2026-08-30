@@ -21,6 +21,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { dashboard } from '@/routes';
 import productRoutes from '@/routes/products';
 
+type OptionGroup = { name: string; values: string[] };
+
 type Variant = {
     id?: number;
     name: string;
@@ -28,6 +30,7 @@ type Variant = {
     price: string;
     compare_at_price: string;
     stock_quantity: string;
+    options?: Record<string, string> | null;
 };
 
 type CategoryOption = {
@@ -42,6 +45,7 @@ type ProductData = {
     slug: string;
     description: string | null;
     status: string;
+    options: OptionGroup[];
     seo_title: string | null;
     seo_description: string | null;
     variants: Variant[];
@@ -90,7 +94,29 @@ function toFormVariant(variant: Variant): Variant {
                 ? ''
                 : String(variant.compare_at_price),
         stock_quantity: String(variant.stock_quantity ?? '0'),
+        options: variant.options ?? null,
     };
+}
+
+/** Cartesian product of the option groups' values. */
+function combinations(groups: OptionGroup[]): Record<string, string>[] {
+    return groups.reduce<Record<string, string>[]>(
+        (acc, group) =>
+            acc.flatMap((combo) =>
+                group.values
+                    .filter((v) => v.trim() !== '')
+                    .map((value) => ({ ...combo, [group.name]: value })),
+            ),
+        [{}],
+    );
+}
+
+function optionKey(options: Record<string, string> | null | undefined): string {
+    if (!options) return '';
+    return Object.keys(options)
+        .sort()
+        .map((k) => `${k}=${options[k]}`)
+        .join('|');
 }
 
 export default function ProductForm({ product, statuses, categories }: Props) {
@@ -101,6 +127,7 @@ export default function ProductForm({ product, statuses, categories }: Props) {
         slug: product?.slug ?? '',
         description: product?.description ?? '',
         status: product?.status ?? statuses[0],
+        options: product?.options ?? [],
         seo_title: product?.seo_title ?? '',
         seo_description: product?.seo_description ?? '',
         variants: product
@@ -108,6 +135,33 @@ export default function ProductForm({ product, statuses, categories }: Props) {
             : [blankVariant()],
         category_ids: product?.category_ids ?? [],
     });
+
+    const hasOptions = form.data.options.length > 0;
+
+    function setOptions(options: OptionGroup[]) {
+        form.setData('options', options);
+    }
+
+    function generateVariants() {
+        const combos = combinations(form.data.options);
+        const existing = new Map(
+            form.data.variants.map((v) => [optionKey(v.options), v]),
+        );
+        const next: Variant[] = combos.map((combo) => {
+            const key = optionKey(combo);
+            const match = existing.get(key);
+            return {
+                id: match?.id,
+                name: Object.values(combo).join(' / '),
+                sku: match?.sku ?? '',
+                price: match?.price ?? '',
+                compare_at_price: match?.compare_at_price ?? '',
+                stock_quantity: match?.stock_quantity ?? '0',
+                options: combo,
+            };
+        });
+        form.setData('variants', next.length > 0 ? next : [blankVariant()]);
+    }
 
     function toggleCategory(id: number, checked: boolean) {
         form.setData(
@@ -247,15 +301,168 @@ export default function ProductForm({ product, statuses, categories }: Props) {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle>Options</CardTitle>
+                        {form.data.options.length < 3 && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                    setOptions([
+                                        ...form.data.options,
+                                        { name: '', values: [] },
+                                    ])
+                                }
+                            >
+                                Add option
+                            </Button>
+                        )}
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-4">
+                        {form.data.options.length === 0 ? (
+                            <p className="text-muted-foreground text-sm">
+                                Add options like Size or Colour to sell variants
+                                of this product.
+                            </p>
+                        ) : (
+                            form.data.options.map((group, gi) => (
+                                <div
+                                    key={gi}
+                                    className="border-border flex flex-col gap-2 rounded-lg border p-3"
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <Input
+                                            placeholder="Option name (e.g. Size)"
+                                            className="max-w-48"
+                                            value={group.name}
+                                            onChange={(e) =>
+                                                setOptions(
+                                                    form.data.options.map(
+                                                        (g, i) =>
+                                                            i === gi
+                                                                ? {
+                                                                      ...g,
+                                                                      name: e
+                                                                          .target
+                                                                          .value,
+                                                                  }
+                                                                : g,
+                                                    ),
+                                                )
+                                            }
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-muted-foreground ml-auto"
+                                            onClick={() =>
+                                                setOptions(
+                                                    form.data.options.filter(
+                                                        (_, i) => i !== gi,
+                                                    ),
+                                                )
+                                            }
+                                        >
+                                            Remove
+                                        </Button>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                        {group.values.map((value, vi) => (
+                                            <span
+                                                key={vi}
+                                                className="bg-muted flex items-center gap-1 rounded px-2 py-1 text-xs"
+                                            >
+                                                {value}
+                                                <button
+                                                    type="button"
+                                                    className="text-muted-foreground"
+                                                    onClick={() =>
+                                                        setOptions(
+                                                            form.data.options.map(
+                                                                (g, i) =>
+                                                                    i === gi
+                                                                        ? {
+                                                                              ...g,
+                                                                              values: g.values.filter(
+                                                                                  (
+                                                                                      _,
+                                                                                      j,
+                                                                                  ) =>
+                                                                                      j !==
+                                                                                      vi,
+                                                                              ),
+                                                                          }
+                                                                        : g,
+                                                            ),
+                                                        )
+                                                    }
+                                                >
+                                                    ×
+                                                </button>
+                                            </span>
+                                        ))}
+                                        <Input
+                                            placeholder="Add value + Enter"
+                                            className="h-7 max-w-40 text-xs"
+                                            onKeyDown={(e) => {
+                                                if (
+                                                    e.key === 'Enter' &&
+                                                    e.currentTarget.value.trim()
+                                                ) {
+                                                    e.preventDefault();
+                                                    const value =
+                                                        e.currentTarget.value.trim();
+                                                    setOptions(
+                                                        form.data.options.map(
+                                                            (g, i) =>
+                                                                i === gi
+                                                                    ? {
+                                                                          ...g,
+                                                                          values: [
+                                                                              ...g.values,
+                                                                              value,
+                                                                          ],
+                                                                      }
+                                                                    : g,
+                                                        ),
+                                                    );
+                                                    e.currentTarget.value = '';
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                        {hasOptions && (
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                className="self-start"
+                                onClick={generateVariants}
+                            >
+                                Generate variants
+                            </Button>
+                        )}
+                        <InputError message={form.errors.options} />
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Variants</CardTitle>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={addVariant}
-                        >
-                            Add variant
-                        </Button>
+                        {!hasOptions && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={addVariant}
+                            >
+                                Add variant
+                            </Button>
+                        )}
                     </CardHeader>
                     <CardContent className="flex flex-col gap-4">
                         {form.data.variants.map((variant, index) => (
@@ -267,6 +474,12 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                                     <Label>Name</Label>
                                     <Input
                                         value={variant.name}
+                                        readOnly={hasOptions}
+                                        className={
+                                            hasOptions
+                                                ? 'text-muted-foreground'
+                                                : undefined
+                                        }
                                         onChange={(e) =>
                                             updateVariant(
                                                 index,

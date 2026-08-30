@@ -18,12 +18,13 @@ use Illuminate\Support\Carbon;
  * @property string $slug
  * @property string|null $description
  * @property string $status
+ * @property array<int, array{name: string, values: list<string>}>|null $options
  * @property string|null $seo_title
  * @property string|null $seo_description
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['title', 'slug', 'description', 'status', 'seo_title', 'seo_description'])]
+#[Fillable(['title', 'slug', 'description', 'status', 'options', 'seo_title', 'seo_description'])]
 class Product extends Model
 {
     use BelongsToTenant;
@@ -32,6 +33,16 @@ class Product extends Model
     use HasFactory;
 
     public const STATUSES = ['draft', 'active', 'archived'];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'options' => 'array',
+        ];
+    }
 
     /**
      * @return HasMany<ProductVariant, $this>

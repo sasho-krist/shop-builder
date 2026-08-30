@@ -127,6 +127,7 @@ class ProductController extends Controller
                 'slug' => $model->slug,
                 'description' => $model->description,
                 'status' => $model->status,
+                'options' => $model->options ?? [],
                 'seo_title' => $model->seo_title,
                 'seo_description' => $model->seo_description,
                 'variants' => $model->variants->map(fn (ProductVariant $variant): array => [
@@ -136,6 +137,7 @@ class ProductController extends Controller
                     'price' => $variant->price,
                     'compare_at_price' => $variant->compare_at_price,
                     'stock_quantity' => $variant->stock_quantity,
+                    'options' => $variant->options ?? null,
                 ]),
                 'category_ids' => $model->categories->pluck('id'),
                 'images' => $model->images->map(fn (ProductImage $image): array => [
@@ -209,6 +211,7 @@ class ProductController extends Controller
                 'price' => $variant['price'],
                 'compare_at_price' => $variant['compare_at_price'] ?? null,
                 'stock_quantity' => $variant['stock_quantity'],
+                'options' => $variant['options'] ?? null,
                 'position' => $position,
             ];
 

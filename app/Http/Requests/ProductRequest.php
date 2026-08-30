@@ -44,9 +44,15 @@ class ProductRequest extends FormRequest
             'seo_title' => ['nullable', 'string', 'max:255'],
             'seo_description' => ['nullable', 'string', 'max:500'],
 
+            'options' => ['nullable', 'array', 'max:3'],
+            'options.*.name' => ['required', 'string', 'max:60'],
+            'options.*.values' => ['required', 'array', 'min:1', 'max:20'],
+            'options.*.values.*' => ['required', 'string', 'max:60'],
+
             'variants' => ['required', 'array', 'min:1'],
             'variants.*.id' => ['nullable', 'integer'],
             'variants.*.name' => ['required', 'string', 'max:255'],
+            'variants.*.options' => ['nullable', 'array'],
             'variants.*.sku' => ['nullable', 'string', 'max:255'],
             'variants.*.price' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
             'variants.*.compare_at_price' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
