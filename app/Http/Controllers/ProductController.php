@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Http\RedirectResponse;
@@ -38,6 +39,7 @@ class ProductController extends Controller
         return Inertia::render('admin/products/form', [
             'product' => null,
             'statuses' => Product::STATUSES,
+            'categories' => $this->categoryOptions(),
         ]);
     }
 
@@ -48,6 +50,7 @@ class ProductController extends Controller
         DB::transaction(function () use ($data) {
             $product = Product::create($data);
             $this->syncVariants($product, $data['variants']);
+            $product->categories()->sync($data['category_ids'] ?? []);
         });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Product created.']);
@@ -57,7 +60,7 @@ class ProductController extends Controller
 
     public function edit(int $product): Response
     {
-        $model = Product::with('variants')->findOrFail($product);
+        $model = Product::with(['variants', 'categories:id'])->findOrFail($product);
 
         return Inertia::render('admin/products/form', [
             'product' => [
@@ -76,8 +79,10 @@ class ProductController extends Controller
                     'compare_at_price' => $variant->compare_at_price,
                     'stock_quantity' => $variant->stock_quantity,
                 ]),
+                'category_ids' => $model->categories->pluck('id'),
             ],
             'statuses' => Product::STATUSES,
+            'categories' => $this->categoryOptions(),
         ]);
     }
 
@@ -89,6 +94,7 @@ class ProductController extends Controller
         DB::transaction(function () use ($model, $data) {
             $model->update($data);
             $this->syncVariants($model, $data['variants']);
+            $model->categories()->sync($data['category_ids'] ?? []);
         });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Product saved.']);
@@ -103,6 +109,25 @@ class ProductController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Product deleted.']);
 
         return to_route('products.index');
+    }
+
+    /**
+     * Flat, tree-ordered category list for the product form's picker.
+     *
+     * @return array<int, array{id: int, name: string, parent_id: int|null}>
+     */
+    private function categoryOptions(): array
+    {
+        return Category::query()
+            ->orderBy('position')
+            ->orderBy('name')
+            ->get(['id', 'name', 'parent_id'])
+            ->map(fn (Category $category): array => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'parent_id' => $category->parent_id,
+            ])
+            ->all();
     }
 
     /**

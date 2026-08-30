@@ -64,11 +64,11 @@ _Забележка: изнасянето на админа на отделен 
 
 ### Каталог (всички с `tenant_id`)
 
-- `products` — title, slug, description, status, type (simple/variable), seo_*
-- `product_variants` — sku, price, compare_at_price, stock_qty, weight, option_values (JSON)
+- `products` — title, slug, description, status, seo\_\* ✅
+- `product_variants` — name, sku, price, compare_at_price, stock_quantity, position, options (JSON) ✅
 - `product_images` — media_id, position, alt
-- `categories` — parent_id (nested), name, slug, image_media_id
-- `category_product` (pivot)
+- `categories` — parent_id (nested), name, slug, description, position ✅
+- `category_product` (pivot) ✅
 - `attributes` / `attribute_values` — за вариации и филтри
 - `collections` — ръчни/автоматични групи; `collection_product` (pivot)
 - `media` — disk, path, mime, size, width, height, alt
@@ -147,7 +147,8 @@ _Забележка: изнасянето на админа на отделен 
 | **0. Setup** ✅                    | Repo, Laravel 13 + React starter kit, БД (InnoDB), Pest/PHPStan/Pint, `.env` за `shop-builder.localhost`                                                            | `composer run dev` върви, `php artisan test` минава, login работи                                |
 | **1. Tenancy + Auth** ✅           | `tenants` + `tenant_user`, `TenantContext`, storefront/admin middleware, поддомейн роути, signup → onboarding → създава магазин + owner, dashboard показва магазина | Регистрация създава магазин, `{slug}.shop-builder.localhost` зарежда tenant контекст (200 / 404) |
 | **2a. Каталог — продукти** ✅      | `products` + `product_variants`, `BelongsToTenant`, админ CRUD (list/create/edit/delete) с variants repeater, sidebar nav                                           | Създаване/редакция/триене на продукт с вариации; изолация по магазин (404 за чужд)               |
-| **2b–2d. Каталог — останало**      | Категории (nested) + атрибути; media library + product images; колекции + CSV импорт                                                                                | Пълен каталог с категории, снимки, импорт                                                        |
+| **2b. Каталог — категории** ✅     | `categories` (nested, parent_id) + `category_product`, админ CRUD (dialog, tree, cycle-prevention), продукт ↔ категории от продуктовата форма                       | Влагане на подкатегории; забрана за цикли; продукт се маркира в категории                        |
+| **2c–2d. Каталог — останало**      | Атрибути (за вариации/филтри); media library + product images; колекции + CSV импорт                                                                                | Пълен каталог със снимки и импорт                                                                |
 | **3. Theme engine**                | Token редактор, CSS var pipeline, 2–3 стартови теми, превключване                                                                                                   | Смяна и редакция на тема с жив preview                                                           |
 | **4. Page builder**                | Регистър от секции, schema-driven форми, drag-reorder, live preview                                                                                                 | Сглобяване на home/category/product страници от блокове                                          |
 | **5. Storefront**                  | Inertia SSR storefront, роути, рендер на blocks, количка                                                                                                            | Работещ публичен магазин с разглеждане и количка                                                 |

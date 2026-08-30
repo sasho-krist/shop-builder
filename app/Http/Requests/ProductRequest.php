@@ -51,6 +51,12 @@ class ProductRequest extends FormRequest
             'variants.*.price' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
             'variants.*.compare_at_price' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
             'variants.*.stock_quantity' => ['required', 'integer', 'min:0'],
+
+            'category_ids' => ['nullable', 'array'],
+            'category_ids.*' => [
+                'integer',
+                Rule::exists('categories', 'id')->where('tenant_id', Tenant::currentOrFail()->id),
+            ],
         ];
     }
 }

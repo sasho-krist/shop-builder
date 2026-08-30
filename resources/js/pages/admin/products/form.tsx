@@ -3,6 +3,7 @@ import { type FormEventHandler } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -26,6 +27,12 @@ type Variant = {
     stock_quantity: string;
 };
 
+type CategoryOption = {
+    id: number;
+    name: string;
+    parent_id: number | null;
+};
+
 type ProductData = {
     id: number;
     title: string;
@@ -35,12 +42,27 @@ type ProductData = {
     seo_title: string | null;
     seo_description: string | null;
     variants: Variant[];
+    category_ids: number[];
 };
 
 type Props = {
     product: ProductData | null;
     statuses: string[];
+    categories: CategoryOption[];
 };
+
+function categoryDepth(
+    all: CategoryOption[],
+    category: CategoryOption,
+): number {
+    let depth = 0;
+    let parentId = category.parent_id;
+    while (parentId !== null) {
+        depth += 1;
+        parentId = all.find((c) => c.id === parentId)?.parent_id ?? null;
+    }
+    return depth;
+}
 
 function blankVariant(): Variant {
     return {
@@ -67,7 +89,7 @@ function toFormVariant(variant: Variant): Variant {
     };
 }
 
-export default function ProductForm({ product, statuses }: Props) {
+export default function ProductForm({ product, statuses, categories }: Props) {
     const isEdit = product !== null;
 
     const form = useForm({
@@ -80,7 +102,17 @@ export default function ProductForm({ product, statuses }: Props) {
         variants: product
             ? product.variants.map(toFormVariant)
             : [blankVariant()],
+        category_ids: product?.category_ids ?? [],
     });
+
+    function toggleCategory(id: number, checked: boolean) {
+        form.setData(
+            'category_ids',
+            checked
+                ? [...form.data.category_ids, id]
+                : form.data.category_ids.filter((value) => value !== id),
+        );
+    }
 
     const errors = form.errors as Record<string, string>;
 
@@ -350,6 +382,43 @@ export default function ProductForm({ product, statuses }: Props) {
                             </div>
                         ))}
                         <InputError message={form.errors.variants} />
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Categories</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-2">
+                        {categories.length === 0 ? (
+                            <p className="text-muted-foreground text-sm">
+                                No categories yet.
+                            </p>
+                        ) : (
+                            categories.map((category) => (
+                                <label
+                                    key={category.id}
+                                    className="flex items-center gap-2 text-sm"
+                                    style={{
+                                        paddingLeft: `${categoryDepth(categories, category) * 20}px`,
+                                    }}
+                                >
+                                    <Checkbox
+                                        checked={form.data.category_ids.includes(
+                                            category.id,
+                                        )}
+                                        onCheckedChange={(checked) =>
+                                            toggleCategory(
+                                                category.id,
+                                                checked === true,
+                                            )
+                                        }
+                                    />
+                                    {category.name}
+                                </label>
+                            ))
+                        )}
+                        <InputError message={form.errors.category_ids} />
                     </CardContent>
                 </Card>
             </form>
