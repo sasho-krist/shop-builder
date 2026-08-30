@@ -52,11 +52,12 @@ class User extends Authenticatable implements PasskeyUser
     /**
      * Stores this user is a member of.
      *
-     * @return BelongsToMany<Tenant, $this>
+     * @return BelongsToMany<Tenant, $this, TenantMembership>
      */
     public function tenants(): BelongsToMany
     {
         return $this->belongsToMany(Tenant::class)
+            ->using(TenantMembership::class)
             ->withPivot('role')
             ->withTimestamps();
     }

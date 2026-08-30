@@ -10,7 +10,9 @@ import {
     Package,
     Palette,
     Settings,
+    ShieldCheck,
     ShoppingCart,
+    Users,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -32,6 +34,8 @@ import orders from '@/routes/orders';
 import pages from '@/routes/pages';
 import products from '@/routes/products';
 import { show as billingShow } from '@/routes/billing';
+import customers from '@/routes/customers';
+import owners from '@/routes/owners';
 import { edit as storeSettingsEdit } from '@/routes/store-settings';
 import themes from '@/routes/themes';
 import type { NavItem } from '@/types';
@@ -61,6 +65,16 @@ const mainNavItems: NavItem[] = [
         title: 'Orders',
         href: orders.index(),
         icon: ShoppingCart,
+    },
+    {
+        title: 'Customers',
+        href: customers.index(),
+        icon: Users,
+    },
+    {
+        title: 'Owners',
+        href: owners.index(),
+        icon: ShieldCheck,
     },
     {
         title: 'Themes',

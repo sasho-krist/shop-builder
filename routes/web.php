@@ -11,7 +11,9 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\ProductImportController;
+use App\Http\Controllers\StoreCustomerController;
 use App\Http\Controllers\StoreDomainController;
+use App\Http\Controllers\StoreOwnerController;
 use App\Http\Controllers\StoreSettingController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\ThemeController;
@@ -87,6 +89,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('billing', [BillingController::class, 'show'])->name('billing.show');
         Route::post('billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
         Route::get('billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
+
+        Route::get('customers', [StoreCustomerController::class, 'index'])->name('customers.index');
+        Route::put('customers/{customer}', [StoreCustomerController::class, 'update'])->name('customers.update');
+        Route::put('customers/{customer}/password', [StoreCustomerController::class, 'password'])->name('customers.password');
+        Route::delete('customers/{customer}', [StoreCustomerController::class, 'destroy'])->name('customers.destroy');
+
+        Route::get('owners', [StoreOwnerController::class, 'index'])->name('owners.index');
+        Route::post('owners', [StoreOwnerController::class, 'store'])->name('owners.store');
+        Route::put('owners/{user}', [StoreOwnerController::class, 'update'])->name('owners.update');
+        Route::delete('owners/{user}', [StoreOwnerController::class, 'destroy'])->name('owners.destroy');
     });
 });
 

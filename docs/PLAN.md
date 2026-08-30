@@ -219,6 +219,25 @@ _Забележка: изнасянето на админа на отделен 
 - Оставено за после: истински in-place edit на текст (сега hover → редактор),
   full-bleed hero опция, SSR на `?section` deep-link.
 
+### 8c. Owner entry + People management ✅
+
+- **`{store}.domain/admin`** (`StoreAdminController` в storefront групата) — вход
+  за собственик: login + register табове. Login проверява членство в магазина;
+  register създава `User` + `tenant_user` role `owner`. И двете правят
+  `session(['active_tenant_id' => …])` и `Inertia::location(...)` към централния
+  админ (различен origin). Влязъл собственик → директно към dashboard.
+  `EnsureTenantSelected` вече уважава `active_tenant_id` (подготовка за
+  multi-store).
+- **`TenantMembership`** pivot модел (`tenant_user`, typed props).
+- **Админ „Customers"** (`StoreCustomerController`) — списък (search + пагинация),
+  edit име/имейл, **reset на парола**, delete. Tenant-scoped.
+- **Админ „Owners"** (`StoreOwnerController`) — списък на членовете, add owner
+  (нов `User` или закачане на съществуващ), edit само име/имейл, remove с guard-и
+  (не себе си, не последния). **Няма смяна на парола на собственик от админа** —
+  само самият собственик от `/settings/security`.
+- Оставено за после: gate на open registration на `{store}/admin` (invite / claim),
+  роли различни от `owner` (staff с ограничени права).
+
 ---
 
 ## 8. Отворени решения

@@ -18,7 +18,15 @@ class EnsureTenantSelected
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        $tenant = $user instanceof User ? $user->tenants()->first() : null;
+        $tenant = null;
+
+        if ($user instanceof User) {
+            $preferred = (int) $request->session()->get('active_tenant_id', 0);
+
+            $tenant = ($preferred > 0
+                ? $user->tenants()->whereKey($preferred)->first()
+                : null) ?? $user->tenants()->first();
+        }
 
         if ($tenant === null) {
             return redirect()->route('onboarding.create');

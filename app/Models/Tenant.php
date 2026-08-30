@@ -45,11 +45,12 @@ class Tenant extends Model
     }
 
     /**
-     * @return BelongsToMany<User, $this>
+     * @return BelongsToMany<User, $this, TenantMembership>
      */
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)
+            ->using(TenantMembership::class)
             ->withPivot('role')
             ->withTimestamps();
     }
