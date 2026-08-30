@@ -9,6 +9,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
+use App\Http\Controllers\ProductImportController;
 use App\Http\Controllers\StoreSettingController;
 use App\Http\Controllers\ThemeController;
 use App\Http\Middleware\EnsureTenantSelected;
@@ -30,6 +31,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('products', [ProductController::class, 'index'])->name('products.index');
         Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
         Route::get('products/search', [ProductController::class, 'search'])->name('products.search');
+        Route::get('products/import', [ProductImportController::class, 'show'])->name('products.import');
+        Route::post('products/import/preview', [ProductImportController::class, 'preview'])->name('products.import.preview');
+        Route::post('products/import', [ProductImportController::class, 'store'])->name('products.import.store');
         Route::post('products', [ProductController::class, 'store'])->name('products.store');
         Route::get('products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
         Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');

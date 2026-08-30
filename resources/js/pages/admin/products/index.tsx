@@ -140,9 +140,16 @@ export default function ProductsIndex({
                             {page.total === 1 ? 'product' : 'products'}
                         </p>
                     </div>
-                    <Button asChild>
-                        <Link href={products.create().url}>New product</Link>
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button variant="outline" asChild>
+                            <Link href={products.import().url}>Import CSV</Link>
+                        </Button>
+                        <Button asChild>
+                            <Link href={products.create().url}>
+                                New product
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
