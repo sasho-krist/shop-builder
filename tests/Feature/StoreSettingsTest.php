@@ -77,6 +77,44 @@ class StoreSettingsTest extends TestCase
             ->assertSessionHasErrors(['currency', 'shipping_flat', 'tax_rate']);
     }
 
+    public function test_a_custom_domain_can_be_connected_and_resolves_the_storefront(): void
+    {
+        $this->actingAs($this->user)
+            ->put(route('store-domain.update'), ['custom_domain' => 'https://Shop.Example.com/'])
+            ->assertRedirect();
+
+        $this->assertSame('shop.example.com', $this->tenant->fresh()?->custom_domain);
+
+        Tenant::forgetCurrent();
+        $this->get('http://shop.example.com/products')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('storefront/listing'));
+    }
+
+    public function test_a_custom_domain_cannot_be_a_central_subdomain_or_a_duplicate(): void
+    {
+        $this->actingAs($this->user)
+            ->put(route('store-domain.update'), ['custom_domain' => 'evil.shop-builder.localhost'])
+            ->assertSessionHasErrors('custom_domain');
+
+        Tenant::factory()->create(['slug' => 'other', 'custom_domain' => 'taken.example.com']);
+
+        $this->actingAs($this->user)
+            ->put(route('store-domain.update'), ['custom_domain' => 'taken.example.com'])
+            ->assertSessionHasErrors('custom_domain');
+    }
+
+    public function test_a_custom_domain_can_be_cleared(): void
+    {
+        $this->tenant->update(['custom_domain' => 'shop.example.com']);
+
+        $this->actingAs($this->user)
+            ->put(route('store-domain.update'), ['custom_domain' => ''])
+            ->assertRedirect();
+
+        $this->assertNull($this->tenant->fresh()?->custom_domain);
+    }
+
     public function test_shipping_and_tax_are_applied_at_checkout(): void
     {
         Mail::fake();

@@ -10,6 +10,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\ProductImportController;
+use App\Http\Controllers\StoreDomainController;
 use App\Http\Controllers\StoreSettingController;
 use App\Http\Controllers\ThemeController;
 use App\Http\Middleware\EnsureTenantSelected;
@@ -77,6 +78,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('store-settings', [StoreSettingController::class, 'edit'])->name('store-settings.edit');
         Route::put('store-settings', [StoreSettingController::class, 'update'])->name('store-settings.update');
+        Route::put('store-domain', [StoreDomainController::class, 'update'])->name('store-domain.update');
     });
 });
 

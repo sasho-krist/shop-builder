@@ -12,7 +12,8 @@ class StoreSettingController extends Controller
 {
     public function edit(): Response
     {
-        $settings = Tenant::currentOrFail()->storeSettings();
+        $tenant = Tenant::currentOrFail();
+        $settings = $tenant->storeSettings();
 
         return Inertia::render('admin/settings', [
             'settings' => [
@@ -23,6 +24,11 @@ class StoreSettingController extends Controller
                 'free_shipping_over' => $settings->free_shipping_over,
                 'tax_rate' => $settings->tax_rate,
                 'tax_included' => $settings->tax_included,
+            ],
+            'domain' => [
+                'subdomain' => $tenant->slug.'.'.(string) config('app.central_domain'),
+                'custom_domain' => $tenant->custom_domain,
+                'target' => (string) config('app.central_domain'),
             ],
         ]);
     }

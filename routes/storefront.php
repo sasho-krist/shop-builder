@@ -12,9 +12,16 @@ use App\Http\Middleware\ResolveCart;
 use App\Http\Middleware\ResolveStorefrontTenant;
 use Illuminate\Support\Facades\Route;
 
-Route::domain('{store}.'.config('app.central_domain'))
+$central = (string) config('app.central_domain');
+
+// Every storefront host is handled here: a `{slug}.central-domain` subdomain or
+// a connected custom domain. The only host that is *not* a storefront is the
+// bare central domain itself (marketing + admin), which the constraint excludes.
+// `ResolveStorefrontTenant` resolves the tenant from the request host.
+Route::domain('{store}')
+    ->where(['store' => '^(?!'.preg_quote($central, '/').'$).+$'])
     ->middleware([ResolveStorefrontTenant::class, ResolveCart::class])
-    ->group(function () {
+    ->group(function (): void {
         Route::get('/', HomeController::class)->name('storefront.home');
 
         Route::get('products', [ProductController::class, 'index'])->name('storefront.products');

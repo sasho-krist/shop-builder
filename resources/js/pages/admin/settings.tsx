@@ -1,4 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
+import { Check, Copy } from 'lucide-react';
+import { useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { dashboard } from '@/routes';
+import { update as updateDomain } from '@/routes/store-domain';
 import { edit, update } from '@/routes/store-settings';
 
 type Props = {
@@ -19,9 +22,46 @@ type Props = {
         tax_rate: string;
         tax_included: boolean;
     };
+    domain: {
+        subdomain: string;
+        custom_domain: string | null;
+        target: string;
+    };
 };
 
-export default function StoreSettings({ settings }: Props) {
+function CopyField({ value }: { value: string }) {
+    const [copied, setCopied] = useState(false);
+
+    function copy() {
+        void navigator.clipboard.writeText(value).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+        });
+    }
+
+    return (
+        <div className="flex items-center gap-2">
+            <code className="bg-muted flex-1 truncate rounded px-2 py-1.5 text-sm">
+                {value}
+            </code>
+            <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={copy}
+                aria-label="Copy"
+            >
+                {copied ? (
+                    <Check className="size-4" />
+                ) : (
+                    <Copy className="size-4" />
+                )}
+            </Button>
+        </div>
+    );
+}
+
+export default function StoreSettings({ settings, domain }: Props) {
     const form = useForm({
         currency: settings.currency,
         currency_symbol: settings.currency_symbol,
@@ -32,19 +72,25 @@ export default function StoreSettings({ settings }: Props) {
         tax_included: settings.tax_included,
     });
 
+    const domainForm = useForm({
+        custom_domain: domain.custom_domain ?? '',
+    });
+
     function submit(event: React.FormEvent) {
         event.preventDefault();
         form.put(update().url, { preserveScroll: true });
     }
 
+    function submitDomain(event: React.FormEvent) {
+        event.preventDefault();
+        domainForm.put(updateDomain().url, { preserveScroll: true });
+    }
+
     return (
-        <>
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-4">
             <Head title="Store settings" />
 
-            <form
-                onSubmit={submit}
-                className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-4"
-            >
+            <form onSubmit={submit} className="flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-xl font-semibold">Store settings</h1>
                     <Button type="submit" disabled={form.processing}>
@@ -197,7 +243,69 @@ export default function StoreSettings({ settings }: Props) {
                     </CardContent>
                 </Card>
             </form>
-        </>
+
+            <form onSubmit={submitDomain}>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Domain</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-4">
+                        <div className="grid gap-2">
+                            <Label>Your store address</Label>
+                            <CopyField value={`https://${domain.subdomain}`} />
+                            <p className="text-muted-foreground text-xs">
+                                Always available. A custom domain is optional.
+                            </p>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="custom_domain">Custom domain</Label>
+                            <Input
+                                id="custom_domain"
+                                placeholder="shop.example.com"
+                                value={domainForm.data.custom_domain}
+                                onChange={(e) =>
+                                    domainForm.setData(
+                                        'custom_domain',
+                                        e.target.value,
+                                    )
+                                }
+                            />
+                            <InputError
+                                message={domainForm.errors.custom_domain}
+                            />
+                        </div>
+
+                        {domainForm.data.custom_domain.trim() !== '' && (
+                            <div className="border-muted grid gap-2 rounded-md border border-dashed p-3">
+                                <p className="text-sm font-medium">DNS setup</p>
+                                <p className="text-muted-foreground text-xs">
+                                    At your domain registrar, add a CNAME record
+                                    pointing your domain to:
+                                </p>
+                                <CopyField value={domain.target} />
+                                <p className="text-muted-foreground text-xs">
+                                    DNS changes can take up to 24h to propagate.
+                                    HTTPS is issued automatically once the
+                                    record resolves.
+                                </p>
+                            </div>
+                        )}
+
+                        <div>
+                            <Button
+                                type="submit"
+                                variant="outline"
+                                disabled={domainForm.processing}
+                            >
+                                {domainForm.processing && <Spinner />}
+                                Save domain
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </form>
+        </div>
     );
 }
 
