@@ -79,7 +79,7 @@ _Забележка: изнасянето на админа на отделен 
 
 - `themes` — name, tokens (JSON: colors×7, typography, radius, spacing, container,
   buttonStyle), is_active ✅ (една активна на магазин)
-- `pages` — type (home/product/category/cart/page), slug, blocks (JSON), seo_*, is_published
+- `pages` — type (home/page), title, slug, blocks (JSON), seo_*, is_published ✅
 - `menus` / `menu_items` — навигация (header, footer)
 - `settings` — key/value per tenant (валута, език, ДДС, зони за доставка, payment креденшъли)
 
@@ -118,15 +118,25 @@ _Забележка: изнасянето на админа на отделен 
 
 ---
 
-## 5. Page / Section builder
+## 5. Page / Section builder ✅ (4a)
 
-- **Регистър от секции** — React компоненти, всяка с `schema` + `render(props)`.
-- Типове полета в schema: `text`, `richtext`, `image`, `color`, `select`, `number`, `boolean`, `product-picker`, `collection-picker`, `repeater`.
-- **Стартов набор секции:** `Header`, `HeroBanner`, `ProductGrid`, `FeaturedCollection`, `ImageWithText`, `RichText`, `Newsletter`, `Footer`.
-- Редактор: ляв панел = списък секции (add / drag-reorder / remove) + форма от schema; център = жив preview. Данните се пазят в `pages.blocks` (JSON).
-- **Card / list / table изглед:** `ProductGrid` има настройки `display: grid | list | table`, `columns`, `cardStyle` (image ratio, показвай цена/бадж/рейтинг). Глобален "product card" preset идва от темата; секцията може да го override-не.
-- Заглавия: всяка секция има editable heading полета; типографията идва от темата.
-- Storefront рендерира същите компоненти от `pages.blocks` → блокът се пише веднъж.
+- **`pages` таблица** — type (home/page), title, slug, `blocks` (JSON), seo, is_published.
+  Home страница се създава при onboarding. `PageRequest` валидира структурата
+  (тип на блока в `BlockRegistry::TYPES`, `blocks.*.id/props` present).
+- **Регистър от секции** — `resources/js/sections/registry.tsx`, всяка `SectionDef`
+  има `fields` (schema) + `Render` компонент. Field типове: `text`, `textarea`,
+  `image`, `color`, `select`, `number` (slider), `boolean`, `collection`.
+- **Стартов набор:** Hero, Text (RichText), Image + text, Product grid
+  (grid/list, columns 2–4, latest/collection source, show price), Featured collection.
+- **Редактор** (`pages/edit`) — ляв панел: sortable списък от секции (**@dnd-kit**
+  drag-reorder, add меню, delete) + schema форма за избраната; десен панел:
+  `PageCanvas` жив preview, стилизиран от активната тема, с реални примерни
+  продукти/колекции (`previewContext`). Блоковете се пазят в `pages.blocks`.
+- `MediaController@store` — качване на изображение → URL за image полетата.
+- Storefront ще рендерира същите section компоненти от `pages.blocks` (Фаза 5).
+- Оставено за после: още секции (Header/Footer/Newsletter), `richtext` редактор,
+  drag-reorder на variant/image списъци (сега up/down), `table` display на
+  product card, per-section card override.
 
 ---
 
@@ -153,7 +163,7 @@ _Забележка: изнасянето на админа на отделен 
 | **2d. Колекции** ✅                   | `collections` + `collection_product` (ordered), админ CRUD, searchable product picker (`GET products/search` JSON) с reorder/remove                                                  | Създаване на колекция с подредени продукти; JSON search е scoped по магазин                      |
 | **2e. Каталог — останало** (по избор) | Атрибути (Размер/Цвят → вариантна матрица + storefront филтри); CSV импорт                                                                                                           | Може да се направи и по-късно — не блокира builder-а                                             |
 | **3. Theme engine** ✅                | `themes` + `ThemePresets`, редактор (color pickers, font selects, slider-и, ToggleGroup) + live `ThemePreview`, `lib/theme.ts` CSS-var pipeline, активна тема стилизира storefront-а | Смяна и редакция на тема с жив preview; storefront ползва активната тема                         |
-| **4. Page builder**                   | Регистър от секции, schema-driven форми, drag-reorder, live preview                                                                                                                  | Сглобяване на home/category/product страници от блокове                                          |
+| **4a. Page builder** ✅               | `pages` + `BlockRegistry`, 5 секции с schema, @dnd-kit drag-reorder, schema форми, `PageCanvas` жив preview с реални данни + тема, `MediaController` upload                          | Сглобяване на home страницата от секции; блоковете се пазят и рендерират в preview               |
 | **5. Storefront**                     | Inertia SSR storefront, роути, рендер на blocks, количка                                                                                                                             | Работещ публичен магазин с разглеждане и количка                                                 |
 | **6. Checkout & поръчки**             | Checkout flow, Stripe, управление на поръчки, имейли, статуси                                                                                                                        | Реална продажба end-to-end                                                                       |
 | **7. Клиенти, настройки, домейни**    | Клиентски акаунти, настройки за доставка/ДДС/валута, custom domain                                                                                                                   | Готов за реален магазин                                                                          |

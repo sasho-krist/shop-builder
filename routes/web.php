@@ -3,7 +3,9 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MediaController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\ThemeController;
@@ -54,6 +56,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('themes/{theme}', [ThemeController::class, 'update'])->name('themes.update');
         Route::post('themes/{theme}/activate', [ThemeController::class, 'activate'])->name('themes.activate');
         Route::delete('themes/{theme}', [ThemeController::class, 'destroy'])->name('themes.destroy');
+
+        Route::get('pages', [PageController::class, 'index'])->name('pages.index');
+        Route::post('pages', [PageController::class, 'store'])->name('pages.store');
+        Route::get('pages/{page}/edit', [PageController::class, 'edit'])->name('pages.edit');
+        Route::put('pages/{page}', [PageController::class, 'update'])->name('pages.update');
+        Route::delete('pages/{page}', [PageController::class, 'destroy'])->name('pages.destroy');
+
+        Route::post('media', [MediaController::class, 'store'])->name('media.store');
     });
 });
 

@@ -46,6 +46,13 @@ class OnboardingController extends Controller
                 'tokens' => ThemePresets::minimal(),
                 'is_active' => true,
             ]);
+            $tenant->pages()->create([
+                'type' => 'home',
+                'title' => 'Home',
+                'slug' => 'home',
+                'blocks' => [],
+                'is_published' => true,
+            ]);
         });
 
         return redirect()->route('dashboard');

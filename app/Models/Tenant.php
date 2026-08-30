@@ -57,6 +57,14 @@ class Tenant extends Model
     }
 
     /**
+     * @return HasMany<Page, $this>
+     */
+    public function pages(): HasMany
+    {
+        return $this->hasMany(Page::class);
+    }
+
+    /**
      * The public URL of this store's storefront.
      */
     public function storefrontUrl(): string

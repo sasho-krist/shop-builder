@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import {
     BookOpen,
+    FileText,
     FolderGit2,
     FolderTree,
     LayoutGrid,
@@ -24,6 +25,7 @@ import {
 import { dashboard } from '@/routes';
 import categories from '@/routes/categories';
 import collections from '@/routes/collections';
+import pages from '@/routes/pages';
 import products from '@/routes/products';
 import themes from '@/routes/themes';
 import type { NavItem } from '@/types';
@@ -53,6 +55,11 @@ const mainNavItems: NavItem[] = [
         title: 'Themes',
         href: themes.index(),
         icon: Palette,
+    },
+    {
+        title: 'Pages',
+        href: pages.index(),
+        icon: FileText,
     },
 ];
 
