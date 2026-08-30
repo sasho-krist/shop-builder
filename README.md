@@ -32,8 +32,9 @@ composer run dev
 
 `composer run dev` starts the PHP server, queue worker and Vite together.
 
-Add `127.0.0.1 shop-builder.test` (and any `*.shop-builder.test` test subdomains)
-to your hosts file, or use the default `http://localhost:8000`.
+Open `http://shop-builder.localhost:8000`. Browsers resolve any `*.localhost`
+name to `127.0.0.1`, so store subdomains like `acme.shop-builder.localhost:8000`
+work with no hosts-file changes.
 
 ## Quality checks
 

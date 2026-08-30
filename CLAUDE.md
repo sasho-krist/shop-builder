@@ -39,9 +39,11 @@ php artisan test          # само тестове
 
 ## Локална среда
 
-- URL: `http://shop-builder.test` (добави в hosts файла)
-- Поддомейни за магазини: `*.shop-builder.test`
-- `APP_CENTRAL_DOMAIN` в `.env` държи root домейна за tenant резолюция
+- URL: `http://shop-builder.localhost:8000` (браузърите резолвват `*.localhost`
+  към 127.0.0.1 автоматично — **не пипай hosts файла**)
+- Поддомейни за магазини: `{slug}.shop-builder.localhost:8000`
+- `APP_CENTRAL_DOMAIN` в `.env` държи root домейна за tenant резолюция; портът
+  се взима от `APP_URL`
 
 ## Код конвенции
 

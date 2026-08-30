@@ -56,6 +56,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Central Domain
+    |--------------------------------------------------------------------------
+    |
+    | The root domain the platform is served from. Tenant stores live on
+    | subdomains of this host (e.g. "acme.shop-builder.localhost"), so tenant
+    | resolution strips this suffix to find the store slug.
+    |
+    */
+
+    'central_domain' => env('APP_CENTRAL_DOMAIN', 'localhost'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

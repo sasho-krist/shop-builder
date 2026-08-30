@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,12 +17,13 @@ class DashboardTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_visit_the_dashboard()
+    public function test_authenticated_users_with_a_store_can_visit_the_dashboard()
     {
         $user = User::factory()->create();
-        $this->actingAs($user);
+        Tenant::factory()->create()->users()->attach($user, ['role' => 'owner']);
 
-        $response = $this->get(route('dashboard'));
-        $response->assertOk();
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk();
     }
 }
