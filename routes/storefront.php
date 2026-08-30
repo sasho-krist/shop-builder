@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\Storefront\AccountController;
 use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CategoryController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\CollectionController;
+use App\Http\Controllers\Storefront\CustomerAuthController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Middleware\ResolveCart;
@@ -28,4 +30,11 @@ Route::domain('{store}.'.config('app.central_domain'))
         Route::get('checkout', [CheckoutController::class, 'show'])->name('storefront.checkout');
         Route::post('checkout', [CheckoutController::class, 'store'])->name('storefront.checkout.place');
         Route::get('order/{token}', [CheckoutController::class, 'confirmation'])->name('storefront.order');
+
+        Route::get('account/register', [CustomerAuthController::class, 'showRegister'])->name('storefront.register');
+        Route::post('account/register', [CustomerAuthController::class, 'register']);
+        Route::get('account/login', [CustomerAuthController::class, 'showLogin'])->name('storefront.login');
+        Route::post('account/login', [CustomerAuthController::class, 'login']);
+        Route::post('account/logout', [CustomerAuthController::class, 'logout'])->name('storefront.logout');
+        Route::get('account', [AccountController::class, 'show'])->name('storefront.account');
     });

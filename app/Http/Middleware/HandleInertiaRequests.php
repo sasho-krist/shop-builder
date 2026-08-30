@@ -4,10 +4,12 @@ namespace App\Http\Middleware;
 
 use App\Models\Cart;
 use App\Models\Category;
+use App\Models\Customer;
 use App\Models\Tenant;
 use App\Models\Theme;
 use App\Support\Theme\ThemePresets;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -85,9 +87,13 @@ class HandleInertiaRequests extends Middleware
 
         $activeTheme = Theme::active();
         $cart = app()->bound(Cart::class) ? app(Cart::class) : null;
+        $customer = Auth::guard('customer')->user();
 
         return [
             'storeName' => $tenant->name,
+            'customer' => $customer instanceof Customer
+                ? ['name' => $customer->name]
+                : null,
             'theme' => $activeTheme instanceof Theme ? $activeTheme->tokens : ThemePresets::minimal(),
             'cartCount' => $cart?->loadMissing('items')->itemCount() ?? 0,
             'currencySymbol' => $tenant->storeSettings()->currency_symbol,

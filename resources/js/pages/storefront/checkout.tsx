@@ -23,14 +23,15 @@ type Props = {
             total: string;
         };
     };
+    customer: { name: string; email: string } | null;
 };
 
 const inputClass = 'w-full rounded-md border px-3 py-2 text-sm outline-none';
 
-export default function StorefrontCheckout({ cart }: Props) {
+export default function StorefrontCheckout({ cart, customer }: Props) {
     const form = useForm({
-        email: '',
-        customer_name: '',
+        email: customer?.email ?? '',
+        customer_name: customer?.name ?? '',
         phone: '',
         address: {
             line1: '',

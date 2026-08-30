@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CheckoutRequest;
 use App\Mail\OrderPlaced;
 use App\Models\Cart;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -26,8 +28,13 @@ class CheckoutController extends Controller
             return redirect('/cart');
         }
 
+        $customer = Auth::guard('customer')->user();
+
         return Inertia::render('storefront/checkout', [
             'cart' => $cart->presentation(Tenant::currentOrFail()->storeSettings()),
+            'customer' => $customer instanceof Customer
+                ? ['name' => $customer->name, 'email' => $customer->email]
+                : null,
         ]);
     }
 
@@ -48,6 +55,7 @@ class CheckoutController extends Controller
             $totals = $cart->totals($settings);
 
             $order = Order::create([
+                'customer_id' => Auth::guard('customer')->id(),
                 'number' => $nextNumber + 1,
                 'token' => Str::random(40),
                 'status' => 'pending',

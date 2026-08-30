@@ -30,7 +30,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable([
-    'number', 'token', 'status', 'payment_status', 'payment_method',
+    'customer_id', 'number', 'token', 'status', 'payment_status', 'payment_method',
     'email', 'customer_name', 'phone', 'shipping_address', 'notes',
     'subtotal', 'shipping_total', 'tax_total', 'total', 'currency',
 ])]

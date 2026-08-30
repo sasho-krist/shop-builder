@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, User } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { fontStack, type ThemeTokens, themeToCssVars } from '@/lib/theme';
 
@@ -10,6 +10,7 @@ export type StorefrontShared = {
         cartCount: number;
         currencySymbol: string;
         categories: { name: string; slug: string }[];
+        customer: { name: string } | null;
     };
 };
 
@@ -19,7 +20,7 @@ export default function StorefrontLayout({
     children: ReactNode;
 }) {
     const { storefront } = usePage<StorefrontShared>().props;
-    const { theme, storeName, cartCount, categories } = storefront;
+    const { theme, storeName, cartCount, categories, customer } = storefront;
 
     return (
         <div
@@ -60,6 +61,16 @@ export default function StorefrontLayout({
                                 {category.name}
                             </Link>
                         ))}
+                        <Link
+                            href={customer ? '/account' : '/account/login'}
+                            className="flex items-center gap-1.5"
+                            title={customer ? customer.name : 'Sign in'}
+                        >
+                            <User className="size-4" />
+                            <span className="hidden sm:inline">
+                                {customer ? customer.name : 'Sign in'}
+                            </span>
+                        </Link>
                         <Link
                             href="/cart"
                             className="flex items-center gap-1.5"
