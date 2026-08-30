@@ -7,6 +7,7 @@ use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\CollectionController;
 use App\Http\Controllers\Storefront\CustomerAuthController;
 use App\Http\Controllers\Storefront\HomeController;
+use App\Http\Controllers\Storefront\PageController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\StoreAdminController;
 use App\Http\Middleware\ResolveCart;
@@ -50,4 +51,9 @@ Route::domain('{store}')
         Route::post('admin/login', [StoreAdminController::class, 'login'])->name('storefront.admin.login');
         Route::post('admin/register', [StoreAdminController::class, 'register'])->name('storefront.admin.register');
         Route::post('admin/logout', [StoreAdminController::class, 'logout'])->name('storefront.admin.logout');
+
+        // Custom pages by slug — kept last so it never shadows the routes above.
+        Route::get('{slug}', [PageController::class, 'show'])
+            ->where('slug', '[a-z0-9](?:[a-z0-9-]*[a-z0-9])?')
+            ->name('storefront.page');
     });

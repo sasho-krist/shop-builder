@@ -238,6 +238,24 @@ _Забележка: изнасянето на админа на отделен 
 - Оставено за после: gate на open registration на `{store}/admin` (invite / claim),
   роли различни от `owner` (staff с ограничени права).
 
+### 8d. Navigation & footer + custom pages ✅
+
+- **`store_navigation`** таблица (hasOne per tenant) — `header_links`,
+  `footer_links` (JSON `{label, type, value}`), `footer_note`, `show_category_nav`.
+  `App\Support\Storefront\NavLinks` резолвва `type`+`value` → href
+  (`home/shop/cart/category/collection/page/url`); нерезолвиращи се падат.
+- **Админ „Navigation"** (`StoreNavigationController`) — редактор с repeatable
+  редове (label + тип dropdown + target select/URL), up/down/delete, toggle за
+  категорийните линкове, footer текст + линкове. `targets` = списъци на
+  категории/колекции/страници.
+- **Storefront route `GET {slug}`** (последен в групата, regex) →
+  `Storefront\PageController` рендерира публикувана страница `type=page` през
+  същия блоков pipeline (`storefront/page` = `StorefrontBlocks` компонент,
+  споделен с `home`).
+- `storefront-layout` header: ако има `nav.header` → тях (+ категории само ако
+  `showCategoryNav`), иначе fallback „Shop". Footer: note + линкове + copyright.
+  Вътрешни href → Inertia `<Link>`, външни → `<a target=_blank>`.
+
 ---
 
 ## 8. Отворени решения

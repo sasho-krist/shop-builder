@@ -85,6 +85,19 @@ class Tenant extends Model
     }
 
     /**
+     * @return HasOne<StoreNavigation, $this>
+     */
+    public function navigation(): HasOne
+    {
+        return $this->hasOne(StoreNavigation::class);
+    }
+
+    public function storeNavigation(): StoreNavigation
+    {
+        return $this->navigation()->firstOrCreate([]);
+    }
+
+    /**
      * The store's current subscription plan. `tenants.plan` is authoritative and
      * is kept in sync from Stripe by the billing webhook.
      */

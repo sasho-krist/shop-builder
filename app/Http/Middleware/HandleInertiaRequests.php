@@ -9,6 +9,7 @@ use App\Models\Page;
 use App\Models\Tenant;
 use App\Models\Theme;
 use App\Models\User;
+use App\Support\Storefront\NavLinks;
 use App\Support\Theme\ThemePresets;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -90,6 +91,7 @@ class HandleInertiaRequests extends Middleware
         $activeTheme = Theme::active();
         $cart = app()->bound(Cart::class) ? app(Cart::class) : null;
         $customer = Auth::guard('customer')->user();
+        $nav = $tenant->storeNavigation();
 
         return [
             'storeName' => $tenant->name,
@@ -110,6 +112,12 @@ class HandleInertiaRequests extends Middleware
                     'slug' => $category->slug,
                 ])
                 ->all(),
+            'nav' => [
+                'header' => NavLinks::resolve($nav->header_links),
+                'footer' => NavLinks::resolve($nav->footer_links),
+                'footerNote' => $nav->footer_note,
+                'showCategoryNav' => $nav->show_category_nav,
+            ],
             'manage' => $this->manageContext($request, $tenant, $activeTheme),
         ];
     }

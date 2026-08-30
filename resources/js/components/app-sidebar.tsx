@@ -7,6 +7,7 @@ import {
     FolderTree,
     LayoutGrid,
     Layers,
+    Menu,
     Package,
     Palette,
     Settings,
@@ -35,6 +36,7 @@ import pages from '@/routes/pages';
 import products from '@/routes/products';
 import { show as billingShow } from '@/routes/billing';
 import customers from '@/routes/customers';
+import { edit as navigationEdit } from '@/routes/navigation';
 import owners from '@/routes/owners';
 import { edit as storeSettingsEdit } from '@/routes/store-settings';
 import themes from '@/routes/themes';
@@ -85,6 +87,11 @@ const mainNavItems: NavItem[] = [
         title: 'Pages',
         href: pages.index(),
         icon: FileText,
+    },
+    {
+        title: 'Navigation',
+        href: navigationEdit(),
+        icon: Menu,
     },
     {
         title: 'Settings',

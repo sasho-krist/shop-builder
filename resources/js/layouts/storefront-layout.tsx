@@ -6,6 +6,8 @@ import StorefrontOwnerBar, {
 } from '@/components/storefront-owner-bar';
 import { fontStack, type ThemeTokens, themeToCssVars } from '@/lib/theme';
 
+type NavLink = { label: string; href: string };
+
 export type StorefrontShared = {
     storefront: {
         storeName: string;
@@ -15,8 +17,34 @@ export type StorefrontShared = {
         categories: { name: string; slug: string }[];
         customer: { name: string } | null;
         manage: ManageContext | null;
+        nav: {
+            header: NavLink[];
+            footer: NavLink[];
+            footerNote: string | null;
+            showCategoryNav: boolean;
+        };
     };
 };
+
+function NavAnchor({ link, className }: { link: NavLink; className?: string }) {
+    if (link.href.startsWith('/')) {
+        return (
+            <Link href={link.href} className={className}>
+                {link.label}
+            </Link>
+        );
+    }
+    return (
+        <a
+            href={link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={className}
+        >
+            {link.label}
+        </a>
+    );
+}
 
 export default function StorefrontLayout({
     children,
@@ -26,8 +54,9 @@ export default function StorefrontLayout({
     ownerEdit?: { href: string; label: string };
 }) {
     const { storefront } = usePage<StorefrontShared>().props;
-    const { theme, storeName, cartCount, categories, customer, manage } =
+    const { theme, storeName, cartCount, categories, customer, manage, nav } =
         storefront;
+    const year = new Date().getFullYear();
 
     return (
         <div
@@ -58,16 +87,27 @@ export default function StorefrontLayout({
                         {storeName}
                     </Link>
                     <nav className="flex items-center gap-5 text-sm">
-                        <Link href="/products">Shop</Link>
-                        {categories.map((category) => (
-                            <Link
-                                key={category.slug}
-                                href={`/c/${category.slug}`}
-                                className="hidden sm:inline"
-                            >
-                                {category.name}
-                            </Link>
-                        ))}
+                        {nav.header.length > 0 ? (
+                            nav.header.map((link, i) => (
+                                <NavAnchor
+                                    key={`${link.href}-${i}`}
+                                    link={link}
+                                    className="hidden sm:inline"
+                                />
+                            ))
+                        ) : (
+                            <Link href="/products">Shop</Link>
+                        )}
+                        {nav.showCategoryNav &&
+                            categories.map((category) => (
+                                <Link
+                                    key={category.slug}
+                                    href={`/c/${category.slug}`}
+                                    className="hidden sm:inline"
+                                >
+                                    {category.name}
+                                </Link>
+                            ))}
                         {manage ? (
                             <a
                                 href={manage.dashboard}
@@ -131,10 +171,35 @@ export default function StorefrontLayout({
                 className="border-t"
             >
                 <div
-                    className="mx-auto w-full px-5 py-8 text-sm sm:px-8"
+                    className="mx-auto flex w-full flex-col gap-4 px-5 py-10 text-sm sm:px-8"
                     style={{ maxWidth: 'var(--sb-container)' }}
                 >
-                    © {new Date().getFullYear()} {storeName}
+                    {nav.footerNote && (
+                        <p className="max-w-md whitespace-pre-line">
+                            {nav.footerNote}
+                        </p>
+                    )}
+                    {nav.footer.length > 0 && (
+                        <div className="flex flex-wrap gap-x-6 gap-y-2">
+                            {nav.footer.map((link, i) => (
+                                <NavAnchor
+                                    key={`${link.href}-${i}`}
+                                    link={link}
+                                    className="hover:text-[color:var(--sb-foreground)]"
+                                />
+                            ))}
+                        </div>
+                    )}
+                    <div
+                        style={{ borderColor: 'var(--sb-border)' }}
+                        className={
+                            nav.footerNote || nav.footer.length > 0
+                                ? 'border-t pt-4'
+                                : undefined
+                        }
+                    >
+                        © {year} {storeName}
+                    </div>
                 </div>
             </footer>
 
