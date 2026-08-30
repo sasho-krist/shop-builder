@@ -43,7 +43,7 @@ class StoreAdminController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt(['email' => $data['email'], 'password' => $data['password']], remember: true)) {
+        if (! Auth::attempt(['email' => $data['email'], 'password' => $data['password']])) {
             throw ValidationException::withMessages([
                 'email' => 'Those credentials do not match our records.',
             ]);
@@ -76,7 +76,7 @@ class StoreAdminController extends Controller
 
         $tenant->users()->attach($user, ['role' => 'owner']);
 
-        Auth::login($user, remember: true);
+        Auth::login($user);
         $request->session()->regenerate();
         $request->session()->put('active_tenant_id', $tenant->getKey());
 

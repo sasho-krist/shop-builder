@@ -68,16 +68,38 @@ export default function StorefrontLayout({
                                 {category.name}
                             </Link>
                         ))}
-                        <Link
-                            href={customer ? '/account' : '/account/login'}
-                            className="flex items-center gap-1.5"
-                            title={customer ? customer.name : 'Sign in'}
-                        >
-                            <User className="size-4" />
-                            <span className="hidden sm:inline">
-                                {customer ? customer.name : 'Sign in'}
-                            </span>
-                        </Link>
+                        {manage ? (
+                            <a
+                                href={manage.dashboard}
+                                className="flex items-center gap-1.5"
+                                title={`Signed in as ${manage.name} (store owner)`}
+                            >
+                                <User className="size-4" />
+                                <span className="hidden items-center gap-1.5 sm:flex">
+                                    {manage.name}
+                                    <span
+                                        style={{
+                                            background: 'var(--sb-primary)',
+                                            color: 'var(--sb-primary-foreground)',
+                                        }}
+                                        className="rounded-full px-1.5 py-0.5 text-[10px] leading-none font-semibold tracking-wide uppercase"
+                                    >
+                                        Owner
+                                    </span>
+                                </span>
+                            </a>
+                        ) : (
+                            <Link
+                                href={customer ? '/account' : '/account/login'}
+                                className="flex items-center gap-1.5"
+                                title={customer ? customer.name : 'Sign in'}
+                            >
+                                <User className="size-4" />
+                                <span className="hidden sm:inline">
+                                    {customer ? customer.name : 'Sign in'}
+                                </span>
+                            </Link>
+                        )}
                         <Link
                             href="/cart"
                             className="flex items-center gap-1.5"
