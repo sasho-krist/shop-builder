@@ -1,5 +1,7 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import type { StorefrontShared } from '@/layouts/storefront-layout';
 import StorefrontLayout from '@/layouts/storefront-layout';
+import { money } from '@/lib/money';
 
 type ProductRow = {
     id: number;
@@ -18,13 +20,22 @@ type Paginated<T> = {
 };
 
 type Props = {
+    heading: string;
+    description: string | null;
     products: Paginated<ProductRow>;
 };
 
-export default function StorefrontProducts({ products }: Props) {
+export default function StorefrontListing({
+    heading,
+    description,
+    products,
+}: Props) {
+    const { storefront } = usePage<StorefrontShared>().props;
+    const symbol = storefront.currencySymbol;
+
     return (
         <StorefrontLayout>
-            <Head title="Shop" />
+            <Head title={heading} />
 
             <div
                 className="mx-auto w-full px-4 py-10"
@@ -32,17 +43,28 @@ export default function StorefrontProducts({ products }: Props) {
             >
                 <h1
                     style={{ fontFamily: 'var(--sb-heading-font)' }}
-                    className="mb-6 text-3xl font-bold"
+                    className="text-3xl font-bold"
                 >
-                    Shop
+                    {heading}
                 </h1>
+                {description && (
+                    <p
+                        style={{ color: 'var(--sb-muted-foreground)' }}
+                        className="mt-2 max-w-2xl text-sm"
+                    >
+                        {description}
+                    </p>
+                )}
 
                 {products.data.length === 0 ? (
-                    <p style={{ color: 'var(--sb-muted-foreground)' }}>
-                        No products yet.
+                    <p
+                        style={{ color: 'var(--sb-muted-foreground)' }}
+                        className="mt-6"
+                    >
+                        No products here yet.
                     </p>
                 ) : (
-                    <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
+                    <div className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
                         {products.data.map((product) => (
                             <Link
                                 key={product.id}
@@ -81,7 +103,7 @@ export default function StorefrontProducts({ products }: Props) {
                                             }}
                                             className="text-sm"
                                         >
-                                            {product.price}
+                                            {money(product.price, symbol)}
                                         </div>
                                     )}
                                 </div>

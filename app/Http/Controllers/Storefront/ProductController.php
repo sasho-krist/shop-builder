@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Storefront\Concerns\PresentsProducts;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
@@ -11,23 +12,15 @@ use Inertia\Response;
 
 class ProductController extends Controller
 {
+    use PresentsProducts;
+
     public function index(): Response
     {
-        $products = Product::query()
-            ->where('status', 'active')
-            ->with(['variants:id,product_id,price', 'images:id,product_id,disk,path'])
-            ->latest()
-            ->paginate(12)
-            ->withQueryString()
-            ->through(fn (Product $product): array => [
-                'id' => $product->id,
-                'title' => $product->title,
-                'slug' => $product->slug,
-                'price' => $product->variants->min('price'),
-                'image' => $product->images->first()?->url(),
-            ]);
-
-        return Inertia::render('storefront/products', ['products' => $products]);
+        return Inertia::render('storefront/listing', [
+            'heading' => 'Shop',
+            'description' => null,
+            'products' => $this->paginateProducts(Product::query()),
+        ]);
     }
 
     public function show(string $slug): Response

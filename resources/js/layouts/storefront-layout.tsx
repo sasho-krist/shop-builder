@@ -8,6 +8,8 @@ export type StorefrontShared = {
         storeName: string;
         theme: ThemeTokens;
         cartCount: number;
+        currencySymbol: string;
+        categories: { name: string; slug: string }[];
     };
 };
 
@@ -17,7 +19,7 @@ export default function StorefrontLayout({
     children: ReactNode;
 }) {
     const { storefront } = usePage<StorefrontShared>().props;
-    const { theme, storeName, cartCount } = storefront;
+    const { theme, storeName, cartCount, categories } = storefront;
 
     return (
         <div
@@ -49,6 +51,15 @@ export default function StorefrontLayout({
                     </Link>
                     <nav className="flex items-center gap-5 text-sm">
                         <Link href="/products">Shop</Link>
+                        {categories.map((category) => (
+                            <Link
+                                key={category.slug}
+                                href={`/c/${category.slug}`}
+                                className="hidden sm:inline"
+                            >
+                                {category.name}
+                            </Link>
+                        ))}
                         <Link
                             href="/cart"
                             className="flex items-center gap-1.5"
