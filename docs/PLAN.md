@@ -197,9 +197,10 @@ _Забележка: изнасянето на админа на отделен 
 | **6a. Checkout & поръчки** ✅         | `orders` + `order_lines` (snapshot), storefront checkout → order + token confirmation, offline плащане, админ orders list/detail + status                                                                                                                                             | Клиент прави поръчка end-to-end; админът я вижда и управлява                                     |
 | **6b. Плащане** ✅                    | `PaymentGateway` абстракция + `StripePaymentGateway` (Stripe Checkout), `payments` таблица, config-gated (`STRIPE_SECRET`) — картовата опция се крие ако не е настроен; webhook `checkout.session.completed` маркира поръчката платена + праща имейл; `FakePaymentGateway` за тестове | Реално онлайн плащане (нужни са Stripe ключове)                                                  |
 | **7. Клиенти, настройки, домейни** ✅ | Клиентски акаунти ✅ (регистрация/вход/акаунт с история, per-tenant `customer` guard), настройки за доставка/ДДС/валута ✅, custom domain ✅ (CNAME instructions, host-based tenant resolve)                                                                                          | Готов за реален магазин                                                                          |
-| **8. SaaS billing**                   | Планове, Cashier абонаменти, onboarding wizard, лимити по план                                                                                                                                                                                                                        | Готов за реални клиенти на платформата                                                           |
+| **8. SaaS billing** ✅                | `config/plans.php` (free/pro/business + лимити), `tenants.plan` = source of truth, Laravel Cashier (billable = `Tenant`, webhook `/billing/webhook`), `BillingGateway` абстракция + `StripeBillingGateway` (Checkout + billing portal), `PlanGate` enforcement (продукти/staff/custom domain/card payments), `/billing` екран (usage bars + plan cards + upgrade), `SyncTenantPlan` listener синхронизира plan от subscription; `FakeBillingGateway` за тестове | Готов за реални клиенти на платформата (нужни са Stripe ключове + Price IDs) |
 
-**MVP = Фази 0–6.** Фази 7–8 са за реално пускане в production.
+**MVP = Фази 0–6.** Фази 7–8 вече също са готови — остават Stripe ключове за
+реалните плащания/абонаменти и production DNS/хостинг.
 
 ---
 

@@ -2,14 +2,21 @@
 
 namespace App\Providers;
 
+use App\Listeners\SyncTenantPlan;
+use App\Models\Tenant;
+use App\Services\Billing\BillingGateway;
+use App\Services\Billing\StripeBillingGateway;
 use App\Services\Payments\PaymentGateway;
 use App\Services\Payments\StripePaymentGateway;
 use App\Support\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Cashier\Cashier;
+use Laravel\Cashier\Events\WebhookHandled;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(TenantContext::class);
         $this->app->singleton(PaymentGateway::class, StripePaymentGateway::class);
+        $this->app->singleton(BillingGateway::class, StripeBillingGateway::class);
     }
 
     /**
@@ -36,6 +44,9 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);
+
+        Cashier::useCustomerModel(Tenant::class);
+        Event::listen(WebhookHandled::class, SyncTenantPlan::class);
 
         DB::prohibitDestructiveCommands(
             app()->isProduction(),

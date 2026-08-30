@@ -32,7 +32,7 @@ class CardPaymentTest extends TestCase
 
         Mail::fake();
 
-        $this->store = Tenant::factory()->create(['slug' => 'acme', 'name' => 'Acme']);
+        $this->store = Tenant::factory()->create(['slug' => 'acme', 'name' => 'Acme', 'plan' => 'pro']);
         Page::factory()->for($this->store)->home()->create(['blocks' => []]);
         $this->store->themes()->create([
             'name' => 'Default',
@@ -100,6 +100,18 @@ class CardPaymentTest extends TestCase
             ->assertSessionHasErrors('payment_method');
 
         $this->assertSame(0, Order::query()->count());
+    }
+
+    public function test_a_free_plan_store_cannot_offer_card_payments(): void
+    {
+        $this->store->update(['plan' => 'free']);
+        $this->enableGateway();
+
+        $this->get($this->url('checkout'))
+            ->assertInertia(fn (AssertableInertia $page) => $page->where('cardPaymentsEnabled', false));
+
+        $this->post($this->url('checkout'), $this->payload('card'))
+            ->assertSessionHasErrors('payment_method');
     }
 
     public function test_a_card_order_creates_a_pending_payment_and_redirects_to_the_gateway(): void

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTenantRequest;
 use App\Models\Tenant;
+use App\Models\User;
 use App\Support\Theme\ThemePresets;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,7 +19,9 @@ class OnboardingController extends Controller
      */
     public function create(Request $request): Response|RedirectResponse
     {
-        if ($request->user()->tenants()->exists()) {
+        $user = $request->user();
+
+        if ($user instanceof User && $user->tenants()->exists()) {
             return redirect()->route('dashboard');
         }
 
@@ -33,6 +36,10 @@ class OnboardingController extends Controller
     public function store(StoreTenantRequest $request): RedirectResponse
     {
         $user = $request->user();
+
+        if (! $user instanceof User) {
+            abort(403);
+        }
 
         if ($user->tenants()->exists()) {
             return redirect()->route('dashboard');

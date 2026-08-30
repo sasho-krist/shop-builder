@@ -26,7 +26,7 @@ class StoreSettingsTest extends TestCase
     {
         parent::setUp();
 
-        $this->tenant = Tenant::factory()->create(['slug' => 'acme']);
+        $this->tenant = Tenant::factory()->create(['slug' => 'acme', 'plan' => 'pro']);
         $this->user = User::factory()->create();
         $this->tenant->users()->attach($this->user, ['role' => 'owner']);
         Tenant::setCurrent($this->tenant);
@@ -102,6 +102,17 @@ class StoreSettingsTest extends TestCase
         $this->actingAs($this->user)
             ->put(route('store-domain.update'), ['custom_domain' => 'taken.example.com'])
             ->assertSessionHasErrors('custom_domain');
+    }
+
+    public function test_a_free_plan_store_cannot_connect_a_custom_domain(): void
+    {
+        $this->tenant->update(['plan' => 'free']);
+
+        $this->actingAs($this->user)
+            ->put(route('store-domain.update'), ['custom_domain' => 'shop.example.com'])
+            ->assertSessionHasErrors('custom_domain');
+
+        $this->assertNull($this->tenant->fresh()?->custom_domain);
     }
 
     public function test_a_custom_domain_can_be_cleared(): void

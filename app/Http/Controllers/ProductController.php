@@ -7,12 +7,15 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
+use App\Models\Tenant;
+use App\Services\Billing\PlanGate;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -101,8 +104,14 @@ class ProductController extends Controller
         return response()->json($products);
     }
 
-    public function store(ProductRequest $request): RedirectResponse
+    public function store(ProductRequest $request, PlanGate $planGate): RedirectResponse
     {
+        if (! $planGate->canAdd(Tenant::currentOrFail(), 'products')) {
+            throw ValidationException::withMessages([
+                'title' => 'Your plan\'s product limit is reached. Upgrade in Billing to add more.',
+            ]);
+        }
+
         $data = $request->validated();
 
         DB::transaction(function () use ($data) {

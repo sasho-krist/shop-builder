@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import {
     BookOpen,
+    CreditCard,
     FileText,
     FolderGit2,
     FolderTree,
@@ -30,6 +31,7 @@ import collections from '@/routes/collections';
 import orders from '@/routes/orders';
 import pages from '@/routes/pages';
 import products from '@/routes/products';
+import { show as billingShow } from '@/routes/billing';
 import { edit as storeSettingsEdit } from '@/routes/store-settings';
 import themes from '@/routes/themes';
 import type { NavItem } from '@/types';
@@ -74,6 +76,11 @@ const mainNavItems: NavItem[] = [
         title: 'Settings',
         href: storeSettingsEdit(),
         icon: Settings,
+    },
+    {
+        title: 'Billing',
+        href: billingShow(),
+        icon: CreditCard,
     },
 ];
 

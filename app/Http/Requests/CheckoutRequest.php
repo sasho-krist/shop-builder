@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Tenant;
+use App\Services\Billing\PlanGate;
 use App\Services\Payments\PaymentGateway;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -27,7 +29,10 @@ class CheckoutRequest extends FormRequest
     {
         $methods = ['offline'];
 
-        if (app(PaymentGateway::class)->enabled()) {
+        $cardAvailable = app(PaymentGateway::class)->enabled()
+            && app(PlanGate::class)->allows(Tenant::currentOrFail(), 'card_payments');
+
+        if ($cardAvailable) {
             $methods[] = 'card';
         }
 

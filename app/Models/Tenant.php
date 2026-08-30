@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Support\Billing\Plan;
+use App\Support\Billing\Plans;
 use App\Support\Tenancy\TenantContext;
 use Database\Factories\TenantFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -11,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
+use Laravel\Cashier\Billable;
 
 /**
  * @property int $id
@@ -23,9 +26,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'slug', 'custom_domain', 'plan', 'status', 'trial_ends_at'])]
+#[Fillable(['name', 'slug', 'custom_domain', 'plan', 'status', 'trial_ends_at', 'stripe_id', 'pm_type', 'pm_last_four'])]
 class Tenant extends Model
 {
+    use Billable;
+
     /** @use HasFactory<TenantFactory> */
     use HasFactory;
 
@@ -76,6 +81,15 @@ class Tenant extends Model
     public function storeSettings(): StoreSetting
     {
         return $this->settings()->firstOrCreate([]);
+    }
+
+    /**
+     * The store's current subscription plan. `tenants.plan` is authoritative and
+     * is kept in sync from Stripe by the billing webhook.
+     */
+    public function currentPlan(): Plan
+    {
+        return Plans::get(Plans::exists($this->plan) ? $this->plan : Plans::DEFAULT);
     }
 
     /**

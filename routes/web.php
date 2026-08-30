@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\DashboardController;
@@ -82,6 +83,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('store-settings', [StoreSettingController::class, 'edit'])->name('store-settings.edit');
         Route::put('store-settings', [StoreSettingController::class, 'update'])->name('store-settings.update');
         Route::put('store-domain', [StoreDomainController::class, 'update'])->name('store-domain.update');
+
+        Route::get('billing', [BillingController::class, 'show'])->name('billing.show');
+        Route::post('billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
+        Route::get('billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
     });
 });
 

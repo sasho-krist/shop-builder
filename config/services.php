@@ -31,7 +31,9 @@ return [
     'stripe' => [
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
-        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        // Storefront one-off payments use their own Stripe webhook endpoint,
+        // separate from Cashier's subscription webhook (STRIPE_WEBHOOK_SECRET).
+        'webhook_secret' => env('STRIPE_STOREFRONT_WEBHOOK_SECRET', env('STRIPE_WEBHOOK_SECRET')),
     ],
 
     'slack' => [

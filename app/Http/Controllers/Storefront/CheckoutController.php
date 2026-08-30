@@ -10,6 +10,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderLine;
 use App\Models\Tenant;
+use App\Services\Billing\PlanGate;
 use App\Services\Payments\PaymentGateway;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -37,8 +38,14 @@ class CheckoutController extends Controller
             'customer' => $customer instanceof Customer
                 ? ['name' => $customer->name, 'email' => $customer->email]
                 : null,
-            'cardPaymentsEnabled' => app(PaymentGateway::class)->enabled(),
+            'cardPaymentsEnabled' => $this->cardPaymentsAvailable(),
         ]);
+    }
+
+    private function cardPaymentsAvailable(): bool
+    {
+        return app(PaymentGateway::class)->enabled()
+            && app(PlanGate::class)->allows(Tenant::currentOrFail(), 'card_payments');
     }
 
     public function store(CheckoutRequest $request): RedirectResponse
@@ -52,7 +59,7 @@ class CheckoutController extends Controller
 
         $settings = Tenant::currentOrFail()->storeSettings();
         $data = $request->validated();
-        $payWithCard = $data['payment_method'] === 'card' && app(PaymentGateway::class)->enabled();
+        $payWithCard = $data['payment_method'] === 'card' && $this->cardPaymentsAvailable();
 
         $order = DB::transaction(function () use ($cart, $data, $settings, $payWithCard): Order {
             $nextNumber = (int) Order::query()->lockForUpdate()->max('number') ?: 1000;
