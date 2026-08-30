@@ -41,7 +41,7 @@ export default function StorefrontCart({ cart }: Props) {
             <Head title="Cart" />
 
             <div
-                className="mx-auto w-full px-4 py-10"
+                className="mx-auto w-full px-5 py-10 sm:px-8"
                 style={{ maxWidth: 'var(--sb-container)' }}
             >
                 <h1

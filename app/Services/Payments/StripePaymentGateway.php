@@ -13,12 +13,16 @@ class StripePaymentGateway implements PaymentGateway
 {
     public function enabled(): bool
     {
-        return filled(config('services.stripe.secret'));
+        return (bool) config('services.stripe.enabled', true)
+            && filled(config('services.stripe.secret'));
     }
 
     public function createCheckoutSession(Order $order, string $successUrl, string $cancelUrl): CheckoutSession
     {
-        $session = $this->client()->checkout->sessions->create([
+        $currency = config('services.stripe.currency');
+        $currency = is_string($currency) && $currency !== '' ? $currency : $order->currency;
+
+        $params = [
             'mode' => 'payment',
             'success_url' => $successUrl,
             'cancel_url' => $cancelUrl,
@@ -28,12 +32,18 @@ class StripePaymentGateway implements PaymentGateway
             'line_items' => [[
                 'quantity' => 1,
                 'price_data' => [
-                    'currency' => strtolower($order->currency),
+                    'currency' => strtolower($currency),
                     'unit_amount' => (int) round(((float) $order->total) * 100),
                     'product_data' => ['name' => "Order #{$order->number}"],
                 ],
             ]],
-        ]);
+        ];
+
+        if (config('services.stripe.disable_link')) {
+            $params['payment_method_types'] = ['card'];
+        }
+
+        $session = $this->client()->checkout->sessions->create($params);
 
         return new CheckoutSession((string) $session->id, (string) $session->url);
     }

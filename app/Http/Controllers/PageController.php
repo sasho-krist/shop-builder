@@ -6,6 +6,7 @@ use App\Http\Requests\PageRequest;
 use App\Models\Collection;
 use App\Models\Page;
 use App\Models\Product;
+use App\Models\Tenant;
 use App\Models\Theme;
 use App\Support\Theme\ThemePresets;
 use Illuminate\Http\RedirectResponse;
@@ -109,12 +110,18 @@ class PageController extends Controller
      */
     private function previewContext(): array
     {
-        $mapProduct = fn (Product $product): array => [
-            'id' => $product->id,
-            'title' => $product->title,
-            'price' => $product->variants->min('price'),
-            'image' => $product->images->first()?->url(),
-        ];
+        $symbol = Tenant::currentOrFail()->storeSettings()->currency_symbol;
+
+        $mapProduct = function (Product $product) use ($symbol): array {
+            $from = $product->variants->min('price');
+
+            return [
+                'id' => $product->id,
+                'title' => $product->title,
+                'price' => $from === null ? null : "{$from} {$symbol}",
+                'image' => $product->images->first()?->url(),
+            ];
+        };
 
         return [
             'products' => Product::query()

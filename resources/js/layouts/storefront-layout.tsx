@@ -1,6 +1,9 @@
 import { Link, usePage } from '@inertiajs/react';
 import { ShoppingBag, User } from 'lucide-react';
 import type { ReactNode } from 'react';
+import StorefrontOwnerBar, {
+    type ManageContext,
+} from '@/components/storefront-owner-bar';
 import { fontStack, type ThemeTokens, themeToCssVars } from '@/lib/theme';
 
 export type StorefrontShared = {
@@ -11,16 +14,20 @@ export type StorefrontShared = {
         currencySymbol: string;
         categories: { name: string; slug: string }[];
         customer: { name: string } | null;
+        manage: ManageContext | null;
     };
 };
 
 export default function StorefrontLayout({
     children,
+    ownerEdit,
 }: {
     children: ReactNode;
+    ownerEdit?: { href: string; label: string };
 }) {
     const { storefront } = usePage<StorefrontShared>().props;
-    const { theme, storeName, cartCount, categories, customer } = storefront;
+    const { theme, storeName, cartCount, categories, customer, manage } =
+        storefront;
 
     return (
         <div
@@ -38,7 +45,7 @@ export default function StorefrontLayout({
                 className="border-b"
             >
                 <div
-                    className="mx-auto flex w-full items-center justify-between px-4 py-4"
+                    className="mx-auto flex w-full items-center justify-between px-5 py-4 sm:px-8"
                     style={{ maxWidth: 'var(--sb-container)' }}
                 >
                     <Link
@@ -102,12 +109,23 @@ export default function StorefrontLayout({
                 className="border-t"
             >
                 <div
-                    className="mx-auto w-full px-4 py-8 text-sm"
+                    className="mx-auto w-full px-5 py-8 text-sm sm:px-8"
                     style={{ maxWidth: 'var(--sb-container)' }}
                 >
                     © {new Date().getFullYear()} {storeName}
                 </div>
             </footer>
+
+            {manage && (
+                <>
+                    <div aria-hidden className="h-16" />
+                    <StorefrontOwnerBar
+                        manage={manage}
+                        editHref={ownerEdit?.href ?? manage.homePage}
+                        editLabel={ownerEdit?.label ?? 'Edit home'}
+                    />
+                </>
+            )}
         </div>
     );
 }

@@ -1,0 +1,122 @@
+import {
+    LayoutDashboard,
+    Package,
+    Palette,
+    Plus,
+    ShoppingCart,
+    SquarePen,
+    X,
+} from 'lucide-react';
+import { useState } from 'react';
+
+export type ManageContext = {
+    dashboard: string;
+    products: string;
+    newProduct: string;
+    orders: string;
+    theme: string | null;
+    homePage: string | null;
+};
+
+const STORAGE_KEY = 'sb_owner_bar_hidden';
+
+function readHidden(): boolean {
+    try {
+        return localStorage.getItem(STORAGE_KEY) === '1';
+    } catch {
+        return false;
+    }
+}
+
+export default function StorefrontOwnerBar({
+    manage,
+    editHref,
+    editLabel,
+}: {
+    manage: ManageContext;
+    editHref?: string | null;
+    editLabel?: string;
+}) {
+    const [hidden, setHidden] = useState(readHidden);
+
+    function hide() {
+        setHidden(true);
+        try {
+            localStorage.setItem(STORAGE_KEY, '1');
+        } catch {
+            /* ignore */
+        }
+    }
+
+    if (hidden) {
+        return (
+            <button
+                type="button"
+                onClick={() => {
+                    setHidden(false);
+                    try {
+                        localStorage.removeItem(STORAGE_KEY);
+                    } catch {
+                        /* ignore */
+                    }
+                }}
+                className="fixed bottom-4 left-4 z-50 flex items-center gap-1.5 rounded-full bg-neutral-900 px-3 py-2 text-xs font-medium text-white shadow-lg ring-1 ring-white/10"
+            >
+                <SquarePen className="size-3.5" />
+                Edit store
+            </button>
+        );
+    }
+
+    const link =
+        'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-white/90 transition-colors hover:bg-white/10 hover:text-white';
+
+    return (
+        <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 pb-3">
+            <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-xl bg-neutral-900/95 p-1.5 text-xs font-medium shadow-2xl ring-1 ring-white/10 backdrop-blur">
+                <span className="hidden shrink-0 items-center gap-1.5 px-2 text-white/50 sm:flex">
+                    <span className="size-2 rounded-full bg-emerald-400" />
+                    Owner view
+                </span>
+
+                {editHref && (
+                    <a href={editHref} className={link}>
+                        <SquarePen className="size-3.5" />
+                        {editLabel ?? 'Edit page'}
+                    </a>
+                )}
+                {manage.theme && (
+                    <a href={manage.theme} className={link}>
+                        <Palette className="size-3.5" />
+                        Theme
+                    </a>
+                )}
+                <a href={manage.newProduct} className={link}>
+                    <Plus className="size-3.5" />
+                    Product
+                </a>
+                <a href={manage.products} className={link}>
+                    <Package className="size-3.5" />
+                    Catalog
+                </a>
+                <a href={manage.orders} className={link}>
+                    <ShoppingCart className="size-3.5" />
+                    Orders
+                </a>
+                <a href={manage.dashboard} className={link}>
+                    <LayoutDashboard className="size-3.5" />
+                    Admin
+                </a>
+
+                <button
+                    type="button"
+                    onClick={hide}
+                    aria-label="Hide toolbar"
+                    className="ml-0.5 rounded-md p-1.5 text-white/50 hover:bg-white/10 hover:text-white"
+                >
+                    <X className="size-3.5" />
+                </button>
+            </div>
+        </div>
+    );
+}

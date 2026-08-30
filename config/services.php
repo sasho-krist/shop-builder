@@ -29,11 +29,17 @@ return [
     ],
 
     'stripe' => [
+        'enabled' => env('STRIPE_ENABLED', true),
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
         // Storefront one-off payments use their own Stripe webhook endpoint,
         // separate from Cashier's subscription webhook (STRIPE_WEBHOOK_SECRET).
         'webhook_secret' => env('STRIPE_STOREFRONT_WEBHOOK_SECRET', env('STRIPE_WEBHOOK_SECRET')),
+        // Force the hosted Checkout to card only, hiding Stripe Link.
+        'disable_link' => env('STRIPE_DISABLE_LINK', false),
+        // Optional override for the Checkout line-item currency; when unset the
+        // order's own currency is used.
+        'currency' => env('STRIPE_CURRENCY'),
     ],
 
     'slack' => [

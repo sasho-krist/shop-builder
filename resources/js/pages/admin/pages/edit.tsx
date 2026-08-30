@@ -107,9 +107,21 @@ function SortableRow({
     );
 }
 
+function initialSelection(blocks: Block[]): string | null {
+    if (typeof window !== 'undefined') {
+        const requested = new URLSearchParams(window.location.search).get(
+            'section',
+        );
+        if (requested && blocks.some((b) => b.id === requested)) {
+            return requested;
+        }
+    }
+    return blocks[0]?.id ?? null;
+}
+
 export default function PageEdit({ page, context, theme }: Props) {
-    const [selectedId, setSelectedId] = useState<string | null>(
-        page.blocks[0]?.id ?? null,
+    const [selectedId, setSelectedId] = useState<string | null>(() =>
+        initialSelection(page.blocks),
     );
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),

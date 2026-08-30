@@ -36,7 +36,7 @@ export default function StorefrontOrder({ order }: Props) {
             <Head title={`Order #${order.number}`} />
 
             <div
-                className="mx-auto w-full max-w-xl px-4 py-14"
+                className="mx-auto w-full max-w-xl px-5 py-14 sm:px-8"
                 style={{ maxWidth: '640px' }}
             >
                 <div className="flex flex-col items-center gap-2 text-center">

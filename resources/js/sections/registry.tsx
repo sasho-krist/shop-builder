@@ -1,3 +1,4 @@
+import type { CSSProperties, ReactNode } from 'react';
 import {
     type PreviewContext,
     type PreviewProduct,
@@ -13,6 +14,34 @@ function hrefFor(
     return ctx.hrefBase && product.slug
         ? `${ctx.hrefBase}${product.slug}`
         : undefined;
+}
+
+/**
+ * Every section renders its content inside this shell so the storefront and the
+ * page-builder preview share the same page gutters and max width. Horizontal
+ * spacing lives here, never on the sections themselves.
+ */
+export function SectionShell({
+    children,
+    className = '',
+    py = 2,
+}: {
+    children: ReactNode;
+    className?: string;
+    py?: number;
+}) {
+    return (
+        <div
+            style={{
+                maxWidth: 'var(--sb-container)',
+                paddingTop: `calc(var(--sb-spacing) * ${py})`,
+                paddingBottom: `calc(var(--sb-spacing) * ${py})`,
+            }}
+            className={`mx-auto w-full px-5 sm:px-8 ${className}`}
+        >
+            {children}
+        </div>
+    );
 }
 
 function ProductCard({
@@ -148,25 +177,27 @@ export const SECTIONS: SectionDef[] = [
             return (
                 <div
                     style={{
-                        padding:
-                            'calc(var(--sb-spacing) * 3) var(--sb-spacing)',
                         backgroundImage: bg ? `url(${bg})` : undefined,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         color: bg ? '#fff' : 'var(--sb-foreground)',
                     }}
-                    className={`flex flex-col gap-4 ${align === 'center' ? 'items-center text-center' : 'items-start'}`}
                 >
-                    <h1
-                        style={{ fontFamily: 'var(--sb-heading-font)' }}
-                        className="max-w-2xl text-4xl font-bold"
+                    <SectionShell
+                        py={4}
+                        className={`flex flex-col gap-4 ${align === 'center' ? 'items-center text-center' : 'items-start'}`}
                     >
-                        {prop(props, 'heading', '')}
-                    </h1>
-                    <p className="max-w-lg text-base opacity-90">
-                        {prop(props, 'subheading', '')}
-                    </p>
-                    <Button label={prop(props, 'buttonLabel', '')} />
+                        <h1
+                            style={{ fontFamily: 'var(--sb-heading-font)' }}
+                            className="max-w-2xl text-4xl font-bold"
+                        >
+                            {prop(props, 'heading', '')}
+                        </h1>
+                        <p className="max-w-lg text-base opacity-90">
+                            {prop(props, 'subheading', '')}
+                        </p>
+                        <Button label={prop(props, 'buttonLabel', '')} />
+                    </SectionShell>
                 </div>
             );
         },
@@ -202,9 +233,8 @@ export const SECTIONS: SectionDef[] = [
         Render: ({ props }) => {
             const align = String(prop(props, 'align', 'left'));
             return (
-                <div
-                    style={{ padding: 'calc(var(--sb-spacing) * 2)' }}
-                    className={`mx-auto flex max-w-2xl flex-col gap-3 ${align === 'center' ? 'items-center text-center' : ''}`}
+                <SectionShell
+                    className={`flex flex-col gap-3 ${align === 'center' ? 'items-center text-center' : ''}`}
                 >
                     <h2
                         style={{ fontFamily: 'var(--sb-heading-font)' }}
@@ -214,11 +244,11 @@ export const SECTIONS: SectionDef[] = [
                     </h2>
                     <p
                         style={{ color: 'var(--sb-muted-foreground)' }}
-                        className="text-sm whitespace-pre-line"
+                        className="max-w-2xl text-sm whitespace-pre-line"
                     >
                         {prop(props, 'body', '')}
                     </p>
-                </div>
+                </SectionShell>
             );
         },
     },
@@ -261,19 +291,15 @@ export const SECTIONS: SectionDef[] = [
             const image = String(prop(props, 'image', ''));
             const side = String(prop(props, 'imageSide', 'left'));
             return (
-                <div
-                    style={{
-                        padding: 'calc(var(--sb-spacing) * 2)',
-                        gap: 'calc(var(--sb-spacing) * 2)',
-                    }}
-                    className={`flex items-center ${side === 'right' ? 'flex-row-reverse' : ''}`}
+                <SectionShell
+                    className={`flex flex-col items-center gap-6 sm:flex-row ${side === 'right' ? 'sm:flex-row-reverse' : ''}`}
                 >
                     <div
                         style={{
                             background: 'var(--sb-muted)',
                             borderRadius: 'var(--sb-radius)',
                         }}
-                        className="aspect-[4/3] flex-1 overflow-hidden"
+                        className="aspect-[4/3] w-full flex-1 overflow-hidden"
                     >
                         {image && (
                             <img
@@ -298,7 +324,7 @@ export const SECTIONS: SectionDef[] = [
                         </p>
                         <Button label={prop(props, 'buttonLabel', '')} />
                     </div>
-                </div>
+                </SectionShell>
             );
         },
     },
@@ -338,6 +364,14 @@ export const SECTIONS: SectionDef[] = [
                 default: 3,
             },
             {
+                type: 'number',
+                key: 'limit',
+                label: 'Max products',
+                min: 2,
+                max: 12,
+                default: 8,
+            },
+            {
                 type: 'select',
                 key: 'display',
                 label: 'Layout',
@@ -355,16 +389,16 @@ export const SECTIONS: SectionDef[] = [
             },
         ],
         Render: ({ props, ctx }) => {
-            const products = resolveProducts(props, ctx).slice(0, 8);
+            const products = resolveProducts(props, ctx).slice(
+                0,
+                Number(prop(props, 'limit', 8)),
+            );
             const showPrice = Boolean(prop(props, 'showPrice', true));
             const display = String(prop(props, 'display', 'grid'));
             const columns = Number(prop(props, 'columns', 3));
 
             return (
-                <div
-                    style={{ padding: 'calc(var(--sb-spacing) * 2)' }}
-                    className="flex flex-col gap-4"
-                >
+                <SectionShell className="flex flex-col gap-4">
                     <h2
                         style={{ fontFamily: 'var(--sb-heading-font)' }}
                         className="text-2xl font-bold"
@@ -421,10 +455,12 @@ export const SECTIONS: SectionDef[] = [
                         </div>
                     ) : (
                         <div
-                            className="grid gap-4"
-                            style={{
-                                gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-                            }}
+                            className="grid grid-cols-2 gap-4 sm:[grid-template-columns:repeat(var(--sb-cols),minmax(0,1fr))]"
+                            style={
+                                {
+                                    '--sb-cols': columns,
+                                } as CSSProperties
+                            }
                         >
                             {products.map((product) => (
                                 <ProductCard
@@ -436,7 +472,7 @@ export const SECTIONS: SectionDef[] = [
                             ))}
                         </div>
                     )}
-                </div>
+                </SectionShell>
             );
         },
     },
@@ -474,10 +510,7 @@ export const SECTIONS: SectionDef[] = [
                 prop(props, 'heading', '') || collection?.title || 'Collection';
 
             return (
-                <div
-                    style={{ padding: 'calc(var(--sb-spacing) * 2)' }}
-                    className="flex flex-col gap-4"
-                >
+                <SectionShell className="flex flex-col gap-4">
                     <h2
                         style={{ fontFamily: 'var(--sb-heading-font)' }}
                         className="text-2xl font-bold"
@@ -505,7 +538,7 @@ export const SECTIONS: SectionDef[] = [
                                 ))}
                         </div>
                     )}
-                </div>
+                </SectionShell>
             );
         },
     },

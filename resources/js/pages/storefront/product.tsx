@@ -40,7 +40,7 @@ export default function StorefrontProduct({ product }: Props) {
             <Head title={product.title} />
 
             <div
-                className="mx-auto grid w-full gap-10 px-4 py-10 md:grid-cols-2"
+                className="mx-auto grid w-full gap-10 px-5 py-10 sm:px-8 md:grid-cols-2"
                 style={{ maxWidth: 'var(--sb-container)' }}
             >
                 <div className="flex flex-col gap-3">

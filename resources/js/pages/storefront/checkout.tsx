@@ -66,7 +66,7 @@ export default function StorefrontCheckout({
 
             <form
                 onSubmit={submit}
-                className="mx-auto grid w-full gap-10 px-4 py-10 md:grid-cols-[1fr_320px]"
+                className="mx-auto grid w-full gap-10 px-5 py-10 sm:px-8 md:grid-cols-[1fr_320px]"
                 style={{ maxWidth: 'var(--sb-container)' }}
             >
                 <div className="flex flex-col gap-6">

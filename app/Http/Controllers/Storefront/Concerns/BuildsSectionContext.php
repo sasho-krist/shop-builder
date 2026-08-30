@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Storefront\Concerns;
 
 use App\Models\Collection;
 use App\Models\Product;
+use App\Models\Tenant;
 
 trait BuildsSectionContext
 {
@@ -14,13 +15,19 @@ trait BuildsSectionContext
      */
     protected function sectionContext(): array
     {
-        $map = fn (Product $product): array => [
-            'id' => $product->id,
-            'title' => $product->title,
-            'slug' => $product->slug,
-            'price' => $product->variants->min('price'),
-            'image' => $product->images->first()?->url(),
-        ];
+        $symbol = Tenant::currentOrFail()->storeSettings()->currency_symbol;
+
+        $map = function (Product $product) use ($symbol): array {
+            $from = $product->variants->min('price');
+
+            return [
+                'id' => $product->id,
+                'title' => $product->title,
+                'slug' => $product->slug,
+                'price' => $from === null ? null : "{$from} {$symbol}",
+                'image' => $product->images->first()?->url(),
+            ];
+        };
 
         return [
             'products' => Product::query()

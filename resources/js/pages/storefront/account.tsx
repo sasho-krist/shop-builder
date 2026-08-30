@@ -26,7 +26,7 @@ export default function StorefrontAccount({ customer, orders }: Props) {
             <Head title="My account" />
 
             <div
-                className="mx-auto w-full px-4 py-10"
+                className="mx-auto w-full px-5 py-10 sm:px-8"
                 style={{ maxWidth: 'var(--sb-container)' }}
             >
                 <div className="mb-8 flex items-start justify-between gap-4">

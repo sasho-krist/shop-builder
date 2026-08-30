@@ -5,8 +5,10 @@ namespace App\Http\Middleware;
 use App\Models\Cart;
 use App\Models\Category;
 use App\Models\Customer;
+use App\Models\Page;
 use App\Models\Tenant;
 use App\Models\Theme;
+use App\Models\User;
 use App\Support\Theme\ThemePresets;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -108,6 +110,34 @@ class HandleInertiaRequests extends Middleware
                     'slug' => $category->slug,
                 ])
                 ->all(),
+            'manage' => $this->manageContext($request, $tenant, $activeTheme),
+        ];
+    }
+
+    /**
+     * When the current visitor is a signed-in owner/staff of this store, expose
+     * deep links back into the admin so the storefront can show an editing bar.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function manageContext(Request $request, Tenant $tenant, ?Theme $activeTheme): ?array
+    {
+        $user = $request->user();
+
+        if (! $user instanceof User || ! $user->tenants()->whereKey($tenant->getKey())->exists()) {
+            return null;
+        }
+
+        $base = rtrim((string) config('app.url'), '/');
+        $homePage = Page::query()->where('type', 'home')->first();
+
+        return [
+            'dashboard' => "{$base}/dashboard",
+            'products' => "{$base}/products",
+            'newProduct' => "{$base}/products/create",
+            'orders' => "{$base}/orders",
+            'theme' => $activeTheme instanceof Theme ? "{$base}/themes/{$activeTheme->getKey()}/edit" : null,
+            'homePage' => $homePage instanceof Page ? "{$base}/pages/{$homePage->getKey()}/edit" : null,
         ];
     }
 }
