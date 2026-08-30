@@ -1,0 +1,48 @@
+# Shop Builder
+
+A multi-tenant SaaS platform for building online stores. Users sign up, get a store
+on their own subdomain, and manage products, themes and page content through a
+visual admin panel — no code required.
+
+> **Status:** early development. See [`docs/PLAN.md`](docs/PLAN.md) for the full roadmap.
+
+## Tech stack
+
+- **Backend:** Laravel 13, PHP 8.3, MySQL/MariaDB
+- **Frontend:** Inertia.js v3 + React 19 + TypeScript, Tailwind CSS 4, shadcn/ui
+- **Storefront:** React with Inertia SSR, theme driven by design tokens
+- **Auth:** Laravel Fortify (registration, email verification, 2FA, passkeys)
+- **Tooling:** Vite 8, Pest 4, Larastan (PHPStan), Pint
+
+## Local setup
+
+Requirements: PHP 8.3+, Composer, Node 20+, MySQL 8 / MariaDB.
+
+```bash
+git clone https://github.com/sasho-krist/shop-builder.git
+cd shop-builder
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+# create the database `shop_builder`, then:
+php artisan migrate
+composer run dev
+```
+
+`composer run dev` starts the PHP server, queue worker and Vite together.
+
+Add `127.0.0.1 shop-builder.test` (and any `*.shop-builder.test` test subdomains)
+to your hosts file, or use the default `http://localhost:8000`.
+
+## Quality checks
+
+```bash
+composer run test        # Pint + PHPStan + Pest
+vendor/bin/pint          # format
+vendor/bin/phpstan       # static analysis
+```
+
+## License
+
+MIT
