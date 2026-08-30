@@ -134,8 +134,40 @@ class CardPaymentTest extends TestCase
         $response->assertRedirect("https://checkout.stripe.test/cs_test_{$order->token}");
         $this->assertSame($this->url("order/{$order->token}"), $gateway->sessions[0]['success_url']);
 
-        // Cart cleared, but no confirmation email until payment settles.
+        // The cart survives until Stripe confirms; no email until then either.
+        Tenant::setCurrent($this->store);
+        $this->assertSame(1, Cart::firstWhere('token', 'cart-token')->items()->count());
+        Tenant::forgetCurrent();
         Mail::assertNothingSent();
+    }
+
+    public function test_submitting_card_checkout_again_resumes_the_same_order(): void
+    {
+        $this->enableGateway();
+
+        $this->post($this->url('checkout'), $this->payload('card'));
+        $first = Order::query()->firstOrFail()->token;
+
+        $this->post($this->url('checkout'), $this->payload('card'))
+            ->assertRedirect("https://checkout.stripe.test/cs_test_{$first}");
+
+        $this->assertSame(1, Order::query()->count());
+    }
+
+    public function test_the_confirmation_page_empties_the_cart_for_a_card_order(): void
+    {
+        $this->enableGateway();
+        $this->post($this->url('checkout'), $this->payload('card'));
+
+        Tenant::setCurrent($this->store);
+        $token = Order::query()->firstOrFail()->token;
+        Tenant::forgetCurrent();
+
+        $this->get($this->url("order/{$token}"))->assertOk();
+
+        Tenant::setCurrent($this->store);
+        $this->assertSame(0, Cart::firstWhere('token', 'cart-token')->items()->count());
+        Tenant::forgetCurrent();
     }
 
     public function test_the_webhook_marks_the_order_paid_and_sends_the_email(): void

@@ -13,12 +13,14 @@ use App\Models\Tenant;
 use App\Services\Billing\PlanGate;
 use App\Services\Payments\PaymentGateway;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class CheckoutController extends Controller
 {
@@ -48,7 +50,7 @@ class CheckoutController extends Controller
             && app(PlanGate::class)->allows(Tenant::currentOrFail(), 'card_payments');
     }
 
-    public function store(CheckoutRequest $request): RedirectResponse
+    public function store(CheckoutRequest $request): HttpResponse
     {
         $cart = app(Cart::class);
         $cart->load('items.variant.product');
@@ -60,6 +62,12 @@ class CheckoutController extends Controller
         $settings = Tenant::currentOrFail()->storeSettings();
         $data = $request->validated();
         $payWithCard = $data['payment_method'] === 'card' && $this->cardPaymentsAvailable();
+
+        // Resume an unfinished card payment rather than duplicating the order
+        // when the shopper comes back from Stripe and submits again.
+        if ($payWithCard && ($resumed = $this->resumableCardOrder($request)) !== null) {
+            return $this->startCardPayment($request, $resumed);
+        }
 
         $order = DB::transaction(function () use ($cart, $data, $settings, $payWithCard): Order {
             $nextNumber = (int) Order::query()->lockForUpdate()->max('number') ?: 1000;
@@ -98,13 +106,17 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            $cart->items()->delete();
+            // A card order keeps the cart until Stripe confirms payment, so
+            // "cancel" on Stripe's page still leaves something to check out.
+            if (! $payWithCard) {
+                $cart->items()->delete();
+            }
 
             return $order;
         });
 
         if ($payWithCard) {
-            return $this->startCardPayment($order);
+            return $this->startCardPayment($request, $order);
         }
 
         Mail::to($order->email)->send(new OrderPlaced($order, $settings));
@@ -112,7 +124,23 @@ class CheckoutController extends Controller
         return redirect("/order/{$order->token}");
     }
 
-    private function startCardPayment(Order $order): RedirectResponse
+    private function resumableCardOrder(Request $request): ?Order
+    {
+        $token = $request->session()->get('card_checkout_order');
+
+        if (! is_string($token)) {
+            return null;
+        }
+
+        return Order::query()
+            ->where('token', $token)
+            ->where('payment_method', 'card')
+            ->where('payment_status', 'unpaid')
+            ->where('created_at', '>', now()->subMinutes(30))
+            ->first();
+    }
+
+    private function startCardPayment(Request $request, Order $order): HttpResponse
     {
         $gateway = app(PaymentGateway::class);
         $base = Tenant::currentOrFail()->storefrontUrl();
@@ -131,15 +159,24 @@ class CheckoutController extends Controller
         );
 
         $payment->update(['provider_ref' => $session->id]);
+        $request->session()->put('card_checkout_order', $order->token);
 
-        // Leave the Inertia app for Stripe's hosted checkout page.
-        return redirect()->away($session->url);
+        // Stripe's hosted checkout is a different origin, so hand the Inertia
+        // client a hard redirect rather than a follow-me XHR.
+        return Inertia::location($session->url);
     }
 
-    public function confirmation(string $token): Response
+    public function confirmation(Request $request, string $token): Response
     {
         $order = Order::query()->where('token', $token)->with('lines')->firstOrFail();
         $settings = Tenant::currentOrFail()->storeSettings();
+
+        // Reaching this page for a recent card order means Stripe checkout
+        // completed (cancel lands on /checkout), so the cart can be emptied.
+        if ($order->payment_method === 'card' && $order->created_at?->gt(now()->subDay())) {
+            app(Cart::class)->items()->delete();
+            $request->session()->forget('card_checkout_order');
+        }
 
         return Inertia::render('storefront/order', [
             'order' => [
