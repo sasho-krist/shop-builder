@@ -36,7 +36,7 @@ class CategoryController extends Controller
     {
         Category::create($request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Category created.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Category created.')]);
 
         return back();
     }
@@ -45,7 +45,7 @@ class CategoryController extends Controller
     {
         Category::findOrFail($category)->update($request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Category saved.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Category saved.')]);
 
         return back();
     }
@@ -54,7 +54,7 @@ class CategoryController extends Controller
     {
         Category::findOrFail($category)->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Category deleted.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Category deleted.')]);
 
         return back();
     }

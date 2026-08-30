@@ -1,10 +1,8 @@
 import { usePage } from '@inertiajs/react';
 
 type I18nShared = {
-    storefront?: {
-        locale?: string;
-        i18n?: Record<string, string>;
-    } | null;
+    locale?: string;
+    i18n?: Record<string, string>;
 };
 
 export type Translator = (
@@ -13,13 +11,13 @@ export type Translator = (
 ) => string;
 
 /**
- * Storefront translations. English is the source language — a missing key just
- * renders as-is. Supports `:name` style placeholders.
+ * UI translations for the storefront and the admin panel. English is the source
+ * language — a missing key just renders as-is. Supports `:name` placeholders.
  */
 export function useT(): { t: Translator; locale: string } {
-    const storefront = usePage<I18nShared>().props.storefront;
-    const dict = storefront?.i18n ?? {};
-    const locale = storefront?.locale ?? 'en';
+    const props = usePage<I18nShared>().props;
+    const dict = props.i18n ?? {};
+    const locale = props.locale ?? 'en';
 
     const t: Translator = (key, replace) => {
         let out = dict[key] ?? key;

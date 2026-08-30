@@ -2,6 +2,7 @@ import { ArrowDown, ArrowUp, ImageIcon, Loader2, Plus, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useT } from '@/lib/i18n';
 import productRoutes from '@/routes/products';
 
 export type PickerProduct = {
@@ -32,6 +33,7 @@ function Thumb({ product }: { product: PickerProduct }) {
 }
 
 export default function CollectionProductPicker({ selected, onChange }: Props) {
+    const { t } = useT();
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<PickerProduct[]>([]);
     const [loading, setLoading] = useState(false);
@@ -99,7 +101,7 @@ export default function CollectionProductPicker({ selected, onChange }: Props) {
             <div ref={boxRef} className="relative">
                 <Input
                     value={query}
-                    placeholder="Search products to add…"
+                    placeholder={t('Search products to add…')}
                     onFocus={() => setOpenResults(true)}
                     onChange={(event) => {
                         setQuery(event.target.value);
@@ -111,12 +113,12 @@ export default function CollectionProductPicker({ selected, onChange }: Props) {
                         {loading && (
                             <div className="text-muted-foreground flex items-center gap-2 px-2 py-3 text-sm">
                                 <Loader2 className="size-4 animate-spin" />
-                                Searching…
+                                {t('Searching…')}
                             </div>
                         )}
                         {!loading && results.length === 0 && (
                             <div className="text-muted-foreground px-2 py-3 text-sm">
-                                No products found.
+                                {t('No products found.')}
                             </div>
                         )}
                         {!loading &&
@@ -136,7 +138,7 @@ export default function CollectionProductPicker({ selected, onChange }: Props) {
                                         </span>
                                         {already ? (
                                             <span className="text-muted-foreground text-xs">
-                                                Added
+                                                {t('Added')}
                                             </span>
                                         ) : (
                                             <Plus className="text-muted-foreground size-4" />
@@ -150,7 +152,7 @@ export default function CollectionProductPicker({ selected, onChange }: Props) {
 
             {selected.length === 0 ? (
                 <p className="text-muted-foreground text-sm">
-                    No products in this collection yet.
+                    {t('No products in this collection yet.')}
                 </p>
             ) : (
                 <ul className="divide-border border-border divide-y rounded-md border">

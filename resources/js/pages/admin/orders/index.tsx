@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useT } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import orders from '@/routes/orders';
 
@@ -37,21 +38,25 @@ const statusVariant: Record<string, 'default' | 'secondary' | 'outline'> = {
 };
 
 export default function OrdersIndex({ orders: page }: Props) {
+    const { t } = useT();
+
     return (
         <>
-            <Head title="Orders" />
+            <Head title={t('Orders')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div>
-                    <h1 className="text-xl font-semibold">Orders</h1>
+                    <h1 className="text-xl font-semibold">{t('Orders')}</h1>
                     <p className="text-muted-foreground text-sm">
-                        {page.total} {page.total === 1 ? 'order' : 'orders'}
+                        {page.total === 1
+                            ? t(':count order', { count: page.total })
+                            : t(':count orders', { count: page.total })}
                     </p>
                 </div>
 
                 {page.data.length === 0 ? (
                     <div className="border-border text-muted-foreground rounded-xl border border-dashed p-12 text-center text-sm">
-                        No orders yet.
+                        {t('No orders yet.')}
                     </div>
                 ) : (
                     <div className="border-border overflow-x-auto rounded-xl border">
@@ -59,22 +64,22 @@ export default function OrdersIndex({ orders: page }: Props) {
                             <thead className="bg-muted/50 text-muted-foreground text-left">
                                 <tr>
                                     <th className="px-4 py-2 font-medium">
-                                        Order
+                                        {t('Order')}
                                     </th>
                                     <th className="px-4 py-2 font-medium">
-                                        Customer
+                                        {t('Customer')}
                                     </th>
                                     <th className="px-4 py-2 font-medium">
-                                        Status
+                                        {t('Status')}
                                     </th>
                                     <th className="px-4 py-2 font-medium">
-                                        Payment
+                                        {t('Payment')}
                                     </th>
                                     <th className="px-4 py-2 font-medium">
-                                        Total
+                                        {t('Total')}
                                     </th>
                                     <th className="px-4 py-2 font-medium">
-                                        Placed
+                                        {t('Placed')}
                                     </th>
                                 </tr>
                             </thead>
@@ -102,13 +107,14 @@ export default function OrdersIndex({ orders: page }: Props) {
                                                         order.status
                                                     ] ?? 'secondary'
                                                 }
-                                                className="capitalize"
                                             >
-                                                {order.status}
+                                                {t(`status.${order.status}`)}
                                             </Badge>
                                         </td>
-                                        <td className="px-4 py-2 capitalize">
-                                            {order.payment_status}
+                                        <td className="px-4 py-2">
+                                            {t(
+                                                `payment.${order.payment_status}`,
+                                            )}
                                         </td>
                                         <td className="px-4 py-2">
                                             {order.total} {order.currency}
@@ -126,7 +132,10 @@ export default function OrdersIndex({ orders: page }: Props) {
                 {page.last_page > 1 && (
                     <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">
-                            Page {page.current_page} of {page.last_page}
+                            {t('Page :current of :last', {
+                                current: page.current_page,
+                                last: page.last_page,
+                            })}
                         </span>
                         <div className="flex gap-2">
                             <Button
@@ -138,7 +147,7 @@ export default function OrdersIndex({ orders: page }: Props) {
                                     router.visit(page.prev_page_url)
                                 }
                             >
-                                Previous
+                                {t('Previous')}
                             </Button>
                             <Button
                                 variant="outline"
@@ -149,7 +158,7 @@ export default function OrdersIndex({ orders: page }: Props) {
                                     router.visit(page.next_page_url)
                                 }
                             >
-                                Next
+                                {t('Next')}
                             </Button>
                         </div>
                     </div>

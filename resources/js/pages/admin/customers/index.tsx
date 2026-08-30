@@ -12,6 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import customers from '@/routes/customers';
 
@@ -38,6 +39,7 @@ type Props = {
 };
 
 export default function CustomersIndex({ customers: page, filters }: Props) {
+    const { t } = useT();
     const [search, setSearch] = useState(filters.search);
     const [editing, setEditing] = useState<CustomerRow | null>(null);
     const [pwFor, setPwFor] = useState<CustomerRow | null>(null);
@@ -86,7 +88,11 @@ export default function CustomersIndex({ customers: page, filters }: Props) {
 
     function destroy(c: CustomerRow) {
         if (
-            confirm(`Delete customer "${c.name}"? Their past orders are kept.`)
+            confirm(
+                t('Delete customer ":name"? Their past orders are kept.', {
+                    name: c.name,
+                }),
+            )
         ) {
             router.delete(customers.destroy(c.id).url, {
                 preserveScroll: true,
@@ -96,34 +102,41 @@ export default function CustomersIndex({ customers: page, filters }: Props) {
 
     return (
         <>
-            <Head title="Customers" />
+            <Head title={t('Customers')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h1 className="text-xl font-semibold">Customers</h1>
+                        <h1 className="text-xl font-semibold">
+                            {t('Customers')}
+                        </h1>
                         <p className="text-muted-foreground text-sm">
-                            {page.total}{' '}
-                            {page.total === 1 ? 'customer' : 'customers'} —
-                            store account holders
+                            {page.total === 1
+                                ? t(':count customer — store account holders', {
+                                      count: page.total,
+                                  })
+                                : t(
+                                      ':count customers — store account holders',
+                                      { count: page.total },
+                                  )}
                         </p>
                     </div>
                     <form onSubmit={runSearch} className="flex gap-2">
                         <Input
                             value={search}
-                            placeholder="Search name or email"
+                            placeholder={t('Search name or email')}
                             className="w-56"
                             onChange={(e) => setSearch(e.target.value)}
                         />
                         <Button type="submit" variant="outline">
-                            Search
+                            {t('Search')}
                         </Button>
                     </form>
                 </div>
 
                 {page.data.length === 0 ? (
                     <div className="border-border text-muted-foreground rounded-xl border border-dashed p-12 text-center text-sm">
-                        No customers yet.
+                        {t('No customers yet.')}
                     </div>
                 ) : (
                     <div className="border-border overflow-x-auto rounded-xl border">
@@ -131,16 +144,16 @@ export default function CustomersIndex({ customers: page, filters }: Props) {
                             <thead className="bg-muted/50 text-muted-foreground text-left">
                                 <tr>
                                     <th className="px-4 py-2 font-medium">
-                                        Name
+                                        {t('Name')}
                                     </th>
                                     <th className="px-4 py-2 font-medium">
-                                        Email
+                                        {t('Email')}
                                     </th>
                                     <th className="px-4 py-2 font-medium">
-                                        Orders
+                                        {t('Orders')}
                                     </th>
                                     <th className="px-4 py-2 font-medium">
-                                        Joined
+                                        {t('Joined')}
                                     </th>
                                     <th className="px-4 py-2" />
                                 </tr>
@@ -170,21 +183,21 @@ export default function CustomersIndex({ customers: page, filters }: Props) {
                                                     size="sm"
                                                     onClick={() => openEdit(c)}
                                                 >
-                                                    Edit
+                                                    {t('Edit')}
                                                 </Button>
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
                                                     onClick={() => openPw(c)}
                                                 >
-                                                    Password
+                                                    {t('Password')}
                                                 </Button>
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
                                                     onClick={() => destroy(c)}
                                                 >
-                                                    Delete
+                                                    {t('Delete')}
                                                 </Button>
                                             </div>
                                         </td>
@@ -198,7 +211,10 @@ export default function CustomersIndex({ customers: page, filters }: Props) {
                 {page.last_page > 1 && (
                     <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">
-                            Page {page.current_page} of {page.last_page}
+                            {t('Page :current of :last', {
+                                current: page.current_page,
+                                last: page.last_page,
+                            })}
                         </span>
                         <div className="flex gap-2">
                             <Button
@@ -210,7 +226,7 @@ export default function CustomersIndex({ customers: page, filters }: Props) {
                                     router.visit(page.prev_page_url)
                                 }
                             >
-                                Previous
+                                {t('Previous')}
                             </Button>
                             <Button
                                 variant="outline"
@@ -221,7 +237,7 @@ export default function CustomersIndex({ customers: page, filters }: Props) {
                                     router.visit(page.next_page_url)
                                 }
                             >
-                                Next
+                                {t('Next')}
                             </Button>
                         </div>
                     </div>
@@ -234,11 +250,11 @@ export default function CustomersIndex({ customers: page, filters }: Props) {
             >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Edit customer</DialogTitle>
+                        <DialogTitle>{t('Edit customer')}</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={saveEdit} className="flex flex-col gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="c-name">Name</Label>
+                            <Label htmlFor="c-name">{t('Name')}</Label>
                             <Input
                                 id="c-name"
                                 value={editForm.data.name}
@@ -250,7 +266,7 @@ export default function CustomersIndex({ customers: page, filters }: Props) {
                             <InputError message={editForm.errors.name} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="c-email">Email</Label>
+                            <Label htmlFor="c-email">{t('Email')}</Label>
                             <Input
                                 id="c-email"
                                 type="email"
@@ -267,14 +283,14 @@ export default function CustomersIndex({ customers: page, filters }: Props) {
                                 variant="outline"
                                 onClick={() => setEditing(null)}
                             >
-                                Cancel
+                                {t('Cancel')}
                             </Button>
                             <Button
                                 type="submit"
                                 disabled={editForm.processing}
                             >
                                 {editForm.processing && <Spinner />}
-                                Save
+                                {t('Save')}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -288,13 +304,16 @@ export default function CustomersIndex({ customers: page, filters }: Props) {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                            Set a new password
-                            {pwFor ? ` for ${pwFor.name}` : ''}
+                            {pwFor
+                                ? t('Set a new password for :name', {
+                                      name: pwFor.name,
+                                  })
+                                : t('Set a new password')}
                         </DialogTitle>
                     </DialogHeader>
                     <form onSubmit={savePw} className="flex flex-col gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="c-pw">New password</Label>
+                            <Label htmlFor="c-pw">{t('New password')}</Label>
                             <Input
                                 id="c-pw"
                                 type="password"
@@ -308,7 +327,9 @@ export default function CustomersIndex({ customers: page, filters }: Props) {
                             <InputError message={pwForm.errors.password} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="c-pw2">Confirm password</Label>
+                            <Label htmlFor="c-pw2">
+                                {t('Confirm password')}
+                            </Label>
                             <Input
                                 id="c-pw2"
                                 type="password"
@@ -328,11 +349,11 @@ export default function CustomersIndex({ customers: page, filters }: Props) {
                                 variant="outline"
                                 onClick={() => setPwFor(null)}
                             >
-                                Cancel
+                                {t('Cancel')}
                             </Button>
                             <Button type="submit" disabled={pwForm.processing}>
                                 {pwForm.processing && <Spinner />}
-                                Update password
+                                {t('Update password')}
                             </Button>
                         </DialogFooter>
                     </form>

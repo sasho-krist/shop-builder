@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import pageRoutes from '@/routes/pages';
 
@@ -30,6 +31,7 @@ type Props = {
 };
 
 export default function PagesIndex({ pages }: Props) {
+    const { t } = useT();
     const [open, setOpen] = useState(false);
     const form = useForm({ title: '' });
 
@@ -39,7 +41,7 @@ export default function PagesIndex({ pages }: Props) {
     }
 
     function destroy(page: PageRow) {
-        if (confirm(`Delete "${page.title}"?`)) {
+        if (confirm(t('Delete ":title"?', { title: page.title }))) {
             router.delete(pageRoutes.destroy(page.id).url, {
                 preserveScroll: true,
             });
@@ -48,14 +50,14 @@ export default function PagesIndex({ pages }: Props) {
 
     return (
         <>
-            <Head title="Pages" />
+            <Head title={t('Pages')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-xl font-semibold">Pages</h1>
+                        <h1 className="text-xl font-semibold">{t('Pages')}</h1>
                         <p className="text-muted-foreground text-sm">
-                            Build your storefront pages from sections.
+                            {t('Build your storefront pages from sections.')}
                         </p>
                     </div>
                     <Button
@@ -65,7 +67,7 @@ export default function PagesIndex({ pages }: Props) {
                             setOpen(true);
                         }}
                     >
-                        New page
+                        {t('New page')}
                     </Button>
                 </div>
 
@@ -85,15 +87,17 @@ export default function PagesIndex({ pages }: Props) {
                                 {page.title}
                             </button>
                             {page.type === 'home' && (
-                                <Badge variant="secondary">Home</Badge>
+                                <Badge variant="secondary">{t('Home')}</Badge>
                             )}
                             {page.is_published ? (
-                                <Badge>Published</Badge>
+                                <Badge>{t('Published')}</Badge>
                             ) : (
-                                <Badge variant="outline">Draft</Badge>
+                                <Badge variant="outline">{t('Draft')}</Badge>
                             )}
                             <span className="text-muted-foreground text-sm">
-                                {page.blocks_count} sections
+                                {t(':count sections', {
+                                    count: page.blocks_count,
+                                })}
                             </span>
                             {page.type !== 'home' && (
                                 <Button
@@ -102,7 +106,7 @@ export default function PagesIndex({ pages }: Props) {
                                     className="ml-auto"
                                     onClick={() => destroy(page)}
                                 >
-                                    Delete
+                                    {t('Delete')}
                                 </Button>
                             )}
                         </div>
@@ -113,11 +117,11 @@ export default function PagesIndex({ pages }: Props) {
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>New page</DialogTitle>
+                        <DialogTitle>{t('New page')}</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={create} className="flex flex-col gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="page-title">Title</Label>
+                            <Label htmlFor="page-title">{t('Title')}</Label>
                             <Input
                                 id="page-title"
                                 value={form.data.title}
@@ -134,11 +138,11 @@ export default function PagesIndex({ pages }: Props) {
                                 variant="outline"
                                 onClick={() => setOpen(false)}
                             >
-                                Cancel
+                                {t('Cancel')}
                             </Button>
                             <Button type="submit" disabled={form.processing}>
                                 {form.processing && <Spinner />}
-                                Create
+                                {t('Create')}
                             </Button>
                         </DialogFooter>
                     </form>

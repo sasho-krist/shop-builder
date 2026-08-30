@@ -83,7 +83,7 @@ class PageController extends Controller
     {
         Page::findOrFail($page)->update($request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Page saved.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Page saved.')]);
 
         return back();
     }
@@ -93,12 +93,12 @@ class PageController extends Controller
         $model = Page::findOrFail($page);
 
         if ($model->type === 'home') {
-            return back()->withErrors(['page' => 'The home page cannot be deleted.']);
+            return back()->withErrors(['page' => __('The home page cannot be deleted.')]);
         }
 
         $model->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Page deleted.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Page deleted.')]);
 
         return to_route('pages.index');
     }
@@ -123,10 +123,18 @@ class PageController extends Controller
             ];
         };
 
+        $withRelations = fn () => Product::query()
+            ->with(['variants:id,product_id,price', 'images:id,product_id,disk,path']);
+
         return [
-            'products' => Product::query()
-                ->with(['variants:id,product_id,price', 'images:id,product_id,disk,path'])
+            'products' => $withRelations()
                 ->latest()
+                ->limit(8)
+                ->get()
+                ->map($mapProduct)
+                ->all(),
+            'bestSelling' => $withRelations()
+                ->bestSelling()
                 ->limit(8)
                 ->get()
                 ->map($mapProduct)

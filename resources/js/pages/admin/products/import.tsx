@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { xsrfToken } from '@/lib/csrf';
+import { useT } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import productRoutes from '@/routes/products';
 import { preview, store } from '@/routes/products/import';
@@ -33,7 +34,19 @@ const guesses: Record<string, string[]> = {
     category: ['category', 'collection', 'type'],
 };
 
+const FIELD_LABELS: Record<string, string> = {
+    title: 'Title',
+    slug: 'Slug',
+    description: 'Description',
+    status: 'Status',
+    price: 'Price',
+    sku: 'SKU',
+    stock: 'Stock',
+    category: 'Category',
+};
+
 export default function ProductImport({ fields }: Props) {
+    const { t } = useT();
     const inputRef = useRef<HTMLInputElement>(null);
     const [file, setFile] = useState<File | null>(null);
     const [headers, setHeaders] = useState<string[]>([]);
@@ -93,14 +106,16 @@ export default function ProductImport({ fields }: Props) {
 
     return (
         <>
-            <Head title="Import products" />
+            <Head title={t('Import products')} />
 
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-4">
-                <h1 className="text-xl font-semibold">Import products</h1>
+                <h1 className="text-xl font-semibold">
+                    {t('Import products')}
+                </h1>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>CSV file</CardTitle>
+                        <CardTitle>{t('CSV file')}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex items-center gap-3">
                         <Button
@@ -110,7 +125,7 @@ export default function ProductImport({ fields }: Props) {
                             onClick={() => inputRef.current?.click()}
                         >
                             {loading ? <Spinner /> : null}
-                            {file ? file.name : 'Choose a .csv file'}
+                            {file ? file.name : t('Choose a .csv file')}
                         </Button>
                         <input
                             ref={inputRef}
@@ -126,13 +141,13 @@ export default function ProductImport({ fields }: Props) {
                     <>
                         <Card>
                             <CardHeader>
-                                <CardTitle>Map columns</CardTitle>
+                                <CardTitle>{t('Map columns')}</CardTitle>
                             </CardHeader>
                             <CardContent className="grid gap-3 sm:grid-cols-2">
                                 {fields.map((field) => (
                                     <div key={field} className="grid gap-1.5">
-                                        <Label className="text-xs capitalize">
-                                            {field}
+                                        <Label className="text-xs">
+                                            {t(FIELD_LABELS[field] ?? field)}
                                             {field === 'title' && ' *'}
                                         </Label>
                                         <Select
@@ -149,7 +164,7 @@ export default function ProductImport({ fields }: Props) {
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value={NONE}>
-                                                    — Ignore —
+                                                    {t('— Ignore —')}
                                                 </SelectItem>
                                                 {headers.map((header) => (
                                                     <SelectItem
@@ -168,7 +183,7 @@ export default function ProductImport({ fields }: Props) {
 
                         <Card>
                             <CardHeader>
-                                <CardTitle>Preview</CardTitle>
+                                <CardTitle>{t('Preview')}</CardTitle>
                             </CardHeader>
                             <CardContent className="overflow-x-auto">
                                 <table className="w-full text-xs">
@@ -212,7 +227,7 @@ export default function ProductImport({ fields }: Props) {
                             onClick={runImport}
                         >
                             {submitting && <Spinner />}
-                            Import
+                            {t('Import')}
                         </Button>
                     </>
                 )}

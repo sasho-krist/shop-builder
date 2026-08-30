@@ -52,7 +52,7 @@ class StoreNavigationController extends Controller
     {
         Tenant::currentOrFail()->storeNavigation()->update($request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Navigation saved.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Navigation saved.')]);
 
         return back();
     }

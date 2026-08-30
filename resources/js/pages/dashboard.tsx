@@ -7,6 +7,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { useT } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 
 type Props = {
@@ -19,16 +20,18 @@ type Props = {
 };
 
 export default function Dashboard({ store }: Props) {
+    const { t } = useT();
+
     return (
         <>
-            <Head title="Dashboard" />
+            <Head title={t('Dashboard')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <Card>
                     <CardHeader>
                         <CardTitle>{store.name}</CardTitle>
                         <CardDescription>
-                            Your store is live at{' '}
+                            {t('Your store is live at')}{' '}
                             <a
                                 href={store.url}
                                 target="_blank"
@@ -46,18 +49,14 @@ export default function Dashboard({ store }: Props) {
                                 target="_blank"
                                 rel="noreferrer"
                             >
-                                Visit storefront
+                                {t('Visit storefront')}
                             </a>
                         </Button>
-                        <span className="text-muted-foreground text-sm capitalize">
-                            {store.plan} plan
+                        <span className="text-muted-foreground text-sm">
+                            {t(':plan plan', { plan: t(`plan.${store.plan}`) })}
                         </span>
                     </CardContent>
                 </Card>
-
-                <p className="text-muted-foreground text-sm">
-                    Products, themes and pages arrive in the next phases.
-                </p>
             </div>
         </>
     );

@@ -37,7 +37,7 @@ class StoreSettingController extends Controller
     {
         Tenant::currentOrFail()->storeSettings()->update($request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Settings saved.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Settings saved.')]);
 
         return back();
     }

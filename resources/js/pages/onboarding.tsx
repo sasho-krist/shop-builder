@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 import { store } from '@/routes/onboarding';
 
 type PageProps = {
@@ -22,6 +23,7 @@ function slugify(value: string): string {
 }
 
 export default function Onboarding() {
+    const { t } = useT();
     const { centralDomain } = usePage<PageProps>().props;
     const [slugTouched, setSlugTouched] = useState(false);
     const form = useForm({ name: '', slug: '' });
@@ -33,18 +35,18 @@ export default function Onboarding() {
 
     return (
         <>
-            <Head title="Create your store" />
+            <Head title={t('Create your store')} />
 
             <form onSubmit={submit} className="flex flex-col gap-6">
                 <div className="grid gap-2">
-                    <Label htmlFor="name">Store name</Label>
+                    <Label htmlFor="name">{t('Store name')}</Label>
                     <Input
                         id="name"
                         name="name"
                         value={form.data.name}
                         autoFocus
                         required
-                        placeholder="Acme Supplies"
+                        placeholder={t('Acme Supplies')}
                         onChange={(event) => {
                             const name = event.target.value;
                             form.setData((data) => ({
@@ -58,7 +60,7 @@ export default function Onboarding() {
                 </div>
 
                 <div className="grid gap-2">
-                    <Label htmlFor="slug">Store address</Label>
+                    <Label htmlFor="slug">{t('Store address')}</Label>
                     <div className="flex items-center gap-2">
                         <Input
                             id="slug"
@@ -88,7 +90,7 @@ export default function Onboarding() {
                     disabled={form.processing}
                 >
                     {form.processing && <Spinner />}
-                    Create store
+                    {t('Create store')}
                 </Button>
             </form>
         </>

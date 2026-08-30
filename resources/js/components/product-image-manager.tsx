@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, ImagePlus, Loader2, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useT } from '@/lib/i18n';
 import productImageRoutes from '@/routes/products/images';
 
 export type ProductImage = {
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export default function ProductImageManager({ productId, images }: Props) {
+    const { t } = useT();
     const inputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
     const [dragOver, setDragOver] = useState(false);
@@ -106,7 +108,7 @@ export default function ProductImageManager({ productId, images }: Props) {
                     <ImagePlus className="text-muted-foreground size-6" />
                 )}
                 <span className="text-muted-foreground">
-                    Drop images here or click to upload
+                    {t('Drop images here or click to upload')}
                 </span>
                 <input
                     ref={inputRef}
@@ -133,7 +135,7 @@ export default function ProductImageManager({ productId, images }: Props) {
                             <div className="flex min-w-0 flex-1 flex-col gap-2">
                                 <Input
                                     defaultValue={image.alt ?? ''}
-                                    placeholder="Alt text"
+                                    placeholder={t('Alt text')}
                                     className="h-8"
                                     onBlur={(event) => {
                                         if (

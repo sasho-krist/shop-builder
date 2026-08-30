@@ -49,7 +49,7 @@ class StoreCustomerController extends Controller
     {
         Customer::findOrFail($customer)->update($request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Customer saved.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Customer saved.')]);
 
         return back();
     }
@@ -62,7 +62,7 @@ class StoreCustomerController extends Controller
 
         Customer::findOrFail($customer)->update(['password' => $data['password']]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Password updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Password updated.')]);
 
         return back();
     }
@@ -71,7 +71,7 @@ class StoreCustomerController extends Controller
     {
         Customer::findOrFail($customer)->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Customer deleted.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Customer deleted.')]);
 
         return back();
     }

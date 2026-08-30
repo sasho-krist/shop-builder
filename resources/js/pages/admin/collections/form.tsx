@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useT } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import collectionRoutes from '@/routes/collections';
 
@@ -28,6 +29,7 @@ type Props = {
 };
 
 export default function CollectionForm({ collection }: Props) {
+    const { t } = useT();
     const isEdit = collection !== null;
 
     const form = useForm<{
@@ -73,7 +75,7 @@ export default function CollectionForm({ collection }: Props) {
 
     return (
         <>
-            <Head title={isEdit ? collection.title : 'New collection'} />
+            <Head title={isEdit ? collection.title : t('New collection')} />
 
             <form
                 onSubmit={submit}
@@ -81,21 +83,21 @@ export default function CollectionForm({ collection }: Props) {
             >
                 <div className="flex items-center justify-between">
                     <h1 className="text-xl font-semibold">
-                        {isEdit ? collection.title : 'New collection'}
+                        {isEdit ? collection.title : t('New collection')}
                     </h1>
                     <Button type="submit" disabled={form.processing}>
                         {form.processing && <Spinner />}
-                        {isEdit ? 'Save' : 'Create'}
+                        {isEdit ? t('Save') : t('Create')}
                     </Button>
                 </div>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Details</CardTitle>
+                        <CardTitle>{t('Details')}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="title">Title</Label>
+                            <Label htmlFor="title">{t('Title')}</Label>
                             <Input
                                 id="title"
                                 value={form.data.title}
@@ -109,15 +111,15 @@ export default function CollectionForm({ collection }: Props) {
 
                         <div className="grid gap-2">
                             <Label htmlFor="slug">
-                                Slug{' '}
+                                {t('Slug')}{' '}
                                 <span className="text-muted-foreground font-normal">
-                                    (leave blank to generate from title)
+                                    {t('(leave blank to generate from title)')}
                                 </span>
                             </Label>
                             <Input
                                 id="slug"
                                 value={form.data.slug}
-                                placeholder="auto"
+                                placeholder={t('auto')}
                                 onChange={(e) =>
                                     form.setData('slug', e.target.value)
                                 }
@@ -126,7 +128,9 @@ export default function CollectionForm({ collection }: Props) {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="description">Description</Label>
+                            <Label htmlFor="description">
+                                {t('Description')}
+                            </Label>
                             <Textarea
                                 id="description"
                                 rows={4}
@@ -145,7 +149,7 @@ export default function CollectionForm({ collection }: Props) {
                                     form.setData('is_visible', checked === true)
                                 }
                             />
-                            Visible on storefront
+                            {t('Visible on storefront')}
                         </label>
                     </CardContent>
                 </Card>
@@ -153,7 +157,9 @@ export default function CollectionForm({ collection }: Props) {
                 <Card>
                     <CardHeader>
                         <CardTitle>
-                            Products ({form.data.products.length})
+                            {t('Products (:count)', {
+                                count: form.data.products.length,
+                            })}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>

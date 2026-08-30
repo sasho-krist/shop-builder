@@ -11,7 +11,7 @@ trait BuildsSectionContext
     /**
      * Real catalogue data for rendering page sections on the storefront.
      *
-     * @return array{products: array<int, mixed>, collections: array<int, mixed>}
+     * @return array{products: array<int, mixed>, bestSelling: array<int, mixed>, collections: array<int, mixed>}
      */
     protected function sectionContext(): array
     {
@@ -29,11 +29,19 @@ trait BuildsSectionContext
             ];
         };
 
+        $active = fn () => Product::query()
+            ->where('status', 'active')
+            ->with(['variants:id,product_id,price', 'images:id,product_id,disk,path']);
+
         return [
-            'products' => Product::query()
-                ->where('status', 'active')
-                ->with(['variants:id,product_id,price', 'images:id,product_id,disk,path'])
+            'products' => $active()
                 ->latest()
+                ->limit(12)
+                ->get()
+                ->map($map)
+                ->all(),
+            'bestSelling' => $active()
+                ->bestSelling()
                 ->limit(12)
                 ->get()
                 ->map($map)

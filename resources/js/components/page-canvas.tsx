@@ -1,4 +1,5 @@
 import type { Block, PreviewContext } from '@/lib/blocks';
+import { useT } from '@/lib/i18n';
 import { type ThemeTokens, themeToCssVars } from '@/lib/theme';
 import { getSection } from '@/sections/registry';
 
@@ -17,6 +18,8 @@ export default function PageCanvas({
     selectedId,
     onSelect,
 }: Props) {
+    const { t } = useT();
+
     return (
         <div
             style={{
@@ -30,7 +33,7 @@ export default function PageCanvas({
         >
             {blocks.length === 0 && (
                 <div className="text-muted-foreground p-16 text-center text-sm">
-                    Add a section to start building this page.
+                    {t('Add a section to start building this page.')}
                 </div>
             )}
             {blocks.map((block) => {

@@ -61,13 +61,13 @@ class StoreOwnerController extends Controller
 
         if ($tenant->users()->whereKey($user->getKey())->exists()) {
             throw ValidationException::withMessages([
-                'email' => 'This person already manages the store.',
+                'email' => __('This person already manages the store.'),
             ]);
         }
 
         $tenant->users()->attach($user, ['role' => 'owner']);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Owner added.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Owner added.')]);
 
         return back();
     }
@@ -84,7 +84,7 @@ class StoreOwnerController extends Controller
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($model->getKey())],
         ]));
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Owner saved.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Owner saved.')]);
 
         return back();
     }
@@ -95,16 +95,16 @@ class StoreOwnerController extends Controller
         abort_unless($tenant->users()->whereKey($user)->exists(), 404);
 
         if ((int) ($request->user()?->getAuthIdentifier() ?? 0) === $user) {
-            throw ValidationException::withMessages(['owner' => 'You cannot remove yourself.']);
+            throw ValidationException::withMessages(['owner' => __('You cannot remove yourself.')]);
         }
 
         if ($tenant->users()->count() <= 1) {
-            throw ValidationException::withMessages(['owner' => 'A store needs at least one owner.']);
+            throw ValidationException::withMessages(['owner' => __('A store needs at least one owner.')]);
         }
 
         $tenant->users()->detach($user);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Owner removed.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Owner removed.')]);
 
         return back();
     }

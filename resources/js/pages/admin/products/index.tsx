@@ -11,6 +11,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { useT } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import products from '@/routes/products';
 
@@ -48,12 +49,7 @@ type Props = {
 
 const STATUS_ANY = 'all';
 
-const sortLabels: Record<string, string> = {
-    latest: 'Newest first',
-    oldest: 'Oldest first',
-    title: 'Title A–Z',
-    title_desc: 'Title Z–A',
-};
+const sortKeys = ['latest', 'oldest', 'title', 'title_desc'] as const;
 
 const statusVariant: Record<string, 'default' | 'secondary' | 'outline'> = {
     active: 'default',
@@ -66,8 +62,16 @@ export default function ProductsIndex({
     statuses,
     filters,
 }: Props) {
+    const { t } = useT();
     const [search, setSearch] = useState(filters.search);
     const firstRender = useRef(true);
+
+    const sortLabels: Record<string, string> = {
+        latest: t('Newest first'),
+        oldest: t('Oldest first'),
+        title: t('Title A–Z'),
+        title_desc: t('Title Z–A'),
+    };
 
     function navigate(params: Partial<Filters>) {
         const merged = { ...filters, search, ...params };
@@ -120,7 +124,13 @@ export default function ProductsIndex({
         filters.sort !== 'latest';
 
     function destroy(product: ProductRow) {
-        if (confirm(`Delete "${product.title}"? This cannot be undone.`)) {
+        if (
+            confirm(
+                t('Delete ":title"? This cannot be undone.', {
+                    title: product.title,
+                }),
+            )
+        ) {
             router.delete(products.destroy(product.id).url, {
                 preserveScroll: true,
             });
@@ -129,24 +139,29 @@ export default function ProductsIndex({
 
     return (
         <>
-            <Head title="Products" />
+            <Head title={t('Products')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-xl font-semibold">Products</h1>
+                        <h1 className="text-xl font-semibold">
+                            {t('Products')}
+                        </h1>
                         <p className="text-muted-foreground text-sm">
-                            {page.total}{' '}
-                            {page.total === 1 ? 'product' : 'products'}
+                            {page.total === 1
+                                ? t(':count product', { count: page.total })
+                                : t(':count products', { count: page.total })}
                         </p>
                     </div>
                     <div className="flex gap-2">
                         <Button variant="outline" asChild>
-                            <Link href={products.import().url}>Import CSV</Link>
+                            <Link href={products.import().url}>
+                                {t('Import CSV')}
+                            </Link>
                         </Button>
                         <Button asChild>
                             <Link href={products.create().url}>
-                                New product
+                                {t('New product')}
                             </Link>
                         </Button>
                     </div>
@@ -157,7 +172,7 @@ export default function ProductsIndex({
                         <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                         <Input
                             value={search}
-                            placeholder="Search products…"
+                            placeholder={t('Search products…')}
                             className="pl-9"
                             onChange={(e) => setSearch(e.target.value)}
                         />
@@ -176,15 +191,11 @@ export default function ProductsIndex({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value={STATUS_ANY}>
-                                All statuses
+                                {t('All statuses')}
                             </SelectItem>
                             {statuses.map((status) => (
-                                <SelectItem
-                                    key={status}
-                                    value={status}
-                                    className="capitalize"
-                                >
-                                    {status}
+                                <SelectItem key={status} value={status}>
+                                    {t(`status.${status}`)}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -198,13 +209,11 @@ export default function ProductsIndex({
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            {Object.entries(sortLabels).map(
-                                ([value, label]) => (
-                                    <SelectItem key={value} value={value}>
-                                        {label}
-                                    </SelectItem>
-                                ),
-                            )}
+                            {sortKeys.map((value) => (
+                                <SelectItem key={value} value={value}>
+                                    {sortLabels[value]}
+                                </SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
 
@@ -225,7 +234,7 @@ export default function ProductsIndex({
                                 );
                             }}
                         >
-                            Clear
+                            {t('Clear')}
                         </Button>
                     )}
                 </div>
@@ -233,8 +242,8 @@ export default function ProductsIndex({
                 {page.data.length === 0 ? (
                     <div className="border-border text-muted-foreground rounded-xl border border-dashed p-12 text-center text-sm">
                         {hasFilters
-                            ? 'No products match these filters.'
-                            : 'No products yet. Create your first one.'}
+                            ? t('No products match these filters.')
+                            : t('No products yet. Create your first one.')}
                     </div>
                 ) : (
                     <div className="border-border overflow-x-auto rounded-xl border">
@@ -243,19 +252,19 @@ export default function ProductsIndex({
                                 <tr>
                                     <th className="w-14 px-4 py-2"></th>
                                     <th className="px-4 py-2 font-medium">
-                                        Title
+                                        {t('Title')}
                                     </th>
                                     <th className="px-4 py-2 font-medium">
-                                        Status
+                                        {t('Status')}
                                     </th>
                                     <th className="px-4 py-2 font-medium">
-                                        Variants
+                                        {t('Variants')}
                                     </th>
                                     <th className="px-4 py-2 font-medium">
-                                        Price from
+                                        {t('Price from')}
                                     </th>
                                     <th className="px-4 py-2 font-medium">
-                                        Updated
+                                        {t('Updated')}
                                     </th>
                                     <th className="px-4 py-2"></th>
                                 </tr>
@@ -297,9 +306,8 @@ export default function ProductsIndex({
                                                         product.status
                                                     ] ?? 'secondary'
                                                 }
-                                                className="capitalize"
                                             >
-                                                {product.status}
+                                                {t(`status.${product.status}`)}
                                             </Badge>
                                         </td>
                                         <td className="px-4 py-2">
@@ -317,7 +325,7 @@ export default function ProductsIndex({
                                                 size="sm"
                                                 onClick={() => destroy(product)}
                                             >
-                                                Delete
+                                                {t('Delete')}
                                             </Button>
                                         </td>
                                     </tr>
@@ -330,7 +338,10 @@ export default function ProductsIndex({
                 {page.last_page > 1 && (
                     <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">
-                            Page {page.current_page} of {page.last_page}
+                            {t('Page :current of :last', {
+                                current: page.current_page,
+                                last: page.last_page,
+                            })}
                         </span>
                         <div className="flex gap-2">
                             <Button
@@ -342,7 +353,7 @@ export default function ProductsIndex({
                                     router.visit(page.prev_page_url)
                                 }
                             >
-                                Previous
+                                {t('Previous')}
                             </Button>
                             <Button
                                 variant="outline"
@@ -353,7 +364,7 @@ export default function ProductsIndex({
                                     router.visit(page.next_page_url)
                                 }
                             >
-                                Next
+                                {t('Next')}
                             </Button>
                         </div>
                     </div>

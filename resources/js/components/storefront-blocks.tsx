@@ -49,7 +49,7 @@ export default function StorefrontBlocks({
                                 className="absolute top-2 right-2 z-10 hidden items-center gap-1.5 rounded-md bg-neutral-900/90 px-2.5 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg ring-1 ring-white/10 transition-opacity group-hover/section:flex group-hover/section:opacity-100"
                             >
                                 <SquarePen className="size-3.5" />
-                                {section.label}
+                                {t(section.label)}
                             </a>
                         )}
                         <section.Render props={block.props} ctx={ctx} />

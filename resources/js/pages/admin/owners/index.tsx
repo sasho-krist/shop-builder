@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import owners from '@/routes/owners';
 
@@ -30,6 +31,7 @@ type Props = {
 };
 
 export default function OwnersIndex({ owners: list }: Props) {
+    const { t } = useT();
     const [adding, setAdding] = useState(false);
     const [editing, setEditing] = useState<Owner | null>(null);
 
@@ -68,24 +70,32 @@ export default function OwnersIndex({ owners: list }: Props) {
     }
 
     function remove(o: Owner) {
-        if (confirm(`Remove ${o.name ?? o.email} from this store?`)) {
+        if (
+            confirm(
+                t('Remove :name from this store?', {
+                    name: o.name ?? o.email ?? '',
+                }),
+            )
+        ) {
             router.delete(owners.destroy(o.id).url, { preserveScroll: true });
         }
     }
 
     return (
         <>
-            <Head title="Owners" />
+            <Head title={t('Owners')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-xl font-semibold">Owners</h1>
+                        <h1 className="text-xl font-semibold">{t('Owners')}</h1>
                         <p className="text-muted-foreground text-sm">
-                            People with full admin access to this store
+                            {t('People with full admin access to this store')}
                         </p>
                     </div>
-                    <Button onClick={() => setAdding(true)}>Add owner</Button>
+                    <Button onClick={() => setAdding(true)}>
+                        {t('Add owner')}
+                    </Button>
                 </div>
 
                 <div className="border-border divide-border divide-y rounded-xl border">
@@ -100,19 +110,18 @@ export default function OwnersIndex({ owners: list }: Props) {
                                         {o.name ?? '—'}
                                     </span>
                                     {o.is_you && (
-                                        <Badge variant="secondary">You</Badge>
+                                        <Badge variant="secondary">
+                                            {t('You')}
+                                        </Badge>
                                     )}
-                                    <Badge
-                                        variant="outline"
-                                        className="capitalize"
-                                    >
-                                        {o.role}
+                                    <Badge variant="outline">
+                                        {t(`role.${o.role}`)}
                                     </Badge>
                                 </div>
                                 <div className="text-muted-foreground text-sm">
                                     {o.email}
                                     {o.joined_at
-                                        ? ` · joined ${o.joined_at}`
+                                        ? ` · ${t('joined :date', { date: o.joined_at })}`
                                         : ''}
                                 </div>
                             </div>
@@ -122,7 +131,7 @@ export default function OwnersIndex({ owners: list }: Props) {
                                     size="sm"
                                     onClick={() => openEdit(o)}
                                 >
-                                    Edit
+                                    {t('Edit')}
                                 </Button>
                                 {!o.is_you && list.length > 1 && (
                                     <Button
@@ -130,7 +139,7 @@ export default function OwnersIndex({ owners: list }: Props) {
                                         size="sm"
                                         onClick={() => remove(o)}
                                     >
-                                        Remove
+                                        {t('Remove')}
                                     </Button>
                                 )}
                             </div>
@@ -139,20 +148,20 @@ export default function OwnersIndex({ owners: list }: Props) {
                 </div>
 
                 <p className="text-muted-foreground text-xs">
-                    An owner's password is set once — when they register or are
-                    added here — and can only be changed by that owner from
-                    their own profile settings.
+                    {t(
+                        "An owner's password is set once — when they register or are added here — and can only be changed by that owner from their own profile settings.",
+                    )}
                 </p>
             </div>
 
             <Dialog open={adding} onOpenChange={setAdding}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Add an owner</DialogTitle>
+                        <DialogTitle>{t('Add an owner')}</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={submitAdd} className="flex flex-col gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="o-name">Name</Label>
+                            <Label htmlFor="o-name">{t('Name')}</Label>
                             <Input
                                 id="o-name"
                                 value={addForm.data.name}
@@ -164,7 +173,7 @@ export default function OwnersIndex({ owners: list }: Props) {
                             <InputError message={addForm.errors.name} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="o-email">Email</Label>
+                            <Label htmlFor="o-email">{t('Email')}</Label>
                             <Input
                                 id="o-email"
                                 type="email"
@@ -177,9 +186,9 @@ export default function OwnersIndex({ owners: list }: Props) {
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="o-pw">
-                                Password{' '}
+                                {t('Password')}{' '}
                                 <span className="text-muted-foreground font-normal">
-                                    (they can change it later)
+                                    {t('(they can change it later)')}
                                 </span>
                             </Label>
                             <Input
@@ -194,7 +203,9 @@ export default function OwnersIndex({ owners: list }: Props) {
                             <InputError message={addForm.errors.password} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="o-pw2">Confirm password</Label>
+                            <Label htmlFor="o-pw2">
+                                {t('Confirm password')}
+                            </Label>
                             <Input
                                 id="o-pw2"
                                 type="password"
@@ -214,11 +225,11 @@ export default function OwnersIndex({ owners: list }: Props) {
                                 variant="outline"
                                 onClick={() => setAdding(false)}
                             >
-                                Cancel
+                                {t('Cancel')}
                             </Button>
                             <Button type="submit" disabled={addForm.processing}>
                                 {addForm.processing && <Spinner />}
-                                Add owner
+                                {t('Add owner')}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -231,11 +242,11 @@ export default function OwnersIndex({ owners: list }: Props) {
             >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Edit owner</DialogTitle>
+                        <DialogTitle>{t('Edit owner')}</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={submitEdit} className="flex flex-col gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="oe-name">Name</Label>
+                            <Label htmlFor="oe-name">{t('Name')}</Label>
                             <Input
                                 id="oe-name"
                                 value={editForm.data.name}
@@ -247,7 +258,7 @@ export default function OwnersIndex({ owners: list }: Props) {
                             <InputError message={editForm.errors.name} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="oe-email">Email</Label>
+                            <Label htmlFor="oe-email">{t('Email')}</Label>
                             <Input
                                 id="oe-email"
                                 type="email"
@@ -259,8 +270,9 @@ export default function OwnersIndex({ owners: list }: Props) {
                             <InputError message={editForm.errors.email} />
                         </div>
                         <p className="text-muted-foreground text-xs">
-                            Password can't be changed here — only by this owner
-                            from their profile.
+                            {t(
+                                "Password can't be changed here — only by this owner from their profile.",
+                            )}
                         </p>
                         <DialogFooter>
                             <Button
@@ -268,14 +280,14 @@ export default function OwnersIndex({ owners: list }: Props) {
                                 variant="outline"
                                 onClick={() => setEditing(null)}
                             >
-                                Cancel
+                                {t('Cancel')}
                             </Button>
                             <Button
                                 type="submit"
                                 disabled={editForm.processing}
                             >
                                 {editForm.processing && <Spinner />}
-                                Save
+                                {t('Save')}
                             </Button>
                         </DialogFooter>
                     </form>

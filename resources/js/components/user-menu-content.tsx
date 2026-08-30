@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { LogOut, Settings } from 'lucide-react';
+import { Globe, LogOut, Settings } from 'lucide-react';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
+import { useT } from '@/lib/i18n';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
 import type { User } from '@/types';
@@ -18,10 +19,22 @@ type Props = {
 
 export function UserMenuContent({ user }: Props) {
     const cleanup = useMobileNavigation();
+    const { t, locale } = useT();
 
     const handleLogout = () => {
         cleanup();
         router.flushAll();
+    };
+
+    const switchTo = locale === 'bg' ? 'en' : 'bg';
+
+    const switchLanguage = () => {
+        cleanup();
+        router.patch(
+            '/settings/locale',
+            { locale: switchTo },
+            { preserveScroll: true },
+        );
     };
 
     return (
@@ -41,8 +54,18 @@ export function UserMenuContent({ user }: Props) {
                         onClick={cleanup}
                     >
                         <Settings className="mr-2" />
-                        Settings
+                        {t('Settings')}
                     </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    className="cursor-pointer"
+                    onSelect={(event) => {
+                        event.preventDefault();
+                        switchLanguage();
+                    }}
+                >
+                    <Globe className="mr-2" />
+                    {switchTo === 'en' ? 'English' : 'Български'}
                 </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
@@ -55,7 +78,7 @@ export function UserMenuContent({ user }: Props) {
                     data-test="logout-button"
                 >
                     <LogOut className="mr-2" />
-                    Log out
+                    {t('Log out')}
                 </Link>
             </DropdownMenuItem>
         </>

@@ -20,6 +20,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 import { COLOR_FIELDS, type ThemeTokens } from '@/lib/theme';
 import { dashboard } from '@/routes';
 import themeRoutes from '@/routes/themes';
@@ -43,6 +44,7 @@ type Props = {
 };
 
 export default function ThemesIndex({ themes, presets }: Props) {
+    const { t } = useT();
     const [open, setOpen] = useState(false);
     const form = useForm({ name: '', preset: presets[0]?.key ?? 'minimal' });
 
@@ -60,7 +62,7 @@ export default function ThemesIndex({ themes, presets }: Props) {
     }
 
     function destroy(theme: Theme) {
-        if (confirm(`Delete the "${theme.name}" theme?`)) {
+        if (confirm(t('Delete the ":name" theme?', { name: theme.name }))) {
             router.delete(themeRoutes.destroy(theme.id).url, {
                 preserveScroll: true,
             });
@@ -69,14 +71,14 @@ export default function ThemesIndex({ themes, presets }: Props) {
 
     return (
         <>
-            <Head title="Themes" />
+            <Head title={t('Themes')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-xl font-semibold">Themes</h1>
+                        <h1 className="text-xl font-semibold">{t('Themes')}</h1>
                         <p className="text-muted-foreground text-sm">
-                            The active theme styles your storefront.
+                            {t('The active theme styles your storefront.')}
                         </p>
                     </div>
                     <Button
@@ -86,7 +88,7 @@ export default function ThemesIndex({ themes, presets }: Props) {
                             setOpen(true);
                         }}
                     >
-                        New theme
+                        {t('New theme')}
                     </Button>
                 </div>
 
@@ -100,7 +102,9 @@ export default function ThemesIndex({ themes, presets }: Props) {
                                 <span className="font-medium">
                                     {theme.name}
                                 </span>
-                                {theme.is_active && <Badge>Active</Badge>}
+                                {theme.is_active && (
+                                    <Badge>{t('Active')}</Badge>
+                                )}
                             </div>
 
                             <div className="flex gap-1">
@@ -126,7 +130,7 @@ export default function ThemesIndex({ themes, presets }: Props) {
                                         )
                                     }
                                 >
-                                    Edit
+                                    {t('Edit')}
                                 </Button>
                                 {!theme.is_active && (
                                     <Button
@@ -134,7 +138,7 @@ export default function ThemesIndex({ themes, presets }: Props) {
                                         size="sm"
                                         onClick={() => activate(theme)}
                                     >
-                                        Activate
+                                        {t('Activate')}
                                     </Button>
                                 )}
                                 {!theme.is_active && themes.length > 1 && (
@@ -144,7 +148,7 @@ export default function ThemesIndex({ themes, presets }: Props) {
                                         className="ml-auto"
                                         onClick={() => destroy(theme)}
                                     >
-                                        Delete
+                                        {t('Delete')}
                                     </Button>
                                 )}
                             </div>
@@ -156,11 +160,11 @@ export default function ThemesIndex({ themes, presets }: Props) {
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>New theme</DialogTitle>
+                        <DialogTitle>{t('New theme')}</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={create} className="flex flex-col gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="theme-name">Name</Label>
+                            <Label htmlFor="theme-name">{t('Name')}</Label>
                             <Input
                                 id="theme-name"
                                 value={form.data.name}
@@ -172,7 +176,9 @@ export default function ThemesIndex({ themes, presets }: Props) {
                             <InputError message={form.errors.name} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="theme-preset">Start from</Label>
+                            <Label htmlFor="theme-preset">
+                                {t('Start from')}
+                            </Label>
                             <Select
                                 value={form.data.preset}
                                 onValueChange={(value) =>
@@ -200,11 +206,11 @@ export default function ThemesIndex({ themes, presets }: Props) {
                                 variant="outline"
                                 onClick={() => setOpen(false)}
                             >
-                                Cancel
+                                {t('Cancel')}
                             </Button>
                             <Button type="submit" disabled={form.processing}>
                                 {form.processing && <Spinner />}
-                                Create
+                                {t('Create')}
                             </Button>
                         </DialogFooter>
                     </form>

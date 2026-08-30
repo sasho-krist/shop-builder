@@ -15,6 +15,7 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import type { FieldDef, PreviewContext, PropValue } from '@/lib/blocks';
+import { useT } from '@/lib/i18n';
 import mediaRoutes from '@/routes/media';
 
 function ImageField({
@@ -24,6 +25,7 @@ function ImageField({
     value: string;
     onChange: (value: string) => void;
 }) {
+    const { t } = useT();
     const inputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
 
@@ -74,7 +76,7 @@ function ImageField({
                 ) : (
                     <Upload className="size-4" />
                 )}
-                Upload
+                {t('Upload')}
             </Button>
             {value && (
                 <Button
@@ -111,6 +113,8 @@ export default function SectionFields({
     ctx,
     onChange,
 }: Props) {
+    const { t } = useT();
+
     return (
         <div className="flex flex-col gap-4">
             {fields.map((field) => {
@@ -119,7 +123,7 @@ export default function SectionFields({
                 return (
                     <div key={field.key} className="grid gap-1.5">
                         {field.type !== 'boolean' && (
-                            <Label className="text-xs">{field.label}</Label>
+                            <Label className="text-xs">{t(field.label)}</Label>
                         )}
 
                         {field.type === 'text' && (
@@ -170,7 +174,7 @@ export default function SectionFields({
                                             key={option.value}
                                             value={option.value}
                                         >
-                                            {option.label}
+                                            {t(option.label)}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -202,7 +206,7 @@ export default function SectionFields({
                                         onChange(field.key, checked === true)
                                     }
                                 />
-                                {field.label}
+                                {t(field.label)}
                             </label>
                         )}
 
@@ -217,10 +221,14 @@ export default function SectionFields({
                                 }
                             >
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Choose a collection" />
+                                    <SelectValue
+                                        placeholder={t('Choose a collection')}
+                                    />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="none">None</SelectItem>
+                                    <SelectItem value="none">
+                                        {t('None')}
+                                    </SelectItem>
                                     {ctx.collections.map((collection) => (
                                         <SelectItem
                                             key={collection.id}

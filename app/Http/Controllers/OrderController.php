@@ -86,7 +86,7 @@ class OrderController extends Controller
 
         Order::findOrFail($order)->update($data);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Order updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Order updated.')]);
 
         return back();
     }

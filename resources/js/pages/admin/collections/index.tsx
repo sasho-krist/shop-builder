@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useT } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import collections from '@/routes/collections';
 
@@ -17,8 +18,10 @@ type Props = {
 };
 
 export default function CollectionsIndex({ collections: rows }: Props) {
+    const { t } = useT();
+
     function destroy(collection: CollectionRow) {
-        if (confirm(`Delete "${collection.title}"?`)) {
+        if (confirm(t('Delete ":title"?', { title: collection.title }))) {
             router.delete(collections.destroy(collection.id).url, {
                 preserveScroll: true,
             });
@@ -27,28 +30,34 @@ export default function CollectionsIndex({ collections: rows }: Props) {
 
     return (
         <>
-            <Head title="Collections" />
+            <Head title={t('Collections')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-xl font-semibold">Collections</h1>
+                        <h1 className="text-xl font-semibold">
+                            {t('Collections')}
+                        </h1>
                         <p className="text-muted-foreground text-sm">
-                            {rows.length}{' '}
-                            {rows.length === 1 ? 'collection' : 'collections'}
+                            {rows.length === 1
+                                ? t(':count collection', { count: rows.length })
+                                : t(':count collections', {
+                                      count: rows.length,
+                                  })}
                         </p>
                     </div>
                     <Button asChild>
                         <Link href={collections.create().url}>
-                            New collection
+                            {t('New collection')}
                         </Link>
                     </Button>
                 </div>
 
                 {rows.length === 0 ? (
                     <div className="border-border text-muted-foreground rounded-xl border border-dashed p-12 text-center text-sm">
-                        No collections yet. Group products into collections to
-                        feature them on your storefront.
+                        {t(
+                            'No collections yet. Group products into collections to feature them on your storefront.',
+                        )}
                     </div>
                 ) : (
                     <div className="border-border divide-border divide-y rounded-xl border">
@@ -64,10 +73,14 @@ export default function CollectionsIndex({ collections: rows }: Props) {
                                     {collection.title}
                                 </Link>
                                 {!collection.is_visible && (
-                                    <Badge variant="outline">Hidden</Badge>
+                                    <Badge variant="outline">
+                                        {t('Hidden')}
+                                    </Badge>
                                 )}
                                 <Badge variant="secondary">
-                                    {collection.products_count} products
+                                    {t(':count products', {
+                                        count: collection.products_count,
+                                    })}
                                 </Badge>
                                 <Button
                                     variant="ghost"
@@ -75,7 +88,7 @@ export default function CollectionsIndex({ collections: rows }: Props) {
                                     className="ml-auto"
                                     onClick={() => destroy(collection)}
                                 >
-                                    Delete
+                                    {t('Delete')}
                                 </Button>
                             </div>
                         ))}

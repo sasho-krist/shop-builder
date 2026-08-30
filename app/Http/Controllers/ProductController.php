@@ -108,7 +108,7 @@ class ProductController extends Controller
     {
         if (! $planGate->canAdd(Tenant::currentOrFail(), 'products')) {
             throw ValidationException::withMessages([
-                'title' => 'Your plan\'s product limit is reached. Upgrade in Billing to add more.',
+                'title' => __('Your plan\'s product limit is reached. Upgrade in Billing to add more.'),
             ]);
         }
 
@@ -120,7 +120,7 @@ class ProductController extends Controller
             $product->categories()->sync($data['category_ids'] ?? []);
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Product created.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Product created.')]);
 
         return to_route('products.index');
     }
@@ -171,7 +171,7 @@ class ProductController extends Controller
             $model->categories()->sync($data['category_ids'] ?? []);
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Product saved.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Product saved.')]);
 
         return to_route('products.edit', $model);
     }
@@ -180,7 +180,7 @@ class ProductController extends Controller
     {
         Product::findOrFail($product)->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Product deleted.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Product deleted.')]);
 
         return to_route('products.index');
     }

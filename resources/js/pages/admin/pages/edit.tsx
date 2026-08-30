@@ -34,6 +34,7 @@ import {
     type PreviewContext,
     type PropValue,
 } from '@/lib/blocks';
+import { useT } from '@/lib/i18n';
 import type { ThemeTokens } from '@/lib/theme';
 import { dashboard } from '@/routes';
 import pageRoutes from '@/routes/pages';
@@ -67,6 +68,7 @@ function SortableRow({
     onSelect: () => void;
     onDelete: () => void;
 }) {
+    const { t } = useT();
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id: block.id });
     const section = getSection(block.type);
@@ -92,7 +94,7 @@ function SortableRow({
                 className="flex-1 truncate text-left"
                 onClick={onSelect}
             >
-                {section?.label ?? block.type}
+                {section ? t(section.label) : block.type}
             </button>
             <Button
                 type="button"
@@ -120,6 +122,7 @@ function initialSelection(blocks: Block[]): string | null {
 }
 
 export default function PageEdit({ page, context, theme }: Props) {
+    const { t } = useT();
     const [selectedId, setSelectedId] = useState<string | null>(() =>
         initialSelection(page.blocks),
     );
@@ -189,7 +192,7 @@ export default function PageEdit({ page, context, theme }: Props) {
 
     return (
         <>
-            <Head title={`${page.title} — page`} />
+            <Head title={t(':title — page', { title: page.title })} />
 
             <form onSubmit={save} className="flex h-full flex-1 flex-col">
                 <div className="border-border flex items-center gap-3 border-b p-4">
@@ -205,7 +208,7 @@ export default function PageEdit({ page, context, theme }: Props) {
                                 form.setData('is_published', checked === true)
                             }
                         />
-                        Published
+                        {t('Published')}
                     </label>
                     <Button
                         type="submit"
@@ -213,7 +216,7 @@ export default function PageEdit({ page, context, theme }: Props) {
                         disabled={form.processing}
                     >
                         {form.processing && <Spinner />}
-                        Save
+                        {t('Save')}
                     </Button>
                 </div>
 
@@ -221,7 +224,9 @@ export default function PageEdit({ page, context, theme }: Props) {
                     <div className="border-border flex flex-col gap-4 overflow-y-auto border-r p-4">
                         {page.type !== 'home' && (
                             <div className="grid gap-1.5">
-                                <Label className="text-xs">URL slug</Label>
+                                <Label className="text-xs">
+                                    {t('URL slug')}
+                                </Label>
                                 <Input
                                     value={form.data.slug}
                                     onChange={(e) =>
@@ -239,7 +244,7 @@ export default function PageEdit({ page, context, theme }: Props) {
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-sm font-semibold">
-                                    Sections
+                                    {t('Sections')}
                                 </h2>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -249,7 +254,7 @@ export default function PageEdit({ page, context, theme }: Props) {
                                             size="sm"
                                         >
                                             <Plus className="size-4" />
-                                            Add
+                                            {t('Add')}
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
@@ -261,9 +266,11 @@ export default function PageEdit({ page, context, theme }: Props) {
                                                 }
                                             >
                                                 <div className="flex flex-col">
-                                                    <span>{section.label}</span>
+                                                    <span>
+                                                        {t(section.label)}
+                                                    </span>
                                                     <span className="text-muted-foreground text-xs">
-                                                        {section.description}
+                                                        {t(section.description)}
                                                     </span>
                                                 </div>
                                             </DropdownMenuItem>
@@ -295,7 +302,7 @@ export default function PageEdit({ page, context, theme }: Props) {
                                         ))}
                                         {form.data.blocks.length === 0 && (
                                             <p className="text-muted-foreground py-4 text-center text-xs">
-                                                No sections yet.
+                                                {t('No sections yet.')}
                                             </p>
                                         )}
                                     </div>
@@ -306,7 +313,9 @@ export default function PageEdit({ page, context, theme }: Props) {
                         {selected && selectedSection && (
                             <div className="border-border flex flex-col gap-3 border-t pt-4">
                                 <h2 className="text-sm font-semibold">
-                                    {selectedSection.label} settings
+                                    {t(':section settings', {
+                                        section: t(selectedSection.label),
+                                    })}
                                 </h2>
                                 <SectionFields
                                     fields={selectedSection.fields}

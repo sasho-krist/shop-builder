@@ -10,6 +10,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import orderRoutes from '@/routes/orders';
 
@@ -58,6 +59,7 @@ type Payment = {
 const PAYMENT_STATUSES = ['unpaid', 'paid', 'refunded'];
 
 export default function OrderShow({ order, statuses }: Props) {
+    const { t } = useT();
     const form = useForm({
         status: order.status,
         payment_status: order.payment_status,
@@ -71,23 +73,24 @@ export default function OrderShow({ order, statuses }: Props) {
 
     return (
         <>
-            <Head title={`Order #${order.number}`} />
+            <Head title={t('Order #:number', { number: order.number })} />
 
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-4">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-xl font-semibold">
-                            Order #{order.number}
+                            {t('Order #:number', { number: order.number })}
                         </h1>
                         <p className="text-muted-foreground text-sm">
-                            {order.created_at} · {order.payment_method}
+                            {order.created_at} ·{' '}
+                            {t(`method.${order.payment_method}`)}
                         </p>
                     </div>
                 </div>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Items</CardTitle>
+                        <CardTitle>{t('Items')}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-2 text-sm">
                         {order.lines.map((line, index) => (
@@ -107,26 +110,28 @@ export default function OrderShow({ order, statuses }: Props) {
                         ))}
                         <div className="mt-2 flex justify-between border-t pt-2">
                             <span className="text-muted-foreground">
-                                Subtotal
+                                {t('Subtotal')}
                             </span>
                             <span>{order.subtotal}</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">
-                                Shipping
+                                {t('Shipping')}
                             </span>
                             <span>{order.shipping_total}</span>
                         </div>
                         {order.tax_total !== '0.00' && (
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">
-                                    Tax
+                                    {t('Tax')}
                                 </span>
                                 <span>{order.tax_total}</span>
                             </div>
                         )}
                         <div className="flex justify-between font-semibold">
-                            <span>Total ({order.currency})</span>
+                            <span>
+                                {t('Total')} ({order.currency})
+                            </span>
                             <span>{order.total}</span>
                         </div>
                     </CardContent>
@@ -135,7 +140,7 @@ export default function OrderShow({ order, statuses }: Props) {
                 {order.payments.length > 0 && (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Payments</CardTitle>
+                            <CardTitle>{t('Payments')}</CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-col gap-2 text-sm">
                             {order.payments.map((payment, index) => (
@@ -159,8 +164,8 @@ export default function OrderShow({ order, statuses }: Props) {
                                     </span>
                                     <span className="flex items-center gap-2">
                                         <span>{payment.amount}</span>
-                                        <span className="bg-muted rounded-full px-2 py-0.5 text-xs capitalize">
-                                            {payment.status}
+                                        <span className="bg-muted rounded-full px-2 py-0.5 text-xs">
+                                            {t(`payment.${payment.status}`)}
                                         </span>
                                     </span>
                                 </div>
@@ -172,7 +177,7 @@ export default function OrderShow({ order, statuses }: Props) {
                 <div className="grid gap-6 sm:grid-cols-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Customer</CardTitle>
+                            <CardTitle>{t('Customer')}</CardTitle>
                         </CardHeader>
                         <CardContent className="text-sm">
                             <p className="font-medium">{order.customer_name}</p>
@@ -202,11 +207,11 @@ export default function OrderShow({ order, statuses }: Props) {
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Status</CardTitle>
+                            <CardTitle>{t('Status')}</CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-col gap-4">
                             <div className="grid gap-2">
-                                <Label>Order status</Label>
+                                <Label>{t('Order status')}</Label>
                                 <Select
                                     value={form.data.status}
                                     onValueChange={(value) =>
@@ -221,16 +226,15 @@ export default function OrderShow({ order, statuses }: Props) {
                                             <SelectItem
                                                 key={status}
                                                 value={status}
-                                                className="capitalize"
                                             >
-                                                {status}
+                                                {t(`status.${status}`)}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="grid gap-2">
-                                <Label>Payment</Label>
+                                <Label>{t('Payment')}</Label>
                                 <Select
                                     value={form.data.payment_status}
                                     onValueChange={(value) =>
@@ -245,9 +249,8 @@ export default function OrderShow({ order, statuses }: Props) {
                                             <SelectItem
                                                 key={status}
                                                 value={status}
-                                                className="capitalize"
                                             >
-                                                {status}
+                                                {t(`payment.${status}`)}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -259,7 +262,7 @@ export default function OrderShow({ order, statuses }: Props) {
                                 disabled={form.processing}
                             >
                                 {form.processing && <Spinner />}
-                                Update
+                                {t('Update')}
                             </Button>
                         </CardContent>
                     </Card>

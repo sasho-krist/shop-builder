@@ -35,7 +35,7 @@ class ProductImageController extends Controller
             ]);
         }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Images uploaded.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Images uploaded.')]);
 
         return back();
     }
@@ -71,7 +71,7 @@ class ProductImageController extends Controller
     {
         Product::findOrFail($product)->images()->findOrFail($image)->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Image removed.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Image removed.')]);
 
         return back();
     }

@@ -108,7 +108,9 @@ class ProductImportController extends Controller
 
         Inertia::flash('toast', [
             'type' => $errors > 0 ? 'warning' : 'success',
-            'message' => "Imported {$imported} products".($errors > 0 ? " ({$errors} rows skipped)" : '').'.',
+            'message' => $errors > 0
+                ? __('Imported :count products (:skipped rows skipped).', ['count' => $imported, 'skipped' => $errors])
+                : __('Imported :count products.', ['count' => $imported]),
         ]);
 
         return to_route('products.index');

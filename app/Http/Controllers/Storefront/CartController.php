@@ -34,7 +34,7 @@ class CartController extends Controller
         $item->quantity = min(99, ($item->quantity ?? 0) + $data['quantity']);
         $item->save();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Added to cart.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Added to cart.')]);
 
         return back();
     }

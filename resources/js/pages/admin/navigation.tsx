@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useT } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import { edit, update } from '@/routes/navigation';
 
@@ -45,7 +46,7 @@ type Props = {
     };
 };
 
-const TYPE_LABELS: Record<LinkType, string> = {
+const TYPE_LABEL_KEYS: Record<LinkType, string> = {
     home: 'Home page',
     shop: 'All products',
     cart: 'Cart',
@@ -78,6 +79,8 @@ function LinkRows({
     errorKey: string;
     errors: Record<string, string>;
 }) {
+    const { t } = useT();
+
     function patch(i: number, patch: Partial<NavRow>) {
         onChange(rows.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
     }
@@ -99,7 +102,7 @@ function LinkRows({
                     <div className="grid gap-1">
                         <Input
                             value={row.label}
-                            placeholder="Label"
+                            placeholder={t('Label')}
                             onChange={(e) =>
                                 patch(i, { label: e.target.value })
                             }
@@ -119,10 +122,10 @@ function LinkRows({
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            {(Object.keys(TYPE_LABELS) as LinkType[]).map(
-                                (t) => (
-                                    <SelectItem key={t} value={t}>
-                                        {TYPE_LABELS[t]}
+                            {(Object.keys(TYPE_LABEL_KEYS) as LinkType[]).map(
+                                (type) => (
+                                    <SelectItem key={type} value={type}>
+                                        {t(TYPE_LABEL_KEYS[type])}
                                     </SelectItem>
                                 ),
                             )}
@@ -133,7 +136,7 @@ function LinkRows({
                         {row.type === 'url' ? (
                             <Input
                                 value={row.value}
-                                placeholder="https://…"
+                                placeholder={t('https://…')}
                                 onChange={(e) =>
                                     patch(i, { value: e.target.value })
                                 }
@@ -144,7 +147,7 @@ function LinkRows({
                                 onValueChange={(v) => patch(i, { value: v })}
                             >
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Choose…" />
+                                    <SelectValue placeholder={t('Choose…')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {targetOptions(row.type).map((o) => (
@@ -213,13 +216,14 @@ function LinkRows({
                 }
             >
                 <Plus className="size-4" />
-                Add link
+                {t('Add link')}
             </Button>
         </div>
     );
 }
 
 export default function NavigationEditor({ navigation, targets }: Props) {
+    const { t } = useT();
     const form = useForm({
         header_links: navigation.header_links,
         footer_links: navigation.footer_links,
@@ -236,27 +240,29 @@ export default function NavigationEditor({ navigation, targets }: Props) {
 
     return (
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-4">
-            <Head title="Navigation" />
+            <Head title={t('Navigation')} />
 
             <form onSubmit={submit} className="flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-xl font-semibold">
-                            Navigation &amp; footer
+                            {t('Navigation & footer')}
                         </h1>
                         <p className="text-muted-foreground text-sm">
-                            The links in your storefront header and footer.
+                            {t(
+                                'The links in your storefront header and footer.',
+                            )}
                         </p>
                     </div>
                     <Button type="submit" disabled={form.processing}>
                         {form.processing && <Spinner />}
-                        Save
+                        {t('Save')}
                     </Button>
                 </div>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Header menu</CardTitle>
+                        <CardTitle>{t('Header menu')}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-4">
                         <LinkRows
@@ -278,21 +284,21 @@ export default function NavigationEditor({ navigation, targets }: Props) {
                                     )
                                 }
                             />
-                            Also show top-level category links
+                            {t('Also show top-level category links')}
                         </label>
                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Footer</CardTitle>
+                        <CardTitle>{t('Footer')}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="footer-note">
-                                Footer text{' '}
+                                {t('Footer text')}{' '}
                                 <span className="text-muted-foreground font-normal">
-                                    (a short line about the store)
+                                    {t('(a short line about the store)')}
                                 </span>
                             </Label>
                             <Textarea
@@ -307,7 +313,7 @@ export default function NavigationEditor({ navigation, targets }: Props) {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label>Footer links</Label>
+                            <Label>{t('Footer links')}</Label>
                             <LinkRows
                                 rows={form.data.footer_links}
                                 targets={targets}

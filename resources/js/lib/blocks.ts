@@ -52,6 +52,7 @@ export type PreviewCollection = {
 
 export type PreviewContext = {
     products: PreviewProduct[];
+    bestSelling: PreviewProduct[];
     collections: PreviewCollection[];
     /** When set, product cards link to `${hrefBase}${slug}` (storefront only). */
     hrefBase?: string;

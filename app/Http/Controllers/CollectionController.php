@@ -43,7 +43,7 @@ class CollectionController extends Controller
         $collection = Collection::create($data);
         $collection->products()->sync($this->positioned($data['product_ids'] ?? []));
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Collection created.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Collection created.')]);
 
         return to_route('collections.edit', $collection);
     }
@@ -76,7 +76,7 @@ class CollectionController extends Controller
         $model->update($data);
         $model->products()->sync($this->positioned($data['product_ids'] ?? []));
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Collection saved.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Collection saved.')]);
 
         return to_route('collections.edit', $model);
     }
@@ -85,7 +85,7 @@ class CollectionController extends Controller
     {
         Collection::findOrFail($collection)->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Collection deleted.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Collection deleted.')]);
 
         return to_route('collections.index');
     }

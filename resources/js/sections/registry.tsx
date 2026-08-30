@@ -6,6 +6,7 @@ import {
     type PropValue,
     type SectionDef,
 } from '@/lib/blocks';
+import { useT } from '@/lib/i18n';
 
 function hrefFor(
     ctx: PreviewContext,
@@ -95,6 +96,15 @@ function ProductCard({
     );
 }
 
+function EmptyNote({ text }: { text: string }) {
+    const { t } = useT();
+    return (
+        <p style={{ color: 'var(--sb-muted-foreground)' }} className="text-sm">
+            {t(text)}
+        </p>
+    );
+}
+
 function Button({ label }: { label: string }) {
     if (!label) return null;
     return (
@@ -117,10 +127,17 @@ function resolveProducts(
     props: Record<string, PropValue>,
     ctx: PreviewContext,
 ): PreviewProduct[] {
-    if (String(prop(props, 'source', 'latest')) === 'collection') {
+    const source = String(prop(props, 'source', 'latest'));
+
+    if (source === 'collection') {
         const id = prop<number | null>(props, 'collectionId', null);
         return ctx.collections.find((c) => c.id === id)?.products ?? [];
     }
+
+    if (source === 'bestSelling') {
+        return ctx.bestSelling;
+    }
+
     return ctx.products;
 }
 
@@ -344,7 +361,8 @@ export const SECTIONS: SectionDef[] = [
                 key: 'source',
                 label: 'Products from',
                 options: [
-                    { value: 'latest', label: 'Latest products' },
+                    { value: 'latest', label: 'Newest' },
+                    { value: 'bestSelling', label: 'Best sellers' },
                     { value: 'collection', label: 'A collection' },
                 ],
                 default: 'latest',
@@ -406,12 +424,7 @@ export const SECTIONS: SectionDef[] = [
                         {prop(props, 'heading', '')}
                     </h2>
                     {products.length === 0 ? (
-                        <p
-                            style={{ color: 'var(--sb-muted-foreground)' }}
-                            className="text-sm"
-                        >
-                            No products to show yet.
-                        </p>
+                        <EmptyNote text="No products to show yet." />
                     ) : display === 'list' ? (
                         <div className="flex flex-col gap-2">
                             {products.map((product) => (
@@ -518,12 +531,7 @@ export const SECTIONS: SectionDef[] = [
                         {heading}
                     </h2>
                     {!collection ? (
-                        <p
-                            style={{ color: 'var(--sb-muted-foreground)' }}
-                            className="text-sm"
-                        >
-                            Pick a collection to feature.
-                        </p>
+                        <EmptyNote text="Pick a collection to feature." />
                     ) : (
                         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                             {collection.products

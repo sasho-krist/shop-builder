@@ -18,13 +18,13 @@ class StoreDomainController extends Controller
 
         if (($data['custom_domain'] ?? null) !== null && ! $planGate->allows($tenant, 'custom_domain')) {
             throw ValidationException::withMessages([
-                'custom_domain' => 'Custom domains are available on the Pro plan and above.',
+                'custom_domain' => __('Custom domains are available on the Pro plan and above.'),
             ]);
         }
 
         $tenant->update($data);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Domain updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Domain updated.')]);
 
         return back();
     }

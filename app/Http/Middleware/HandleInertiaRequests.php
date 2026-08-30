@@ -50,6 +50,8 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'locale' => fn () => App::getLocale(),
+            'i18n' => fn () => $this->translations(App::getLocale()),
             'auth' => [
                 'user' => $request->user(),
             ],
@@ -121,10 +123,12 @@ class HandleInertiaRequests extends Middleware
                 'showCategoryNav' => $nav->show_category_nav,
             ],
             'locale' => App::getLocale(),
-            'i18n' => $this->translations(App::getLocale()),
             'manage' => $this->manageContext($request, $tenant, $activeTheme),
         ];
     }
+
+    /** @var array<string, array<string, string>> */
+    private static array $translationCache = [];
 
     /**
      * Flat `english => translation` map for the active locale, for the React
@@ -134,20 +138,20 @@ class HandleInertiaRequests extends Middleware
      */
     private function translations(string $locale): array
     {
-        if ($locale === 'en') {
-            return [];
+        if (isset(self::$translationCache[$locale])) {
+            return self::$translationCache[$locale];
         }
 
         $path = lang_path("{$locale}.json");
 
         if (! File::exists($path)) {
-            return [];
+            return self::$translationCache[$locale] = [];
         }
 
         /** @var array<string, string> $strings */
         $strings = json_decode(File::get($path), true) ?: [];
 
-        return $strings;
+        return self::$translationCache[$locale] = $strings;
     }
 
     /**

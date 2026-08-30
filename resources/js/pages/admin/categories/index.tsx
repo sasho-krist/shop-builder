@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useT } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import categoryRoutes from '@/routes/categories';
 
@@ -61,6 +62,7 @@ function orderedTree(all: Category[]): { category: Category; depth: number }[] {
 }
 
 export default function CategoriesIndex({ categories }: Props) {
+    const { t } = useT();
     const [editing, setEditing] = useState<Category | null>(null);
     const [open, setOpen] = useState(false);
 
@@ -132,7 +134,10 @@ export default function CategoriesIndex({ categories }: Props) {
     function destroy(category: Category) {
         if (
             confirm(
-                `Delete "${category.name}"? Subcategories move up one level; products stay.`,
+                t(
+                    'Delete ":name"? Subcategories move up one level; products stay.',
+                    { name: category.name },
+                ),
             )
         ) {
             router.delete(categoryRoutes.destroy(category.id).url, {
@@ -143,27 +148,32 @@ export default function CategoriesIndex({ categories }: Props) {
 
     return (
         <>
-            <Head title="Categories" />
+            <Head title={t('Categories')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-xl font-semibold">Categories</h1>
+                        <h1 className="text-xl font-semibold">
+                            {t('Categories')}
+                        </h1>
                         <p className="text-muted-foreground text-sm">
-                            {categories.length}{' '}
                             {categories.length === 1
-                                ? 'category'
-                                : 'categories'}
+                                ? t(':count category', {
+                                      count: categories.length,
+                                  })
+                                : t(':count categories', {
+                                      count: categories.length,
+                                  })}
                         </p>
                     </div>
                     <Button onClick={() => openCreate(null)}>
-                        New category
+                        {t('New category')}
                     </Button>
                 </div>
 
                 {rows.length === 0 ? (
                     <div className="border-border text-muted-foreground rounded-xl border border-dashed p-12 text-center text-sm">
-                        No categories yet.
+                        {t('No categories yet.')}
                     </div>
                 ) : (
                     <div className="border-border divide-border divide-y rounded-xl border">
@@ -194,21 +204,21 @@ export default function CategoriesIndex({ categories }: Props) {
                                         size="sm"
                                         onClick={() => openCreate(category.id)}
                                     >
-                                        Add sub
+                                        {t('Add sub')}
                                     </Button>
                                     <Button
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => openEdit(category)}
                                     >
-                                        Edit
+                                        {t('Edit')}
                                     </Button>
                                     <Button
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => destroy(category)}
                                     >
-                                        Delete
+                                        {t('Delete')}
                                     </Button>
                                 </div>
                             </div>
@@ -221,13 +231,13 @@ export default function CategoriesIndex({ categories }: Props) {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                            {editing ? 'Edit category' : 'New category'}
+                            {editing ? t('Edit category') : t('New category')}
                         </DialogTitle>
                     </DialogHeader>
 
                     <form onSubmit={submit} className="flex flex-col gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="cat-name">Name</Label>
+                            <Label htmlFor="cat-name">{t('Name')}</Label>
                             <Input
                                 id="cat-name"
                                 value={form.data.name}
@@ -241,15 +251,15 @@ export default function CategoriesIndex({ categories }: Props) {
 
                         <div className="grid gap-2">
                             <Label htmlFor="cat-slug">
-                                Slug{' '}
+                                {t('Slug')}{' '}
                                 <span className="text-muted-foreground font-normal">
-                                    (blank = from name)
+                                    {t('(blank = from name)')}
                                 </span>
                             </Label>
                             <Input
                                 id="cat-slug"
                                 value={form.data.slug}
-                                placeholder="auto"
+                                placeholder={t('auto')}
                                 onChange={(e) =>
                                     form.setData('slug', e.target.value)
                                 }
@@ -258,7 +268,7 @@ export default function CategoriesIndex({ categories }: Props) {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="cat-parent">Parent</Label>
+                            <Label htmlFor="cat-parent">{t('Parent')}</Label>
                             <Select
                                 value={form.data.parent_id}
                                 onValueChange={(value) =>
@@ -270,7 +280,7 @@ export default function CategoriesIndex({ categories }: Props) {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value={NO_PARENT}>
-                                        — Top level —
+                                        {t('— Top level —')}
                                     </SelectItem>
                                     {parentChoices.map(
                                         ({ category, depth }) => (
@@ -289,7 +299,9 @@ export default function CategoriesIndex({ categories }: Props) {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="cat-description">Description</Label>
+                            <Label htmlFor="cat-description">
+                                {t('Description')}
+                            </Label>
                             <Textarea
                                 id="cat-description"
                                 rows={3}
@@ -307,11 +319,11 @@ export default function CategoriesIndex({ categories }: Props) {
                                 variant="outline"
                                 onClick={() => setOpen(false)}
                             >
-                                Cancel
+                                {t('Cancel')}
                             </Button>
                             <Button type="submit" disabled={form.processing}>
                                 {form.processing && <Spinner />}
-                                {editing ? 'Save' : 'Create'}
+                                {editing ? t('Save') : t('Create')}
                             </Button>
                         </DialogFooter>
                     </form>

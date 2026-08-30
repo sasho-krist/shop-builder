@@ -49,8 +49,8 @@ class StoreTenantRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'slug.regex' => 'The store address may only contain lowercase letters, numbers and hyphens.',
-            'slug.not_in' => 'That store address is reserved. Please choose another.',
+            'slug.regex' => __('The store address may only contain lowercase letters, numbers and hyphens.'),
+            'slug.not_in' => __('That store address is reserved. Please choose another.'),
         ];
     }
 }

@@ -44,9 +44,9 @@ class StoreDomainRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'custom_domain.regex' => 'Enter a bare domain like shop.example.com (no https://, no path).',
-            'custom_domain.not_regex' => 'Use your own domain here, not a '.config('app.central_domain').' subdomain.',
-            'custom_domain.unique' => 'That domain is already connected to another store.',
+            'custom_domain.regex' => __('Enter a bare domain like shop.example.com (no https://, no path).'),
+            'custom_domain.not_regex' => __('Use your own domain here, not a :domain subdomain.', ['domain' => (string) config('app.central_domain')]),
+            'custom_domain.unique' => __('That domain is already connected to another store.'),
         ];
     }
 }

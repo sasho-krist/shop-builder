@@ -46,7 +46,7 @@ class ThemeRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'tokens.colors.*.regex' => 'Colours must be 6-digit hex values like #1a2b3c.',
+            'tokens.colors.*.regex' => __('Colours must be 6-digit hex values like #1a2b3c.'),
         ];
     }
 }

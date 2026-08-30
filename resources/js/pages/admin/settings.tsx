@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import { update as updateDomain } from '@/routes/store-domain';
 import { edit, update } from '@/routes/store-settings';
@@ -30,6 +31,7 @@ type Props = {
 };
 
 function CopyField({ value }: { value: string }) {
+    const { t } = useT();
     const [copied, setCopied] = useState(false);
 
     function copy() {
@@ -49,7 +51,7 @@ function CopyField({ value }: { value: string }) {
                 variant="outline"
                 size="icon"
                 onClick={copy}
-                aria-label="Copy"
+                aria-label={t('Copy')}
             >
                 {copied ? (
                     <Check className="size-4" />
@@ -62,6 +64,7 @@ function CopyField({ value }: { value: string }) {
 }
 
 export default function StoreSettings({ settings, domain }: Props) {
+    const { t } = useT();
     const form = useForm({
         currency: settings.currency,
         currency_symbol: settings.currency_symbol,
@@ -88,25 +91,29 @@ export default function StoreSettings({ settings, domain }: Props) {
 
     return (
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-4">
-            <Head title="Store settings" />
+            <Head title={t('Store settings')} />
 
             <form onSubmit={submit} className="flex flex-col gap-6">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-xl font-semibold">Store settings</h1>
+                    <h1 className="text-xl font-semibold">
+                        {t('Store settings')}
+                    </h1>
                     <Button type="submit" disabled={form.processing}>
                         {form.processing && <Spinner />}
-                        Save
+                        {t('Save')}
                     </Button>
                 </div>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>General</CardTitle>
+                        <CardTitle>{t('General')}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-4">
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="grid gap-2">
-                                <Label htmlFor="currency">Currency code</Label>
+                                <Label htmlFor="currency">
+                                    {t('Currency code')}
+                                </Label>
                                 <Input
                                     id="currency"
                                     maxLength={3}
@@ -122,7 +129,7 @@ export default function StoreSettings({ settings, domain }: Props) {
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="currency_symbol">
-                                    Currency symbol
+                                    {t('Currency symbol')}
                                 </Label>
                                 <Input
                                     id="currency_symbol"
@@ -141,9 +148,9 @@ export default function StoreSettings({ settings, domain }: Props) {
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="store_email">
-                                Store email{' '}
+                                {t('Store email')}{' '}
                                 <span className="text-muted-foreground font-normal">
-                                    (order notifications)
+                                    {t('(order notifications)')}
                                 </span>
                             </Label>
                             <Input
@@ -161,11 +168,13 @@ export default function StoreSettings({ settings, domain }: Props) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Shipping</CardTitle>
+                        <CardTitle>{t('Shipping')}</CardTitle>
                     </CardHeader>
                     <CardContent className="grid gap-4 sm:grid-cols-2">
                         <div className="grid gap-2">
-                            <Label htmlFor="shipping_flat">Flat rate</Label>
+                            <Label htmlFor="shipping_flat">
+                                {t('Flat rate')}
+                            </Label>
                             <Input
                                 id="shipping_flat"
                                 type="number"
@@ -183,9 +192,9 @@ export default function StoreSettings({ settings, domain }: Props) {
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="free_shipping_over">
-                                Free shipping over{' '}
+                                {t('Free shipping over')}{' '}
                                 <span className="text-muted-foreground font-normal">
-                                    (blank = never)
+                                    {t('(blank = never)')}
                                 </span>
                             </Label>
                             <Input
@@ -210,11 +219,11 @@ export default function StoreSettings({ settings, domain }: Props) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Tax</CardTitle>
+                        <CardTitle>{t('Tax')}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-4">
                         <div className="grid gap-2 sm:max-w-40">
-                            <Label htmlFor="tax_rate">Rate (%)</Label>
+                            <Label htmlFor="tax_rate">{t('Rate (%)')}</Label>
                             <Input
                                 id="tax_rate"
                                 type="number"
@@ -238,7 +247,7 @@ export default function StoreSettings({ settings, domain }: Props) {
                                     )
                                 }
                             />
-                            Prices already include tax
+                            {t('Prices already include tax')}
                         </label>
                     </CardContent>
                 </Card>
@@ -247,19 +256,23 @@ export default function StoreSettings({ settings, domain }: Props) {
             <form onSubmit={submitDomain}>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Domain</CardTitle>
+                        <CardTitle>{t('Domain')}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-4">
                         <div className="grid gap-2">
-                            <Label>Your store address</Label>
+                            <Label>{t('Your store address')}</Label>
                             <CopyField value={`https://${domain.subdomain}`} />
                             <p className="text-muted-foreground text-xs">
-                                Always available. A custom domain is optional.
+                                {t(
+                                    'Always available. A custom domain is optional.',
+                                )}
                             </p>
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="custom_domain">Custom domain</Label>
+                            <Label htmlFor="custom_domain">
+                                {t('Custom domain')}
+                            </Label>
                             <Input
                                 id="custom_domain"
                                 placeholder="shop.example.com"
@@ -278,16 +291,19 @@ export default function StoreSettings({ settings, domain }: Props) {
 
                         {domainForm.data.custom_domain.trim() !== '' && (
                             <div className="border-muted grid gap-2 rounded-md border border-dashed p-3">
-                                <p className="text-sm font-medium">DNS setup</p>
+                                <p className="text-sm font-medium">
+                                    {t('DNS setup')}
+                                </p>
                                 <p className="text-muted-foreground text-xs">
-                                    At your domain registrar, add a CNAME record
-                                    pointing your domain to:
+                                    {t(
+                                        'At your domain registrar, add a CNAME record pointing your domain to:',
+                                    )}
                                 </p>
                                 <CopyField value={domain.target} />
                                 <p className="text-muted-foreground text-xs">
-                                    DNS changes can take up to 24h to propagate.
-                                    HTTPS is issued automatically once the
-                                    record resolves.
+                                    {t(
+                                        'DNS changes can take up to 24h to propagate. HTTPS is issued automatically once the record resolves.',
+                                    )}
                                 </p>
                             </div>
                         )}
@@ -299,7 +315,7 @@ export default function StoreSettings({ settings, domain }: Props) {
                                 disabled={domainForm.processing}
                             >
                                 {domainForm.processing && <Spinner />}
-                                Save domain
+                                {t('Save domain')}
                             </Button>
                         </div>
                     </CardContent>

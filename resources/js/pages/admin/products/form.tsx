@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useT } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import productRoutes from '@/routes/products';
 
@@ -120,6 +121,7 @@ function optionKey(options: Record<string, string> | null | undefined): string {
 }
 
 export default function ProductForm({ product, statuses, categories }: Props) {
+    const { t } = useT();
     const isEdit = product !== null;
 
     const form = useForm({
@@ -206,7 +208,7 @@ export default function ProductForm({ product, statuses, categories }: Props) {
 
     return (
         <>
-            <Head title={isEdit ? product.title : 'New product'} />
+            <Head title={isEdit ? product.title : t('New product')} />
 
             <form
                 onSubmit={submit}
@@ -214,21 +216,21 @@ export default function ProductForm({ product, statuses, categories }: Props) {
             >
                 <div className="flex items-center justify-between">
                     <h1 className="text-xl font-semibold">
-                        {isEdit ? product.title : 'New product'}
+                        {isEdit ? product.title : t('New product')}
                     </h1>
                     <Button type="submit" disabled={form.processing}>
                         {form.processing && <Spinner />}
-                        {isEdit ? 'Save' : 'Create'}
+                        {isEdit ? t('Save') : t('Create')}
                     </Button>
                 </div>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Details</CardTitle>
+                        <CardTitle>{t('Details')}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="title">Title</Label>
+                            <Label htmlFor="title">{t('Title')}</Label>
                             <Input
                                 id="title"
                                 value={form.data.title}
@@ -242,15 +244,15 @@ export default function ProductForm({ product, statuses, categories }: Props) {
 
                         <div className="grid gap-2">
                             <Label htmlFor="slug">
-                                Slug{' '}
+                                {t('Slug')}{' '}
                                 <span className="text-muted-foreground font-normal">
-                                    (leave blank to generate from title)
+                                    {t('(leave blank to generate from title)')}
                                 </span>
                             </Label>
                             <Input
                                 id="slug"
                                 value={form.data.slug}
-                                placeholder="auto"
+                                placeholder={t('auto')}
                                 onChange={(e) =>
                                     form.setData('slug', e.target.value)
                                 }
@@ -259,7 +261,9 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="description">Description</Label>
+                            <Label htmlFor="description">
+                                {t('Description')}
+                            </Label>
                             <Textarea
                                 id="description"
                                 rows={5}
@@ -272,7 +276,7 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="status">Status</Label>
+                            <Label htmlFor="status">{t('Status')}</Label>
                             <Select
                                 value={form.data.status}
                                 onValueChange={(value) =>
@@ -284,12 +288,8 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                                 </SelectTrigger>
                                 <SelectContent>
                                     {statuses.map((status) => (
-                                        <SelectItem
-                                            key={status}
-                                            value={status}
-                                            className="capitalize"
-                                        >
-                                            {status}
+                                        <SelectItem key={status} value={status}>
+                                            {t(`status.${status}`)}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -301,7 +301,7 @@ export default function ProductForm({ product, statuses, categories }: Props) {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle>Options</CardTitle>
+                        <CardTitle>{t('Options')}</CardTitle>
                         {form.data.options.length < 3 && (
                             <Button
                                 type="button"
@@ -314,15 +314,16 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                                     ])
                                 }
                             >
-                                Add option
+                                {t('Add option')}
                             </Button>
                         )}
                     </CardHeader>
                     <CardContent className="flex flex-col gap-4">
                         {form.data.options.length === 0 ? (
                             <p className="text-muted-foreground text-sm">
-                                Add options like Size or Colour to sell variants
-                                of this product.
+                                {t(
+                                    'Add options like Size or Colour to sell variants of this product.',
+                                )}
                             </p>
                         ) : (
                             form.data.options.map((group, gi) => (
@@ -332,7 +333,9 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                                 >
                                     <div className="flex items-center gap-2">
                                         <Input
-                                            placeholder="Option name (e.g. Size)"
+                                            placeholder={t(
+                                                'Option name (e.g. Size)',
+                                            )}
                                             className="max-w-48"
                                             value={group.name}
                                             onChange={(e) =>
@@ -364,7 +367,7 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                                                 )
                                             }
                                         >
-                                            Remove
+                                            {t('Remove')}
                                         </Button>
                                     </div>
                                     <div className="flex flex-wrap items-center gap-1.5">
@@ -403,7 +406,7 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                                             </span>
                                         ))}
                                         <Input
-                                            placeholder="Add value + Enter"
+                                            placeholder={t('Add value + Enter')}
                                             className="h-7 max-w-40 text-xs"
                                             onKeyDown={(e) => {
                                                 if (
@@ -443,7 +446,7 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                                 className="self-start"
                                 onClick={generateVariants}
                             >
-                                Generate variants
+                                {t('Generate variants')}
                             </Button>
                         )}
                         <InputError message={form.errors.options} />
@@ -452,7 +455,7 @@ export default function ProductForm({ product, statuses, categories }: Props) {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle>Variants</CardTitle>
+                        <CardTitle>{t('Variants')}</CardTitle>
                         {!hasOptions && (
                             <Button
                                 type="button"
@@ -460,7 +463,7 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                                 size="sm"
                                 onClick={addVariant}
                             >
-                                Add variant
+                                {t('Add variant')}
                             </Button>
                         )}
                     </CardHeader>
@@ -471,7 +474,7 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                                 className="border-border grid gap-3 rounded-lg border p-3 sm:grid-cols-2"
                             >
                                 <div className="grid gap-2">
-                                    <Label>Name</Label>
+                                    <Label>{t('Name')}</Label>
                                     <Input
                                         value={variant.name}
                                         readOnly={hasOptions}
@@ -496,7 +499,7 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label>SKU</Label>
+                                    <Label>{t('SKU')}</Label>
                                     <Input
                                         value={variant.sku}
                                         onChange={(e) =>
@@ -515,7 +518,7 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label>Price</Label>
+                                    <Label>{t('Price')}</Label>
                                     <Input
                                         type="number"
                                         step="0.01"
@@ -537,7 +540,7 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label>Compare-at price</Label>
+                                    <Label>{t('Compare-at price')}</Label>
                                     <Input
                                         type="number"
                                         step="0.01"
@@ -561,7 +564,7 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label>Stock</Label>
+                                    <Label>{t('Stock')}</Label>
                                     <Input
                                         type="number"
                                         min="0"
@@ -593,7 +596,7 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                                         }
                                         onClick={() => removeVariant(index)}
                                     >
-                                        Remove
+                                        {t('Remove')}
                                     </Button>
                                 </div>
                             </div>
@@ -604,7 +607,7 @@ export default function ProductForm({ product, statuses, categories }: Props) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Images</CardTitle>
+                        <CardTitle>{t('Images')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {isEdit ? (
@@ -614,7 +617,7 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                             />
                         ) : (
                             <p className="text-muted-foreground text-sm">
-                                Save the product first to add images.
+                                {t('Save the product first to add images.')}
                             </p>
                         )}
                     </CardContent>
@@ -622,12 +625,12 @@ export default function ProductForm({ product, statuses, categories }: Props) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Categories</CardTitle>
+                        <CardTitle>{t('Categories')}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-2">
                         {categories.length === 0 ? (
                             <p className="text-muted-foreground text-sm">
-                                No categories yet.
+                                {t('No categories yet.')}
                             </p>
                         ) : (
                             categories.map((category) => (

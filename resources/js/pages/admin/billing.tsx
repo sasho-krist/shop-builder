@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import { Check, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { type Translator, useT } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import { checkout, portal, show as billingShow } from '@/routes/billing';
 
@@ -30,11 +31,19 @@ type Props = {
     plans: PlanCard[];
 };
 
-function cap(limit: number | null): string {
-    return limit === null ? 'Unlimited' : String(limit);
+function cap(limit: number | null, t: Translator): string {
+    return limit === null ? t('Unlimited') : String(limit);
 }
 
-function UsageBar({ used, limit }: { used: number; limit: number | null }) {
+function UsageBar({
+    used,
+    limit,
+    t,
+}: {
+    used: number;
+    limit: number | null;
+    t: Translator;
+}) {
     const pct =
         limit === null || limit === 0
             ? 0
@@ -43,8 +52,8 @@ function UsageBar({ used, limit }: { used: number; limit: number | null }) {
     return (
         <div>
             <div className="mb-1 flex justify-between text-sm">
-                <span className="text-muted-foreground capitalize">
-                    {used} / {cap(limit)}
+                <span className="text-muted-foreground">
+                    {used} / {cap(limit, t)}
                 </span>
             </div>
             {limit !== null && (
@@ -68,58 +77,68 @@ export default function Billing({
     usage,
     plans,
 }: Props) {
+    const { t } = useT();
+
     function subscribe(plan: string) {
         router.post(checkout().url, { plan });
     }
 
     return (
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-4">
-            <Head title="Billing" />
+            <Head title={t('Billing')} />
 
             <div className="flex items-center justify-between">
-                <h1 className="text-xl font-semibold">Billing &amp; plan</h1>
+                <h1 className="text-xl font-semibold">{t('Billing & plan')}</h1>
                 {billingEnabled && subscriptionActive && (
                     <Button
                         variant="outline"
                         onClick={() => router.get(portal().url)}
                     >
-                        Manage subscription
+                        {t('Manage subscription')}
                     </Button>
                 )}
             </div>
 
             {onGracePeriod && endsAt && (
                 <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
-                    Your subscription is cancelled and will end on {endsAt}. You
-                    can resume it any time from “Manage subscription”.
+                    {t(
+                        'Your subscription is cancelled and will end on :date. You can resume it any time from "Manage subscription".',
+                        { date: endsAt },
+                    )}
                 </div>
             )}
 
             {!billingEnabled && (
                 <div className="text-muted-foreground rounded-md border border-dashed p-3 text-sm">
-                    Online billing is not configured on this environment. Plans
-                    below are shown for reference; contact us to change your
-                    plan.
+                    {t(
+                        'Online billing is not configured on this environment. Plans below are shown for reference; contact us to change your plan.',
+                    )}
                 </div>
             )}
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Current usage</CardTitle>
+                    <CardTitle>{t('Current usage')}</CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <p className="mb-1 text-sm font-medium">Products</p>
+                        <p className="mb-1 text-sm font-medium">
+                            {t('Products')}
+                        </p>
                         <UsageBar
                             used={usage.products?.used ?? 0}
                             limit={usage.products?.limit ?? null}
+                            t={t}
                         />
                     </div>
                     <div>
-                        <p className="mb-1 text-sm font-medium">Team members</p>
+                        <p className="mb-1 text-sm font-medium">
+                            {t('Team members')}
+                        </p>
                         <UsageBar
                             used={usage.staff?.used ?? 0}
                             limit={usage.staff?.limit ?? null}
+                            t={t}
                         />
                     </div>
                 </CardContent>
@@ -143,18 +162,18 @@ export default function Billing({
                                     {plan.name}
                                     {isCurrent && (
                                         <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
-                                            Current
+                                            {t('Current')}
                                         </span>
                                     )}
                                 </CardTitle>
                                 <p className="text-2xl font-bold">
                                     {plan.price === 0
-                                        ? 'Free'
+                                        ? t('Free')
                                         : `$${plan.price}`}
                                     {plan.price > 0 && (
                                         <span className="text-muted-foreground text-sm font-normal">
                                             {' '}
-                                            / mo
+                                            {t('/ mo')}
                                         </span>
                                     )}
                                 </p>
@@ -162,10 +181,14 @@ export default function Billing({
                             <CardContent className="flex flex-col gap-3">
                                 <ul className="flex flex-col gap-1.5 text-sm">
                                     <li>
-                                        {cap(plan.limits.products)} products
+                                        {t(':limit products', {
+                                            limit: cap(plan.limits.products, t),
+                                        })}
                                     </li>
                                     <li>
-                                        {cap(plan.limits.staff)} team members
+                                        {t(':limit team members', {
+                                            limit: cap(plan.limits.staff, t),
+                                        })}
                                     </li>
                                     <li className="flex items-center gap-1.5">
                                         {plan.limits.custom_domain ? (
@@ -173,7 +196,7 @@ export default function Billing({
                                         ) : (
                                             <Minus className="text-muted-foreground size-4" />
                                         )}
-                                        Custom domain
+                                        {t('Custom domain')}
                                     </li>
                                     <li className="flex items-center gap-1.5">
                                         {plan.limits.card_payments ? (
@@ -181,7 +204,7 @@ export default function Billing({
                                         ) : (
                                             <Minus className="text-muted-foreground size-4" />
                                         )}
-                                        Card payments
+                                        {t('Card payments')}
                                     </li>
                                 </ul>
 
@@ -190,14 +213,14 @@ export default function Billing({
                                         disabled={!billingEnabled}
                                         onClick={() => subscribe(plan.key)}
                                     >
-                                        Choose {plan.name}
+                                        {t('Choose :plan', { plan: plan.name })}
                                     </Button>
                                 )}
                                 {!isCurrent && !plan.subscribable && (
                                     <Button variant="outline" disabled>
                                         {plan.price === 0
-                                            ? 'Downgrade via support'
-                                            : 'Unavailable'}
+                                            ? t('Downgrade via support')
+                                            : t('Unavailable')}
                                     </Button>
                                 )}
                             </CardContent>

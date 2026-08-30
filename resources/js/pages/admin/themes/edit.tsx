@@ -16,6 +16,7 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { Spinner } from '@/components/ui/spinner';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useT } from '@/lib/i18n';
 import { COLOR_FIELDS, type ThemeColors, type ThemeTokens } from '@/lib/theme';
 import { dashboard } from '@/routes';
 import themeRoutes from '@/routes/themes';
@@ -66,6 +67,7 @@ export default function ThemeEdit({
     fonts,
     buttonStyles,
 }: Props) {
+    const { t: tr } = useT();
     const form = useForm<{ name: string; tokens: ThemeTokens }>({
         name: theme.name,
         tokens: theme.tokens,
@@ -86,7 +88,13 @@ export default function ThemeEdit({
     }
 
     function applyPreset(preset: Preset) {
-        if (confirm(`Replace all values with the "${preset.label}" preset?`)) {
+        if (
+            confirm(
+                tr('Replace all values with the ":preset" preset?', {
+                    preset: preset.label,
+                }),
+            )
+        ) {
             form.setData('tokens', preset.tokens);
         }
     }
@@ -100,7 +108,7 @@ export default function ThemeEdit({
 
     return (
         <>
-            <Head title={`${theme.name} — theme`} />
+            <Head title={tr(':name — theme', { name: theme.name })} />
 
             <form onSubmit={save} className="flex h-full flex-1 flex-col">
                 <div className="border-border flex items-center gap-3 border-b p-4">
@@ -110,7 +118,7 @@ export default function ThemeEdit({
                         onChange={(e) => form.setData('name', e.target.value)}
                     />
                     {theme.is_active ? (
-                        <Badge>Active</Badge>
+                        <Badge>{tr('Active')}</Badge>
                     ) : (
                         <Button
                             type="button"
@@ -124,7 +132,7 @@ export default function ThemeEdit({
                                 )
                             }
                         >
-                            Activate
+                            {tr('Activate')}
                         </Button>
                     )}
                     <Button
@@ -133,7 +141,7 @@ export default function ThemeEdit({
                         disabled={form.processing}
                     >
                         {form.processing && <Spinner />}
-                        Save
+                        {tr('Save')}
                     </Button>
                 </div>
 
@@ -141,7 +149,7 @@ export default function ThemeEdit({
                     <div className="flex flex-col gap-6 overflow-y-auto p-4">
                         <section className="flex flex-col gap-2">
                             <h2 className="text-sm font-semibold">
-                                Start from a preset
+                                {tr('Start from a preset')}
                             </h2>
                             <div className="flex flex-wrap gap-2">
                                 {presets.map((preset) => (
@@ -159,11 +167,13 @@ export default function ThemeEdit({
                         </section>
 
                         <section className="flex flex-col gap-3">
-                            <h2 className="text-sm font-semibold">Colours</h2>
+                            <h2 className="text-sm font-semibold">
+                                {tr('Colours')}
+                            </h2>
                             {COLOR_FIELDS.map(({ key, label }) => (
                                 <ColorField
                                     key={key}
-                                    label={label}
+                                    label={tr(label)}
                                     value={t.colors[key]}
                                     onChange={(value) => setColor(key, value)}
                                 />
@@ -173,9 +183,9 @@ export default function ThemeEdit({
 
                         <section className="flex flex-col gap-4">
                             <h2 className="text-sm font-semibold">
-                                Typography
+                                {tr('Typography')}
                             </h2>
-                            <Row label="Heading font">
+                            <Row label={tr('Heading font')}>
                                 <Select
                                     value={t.typography.headingFont}
                                     onValueChange={(value) =>
@@ -194,7 +204,7 @@ export default function ThemeEdit({
                                     </SelectContent>
                                 </Select>
                             </Row>
-                            <Row label="Body font">
+                            <Row label={tr('Body font')}>
                                 <Select
                                     value={t.typography.bodyFont}
                                     onValueChange={(value) =>
@@ -214,7 +224,7 @@ export default function ThemeEdit({
                                 </Select>
                             </Row>
                             <Row
-                                label="Base size"
+                                label={tr('Base size')}
                                 hint={`${t.typography.baseSize}px`}
                             >
                                 <Slider
@@ -228,7 +238,7 @@ export default function ThemeEdit({
                                 />
                             </Row>
                             <Row
-                                label="Type scale"
+                                label={tr('Type scale')}
                                 hint={t.typography.scale.toFixed(2)}
                             >
                                 <Slider
@@ -247,8 +257,13 @@ export default function ThemeEdit({
                         </section>
 
                         <section className="flex flex-col gap-4">
-                            <h2 className="text-sm font-semibold">Layout</h2>
-                            <Row label="Corner radius" hint={`${t.radius}px`}>
+                            <h2 className="text-sm font-semibold">
+                                {tr('Layout')}
+                            </h2>
+                            <Row
+                                label={tr('Corner radius')}
+                                hint={`${t.radius}px`}
+                            >
                                 <Slider
                                     min={0}
                                     max={32}
@@ -259,7 +274,7 @@ export default function ThemeEdit({
                                     }
                                 />
                             </Row>
-                            <Row label="Spacing" hint={`${t.spacing}px`}>
+                            <Row label={tr('Spacing')} hint={`${t.spacing}px`}>
                                 <Slider
                                     min={8}
                                     max={40}
@@ -271,7 +286,7 @@ export default function ThemeEdit({
                                 />
                             </Row>
                             <Row
-                                label="Container width"
+                                label={tr('Container width')}
                                 hint={`${t.container}px`}
                             >
                                 <Slider
@@ -284,7 +299,7 @@ export default function ThemeEdit({
                                     }
                                 />
                             </Row>
-                            <Row label="Button style">
+                            <Row label={tr('Button style')}>
                                 <ToggleGroup
                                     type="single"
                                     value={t.buttonStyle}
@@ -301,9 +316,8 @@ export default function ThemeEdit({
                                         <ToggleGroupItem
                                             key={style}
                                             value={style}
-                                            className="capitalize"
                                         >
-                                            {style}
+                                            {tr(`buttonStyle.${style}`)}
                                         </ToggleGroupItem>
                                     ))}
                                 </ToggleGroup>
@@ -314,7 +328,7 @@ export default function ThemeEdit({
                     <div className="overflow-y-auto p-4">
                         <div className="sticky top-0">
                             <p className="text-muted-foreground mb-2 text-xs">
-                                Live preview
+                                {tr('Live preview')}
                             </p>
                             <ThemePreview tokens={t} />
                         </div>

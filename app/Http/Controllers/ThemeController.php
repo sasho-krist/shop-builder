@@ -45,7 +45,7 @@ class ThemeController extends Controller
             'is_active' => false,
         ]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Theme created.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Theme created.')]);
 
         return to_route('themes.edit', $theme);
     }
@@ -71,7 +71,7 @@ class ThemeController extends Controller
     {
         Theme::findOrFail($theme)->update($request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Theme saved.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Theme saved.')]);
 
         return back();
     }
@@ -80,7 +80,7 @@ class ThemeController extends Controller
     {
         Theme::findOrFail($theme)->activate();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Theme activated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Theme activated.')]);
 
         return back();
     }
@@ -90,7 +90,7 @@ class ThemeController extends Controller
         $model = Theme::findOrFail($theme);
 
         if (Theme::query()->count() <= 1) {
-            return back()->withErrors(['theme' => 'You need at least one theme.']);
+            return back()->withErrors(['theme' => __('You need at least one theme.')]);
         }
 
         $wasActive = $model->is_active;
@@ -100,7 +100,7 @@ class ThemeController extends Controller
             Theme::query()->latest()->first()?->activate();
         }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Theme deleted.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Theme deleted.')]);
 
         return to_route('themes.index');
     }

@@ -19,7 +19,6 @@ export type StorefrontShared = {
         customer: { name: string } | null;
         manage: ManageContext | null;
         locale: string;
-        i18n: Record<string, string>;
         nav: {
             header: NavLink[];
             footer: NavLink[];
