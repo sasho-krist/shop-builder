@@ -53,6 +53,7 @@ class OnboardingController extends Controller
                 'blocks' => [],
                 'is_published' => true,
             ]);
+            $tenant->settings()->create([]);
         });
 
         return redirect()->route('dashboard');

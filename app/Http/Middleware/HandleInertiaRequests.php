@@ -89,6 +89,7 @@ class HandleInertiaRequests extends Middleware
             'storeName' => $tenant->name,
             'theme' => $activeTheme instanceof Theme ? $activeTheme->tokens : ThemePresets::minimal(),
             'cartCount' => $cart?->loadMissing('items')->itemCount() ?? 0,
+            'currencySymbol' => $tenant->storeSettings()->currency_symbol,
         ];
     }
 }

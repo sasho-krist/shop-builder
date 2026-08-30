@@ -9,6 +9,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
+use App\Http\Controllers\StoreSettingController;
 use App\Http\Controllers\ThemeController;
 use App\Http\Middleware\EnsureTenantSelected;
 use Illuminate\Support\Facades\Route;
@@ -69,6 +70,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('pages/{page}', [PageController::class, 'destroy'])->name('pages.destroy');
 
         Route::post('media', [MediaController::class, 'store'])->name('media.store');
+
+        Route::get('store-settings', [StoreSettingController::class, 'edit'])->name('store-settings.edit');
+        Route::put('store-settings', [StoreSettingController::class, 'update'])->name('store-settings.update');
     });
 });
 

@@ -23,6 +23,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $notes
  * @property numeric-string $subtotal
  * @property numeric-string $shipping_total
+ * @property numeric-string $tax_total
  * @property numeric-string $total
  * @property string $currency
  * @property Carbon|null $created_at
@@ -31,7 +32,7 @@ use Illuminate\Support\Carbon;
 #[Fillable([
     'number', 'token', 'status', 'payment_status', 'payment_method',
     'email', 'customer_name', 'phone', 'shipping_address', 'notes',
-    'subtotal', 'shipping_total', 'total', 'currency',
+    'subtotal', 'shipping_total', 'tax_total', 'total', 'currency',
 ])]
 class Order extends Model
 {
@@ -48,6 +49,7 @@ class Order extends Model
             'shipping_address' => 'array',
             'subtotal' => 'decimal:2',
             'shipping_total' => 'decimal:2',
+            'tax_total' => 'decimal:2',
             'total' => 'decimal:2',
         ];
     }

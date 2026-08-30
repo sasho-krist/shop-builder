@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -62,6 +63,19 @@ class Tenant extends Model
     public function pages(): HasMany
     {
         return $this->hasMany(Page::class);
+    }
+
+    /**
+     * @return HasOne<StoreSetting, $this>
+     */
+    public function settings(): HasOne
+    {
+        return $this->hasOne(StoreSetting::class);
+    }
+
+    public function storeSettings(): StoreSetting
+    {
+        return $this->settings()->firstOrCreate([]);
     }
 
     /**

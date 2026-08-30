@@ -36,8 +36,10 @@ type Props = {
         notes: string | null;
         subtotal: string;
         shipping_total: string;
+        tax_total: string;
         total: string;
         currency: string;
+        currency_symbol: string;
         created_at: string | null;
         lines: Line[];
     };
@@ -106,6 +108,14 @@ export default function OrderShow({ order, statuses }: Props) {
                             </span>
                             <span>{order.shipping_total}</span>
                         </div>
+                        {order.tax_total !== '0.00' && (
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">
+                                    Tax
+                                </span>
+                                <span>{order.tax_total}</span>
+                            </div>
+                        )}
                         <div className="flex justify-between font-semibold">
                             <span>Total ({order.currency})</span>
                             <span>{order.total}</span>

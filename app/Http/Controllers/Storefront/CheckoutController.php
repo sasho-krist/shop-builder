@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CheckoutRequest;
+use App\Mail\OrderPlaced;
 use App\Models\Cart;
 use App\Models\Order;
+use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -24,7 +27,7 @@ class CheckoutController extends Controller
         }
 
         return Inertia::render('storefront/checkout', [
-            'cart' => $cart->presentation(),
+            'cart' => $cart->presentation(Tenant::currentOrFail()->storeSettings()),
         ]);
     }
 
@@ -37,12 +40,12 @@ class CheckoutController extends Controller
             return redirect('/cart');
         }
 
+        $settings = Tenant::currentOrFail()->storeSettings();
         $data = $request->validated();
 
-        $order = DB::transaction(function () use ($cart, $data): Order {
+        $order = DB::transaction(function () use ($cart, $data, $settings): Order {
             $nextNumber = (int) Order::query()->lockForUpdate()->max('number') ?: 1000;
-            $subtotal = $cart->subtotal();
-            $shipping = '0.00';
+            $totals = $cart->totals($settings);
 
             $order = Order::create([
                 'number' => $nextNumber + 1,
@@ -55,10 +58,11 @@ class CheckoutController extends Controller
                 'phone' => $data['phone'] ?? null,
                 'shipping_address' => $data['address'],
                 'notes' => $data['notes'] ?? null,
-                'subtotal' => $subtotal,
-                'shipping_total' => $shipping,
-                'total' => bcadd($subtotal, $shipping, 2),
-                'currency' => 'BGN',
+                'subtotal' => $totals['subtotal'],
+                'shipping_total' => $totals['shipping'],
+                'tax_total' => $totals['tax'],
+                'total' => $totals['total'],
+                'currency' => $settings->currency,
             ]);
 
             foreach ($cart->items as $item) {
@@ -80,12 +84,15 @@ class CheckoutController extends Controller
             return $order;
         });
 
+        Mail::to($order->email)->send(new OrderPlaced($order, $settings));
+
         return redirect("/order/{$order->token}");
     }
 
     public function confirmation(string $token): Response
     {
         $order = Order::query()->where('token', $token)->with('lines')->firstOrFail();
+        $settings = Tenant::currentOrFail()->storeSettings();
 
         return Inertia::render('storefront/order', [
             'order' => [
@@ -97,8 +104,10 @@ class CheckoutController extends Controller
                 'shipping_address' => $order->shipping_address,
                 'subtotal' => $order->subtotal,
                 'shipping_total' => $order->shipping_total,
+                'tax_total' => $order->tax_total,
                 'total' => $order->total,
                 'currency' => $order->currency,
+                'currency_symbol' => $settings->currency_symbol,
                 'lines' => $order->lines->map(fn ($line): array => [
                     'product_title' => $line->product_title,
                     'variant_name' => $line->variant_name,

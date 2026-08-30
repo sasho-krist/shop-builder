@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { CheckCircle2 } from 'lucide-react';
 import StorefrontLayout from '@/layouts/storefront-layout';
+import { money } from '@/lib/money';
 
 type Props = {
     order: {
@@ -12,8 +13,10 @@ type Props = {
         shipping_address: Record<string, string>;
         subtotal: string;
         shipping_total: string;
+        tax_total: string;
         total: string;
         currency: string;
+        currency_symbol: string;
         lines: {
             product_title: string;
             variant_name: string;
@@ -76,7 +79,12 @@ export default function StorefrontOrder({ order }: Props) {
                                         · {line.variant_name} × {line.quantity}
                                     </span>
                                 </span>
-                                <span>{line.subtotal}</span>
+                                <span>
+                                    {money(
+                                        line.subtotal,
+                                        order.currency_symbol,
+                                    )}
+                                </span>
                             </li>
                         ))}
                     </ul>
@@ -90,7 +98,9 @@ export default function StorefrontOrder({ order }: Props) {
                             >
                                 Subtotal
                             </span>
-                            <span>{order.subtotal}</span>
+                            <span>
+                                {money(order.subtotal, order.currency_symbol)}
+                            </span>
                         </div>
                         <div className="flex justify-between">
                             <span
@@ -98,11 +108,35 @@ export default function StorefrontOrder({ order }: Props) {
                             >
                                 Shipping
                             </span>
-                            <span>{order.shipping_total}</span>
+                            <span>
+                                {money(
+                                    order.shipping_total,
+                                    order.currency_symbol,
+                                )}
+                            </span>
                         </div>
+                        {order.tax_total !== '0.00' && (
+                            <div className="flex justify-between">
+                                <span
+                                    style={{
+                                        color: 'var(--sb-muted-foreground)',
+                                    }}
+                                >
+                                    Tax
+                                </span>
+                                <span>
+                                    {money(
+                                        order.tax_total,
+                                        order.currency_symbol,
+                                    )}
+                                </span>
+                            </div>
+                        )}
                         <div className="flex justify-between font-semibold">
                             <span>Total ({order.currency})</span>
-                            <span>{order.total}</span>
+                            <span>
+                                {money(order.total, order.currency_symbol)}
+                            </span>
                         </div>
                     </div>
                 </div>

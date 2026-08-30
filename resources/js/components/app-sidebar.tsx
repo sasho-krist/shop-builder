@@ -8,6 +8,7 @@ import {
     Layers,
     Package,
     Palette,
+    Settings,
     ShoppingCart,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
@@ -29,6 +30,7 @@ import collections from '@/routes/collections';
 import orders from '@/routes/orders';
 import pages from '@/routes/pages';
 import products from '@/routes/products';
+import { edit as storeSettingsEdit } from '@/routes/store-settings';
 import themes from '@/routes/themes';
 import type { NavItem } from '@/types';
 
@@ -67,6 +69,11 @@ const mainNavItems: NavItem[] = [
         title: 'Pages',
         href: pages.index(),
         icon: FileText,
+    },
+    {
+        title: 'Settings',
+        href: storeSettingsEdit(),
+        icon: Settings,
     },
 ];
 

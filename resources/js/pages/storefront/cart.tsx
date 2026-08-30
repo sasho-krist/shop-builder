@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { Minus, Plus, X } from 'lucide-react';
 import StorefrontLayout from '@/layouts/storefront-layout';
+import { money } from '@/lib/money';
 
 type CartItem = {
     id: number;
@@ -18,6 +19,7 @@ type Props = {
         items: CartItem[];
         subtotal: string;
         count: number;
+        currency_symbol: string;
     };
 };
 
@@ -94,7 +96,10 @@ export default function StorefrontCart({ cart }: Props) {
                                             className="text-sm"
                                         >
                                             {item.variant_name} ·{' '}
-                                            {item.unit_price}
+                                            {money(
+                                                item.unit_price,
+                                                cart.currency_symbol,
+                                            )}
                                         </div>
                                     </div>
                                     <div
@@ -131,8 +136,11 @@ export default function StorefrontCart({ cart }: Props) {
                                             <Plus className="size-3.5" />
                                         </button>
                                     </div>
-                                    <div className="w-20 text-right text-sm font-medium">
-                                        {item.subtotal}
+                                    <div className="w-24 text-right text-sm font-medium">
+                                        {money(
+                                            item.subtotal,
+                                            cart.currency_symbol,
+                                        )}
                                     </div>
                                     <button
                                         type="button"
@@ -163,7 +171,7 @@ export default function StorefrontCart({ cart }: Props) {
                                     Subtotal
                                 </span>
                                 <span className="font-semibold">
-                                    {cart.subtotal}
+                                    {money(cart.subtotal, cart.currency_symbol)}
                                 </span>
                             </div>
                             <Link

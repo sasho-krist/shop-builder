@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -50,8 +51,10 @@ class OrderController extends Controller
                 'notes' => $model->notes,
                 'subtotal' => $model->subtotal,
                 'shipping_total' => $model->shipping_total,
+                'tax_total' => $model->tax_total,
                 'total' => $model->total,
                 'currency' => $model->currency,
+                'currency_symbol' => Tenant::currentOrFail()->storeSettings()->currency_symbol,
                 'created_at' => $model->created_at?->toDayDateTimeString(),
                 'lines' => $model->lines->map(fn ($line): array => [
                     'product_title' => $line->product_title,

@@ -48,11 +48,30 @@ class Cart extends Model
     }
 
     /**
+     * subtotal / shipping / tax / total for the given store settings.
+     *
+     * @return array{subtotal: string, shipping: string, tax: string, total: string}
+     */
+    public function totals(StoreSetting $settings): array
+    {
+        $subtotal = $this->subtotal();
+        $shipping = $settings->shippingFor($subtotal);
+        $tax = $settings->taxFor($subtotal);
+
+        return [
+            'subtotal' => $subtotal,
+            'shipping' => $shipping,
+            'tax' => $tax,
+            'total' => bcadd(bcadd($subtotal, $shipping, 2), $tax, 2),
+        ];
+    }
+
+    /**
      * Storefront-facing cart payload (line items + totals).
      *
      * @return array<string, mixed>
      */
-    public function presentation(): array
+    public function presentation(?StoreSetting $settings = null): array
     {
         $this->load(['items.variant.product.images']);
 
@@ -74,6 +93,8 @@ class Cart extends Model
             })->all(),
             'subtotal' => $this->subtotal(),
             'count' => $this->itemCount(),
+            'totals' => $settings === null ? null : $this->totals($settings),
+            'currency_symbol' => $settings?->currency_symbol,
         ];
     }
 }

@@ -1,5 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import StorefrontLayout from '@/layouts/storefront-layout';
+import { money } from '@/lib/money';
 
 type CartItem = {
     id: number;
@@ -14,6 +15,13 @@ type Props = {
         items: CartItem[];
         subtotal: string;
         count: number;
+        currency_symbol: string;
+        totals: {
+            subtotal: string;
+            shipping: string;
+            tax: string;
+            total: string;
+        };
     };
 };
 
@@ -213,22 +221,67 @@ export default function StorefrontCheckout({ cart }: Props) {
                                         × {item.quantity}
                                     </span>
                                 </span>
-                                <span>{item.subtotal}</span>
+                                <span>
+                                    {money(item.subtotal, cart.currency_symbol)}
+                                </span>
                             </li>
                         ))}
                     </ul>
                     <div
                         style={{ borderColor: 'var(--sb-border)' }}
-                        className="mt-3 flex justify-between border-t pt-3 text-sm"
+                        className="mt-3 flex flex-col gap-1 border-t pt-3 text-sm"
                     >
-                        <span style={{ color: 'var(--sb-muted-foreground)' }}>
-                            Shipping
-                        </span>
-                        <span>Free</span>
+                        <div className="flex justify-between">
+                            <span
+                                style={{ color: 'var(--sb-muted-foreground)' }}
+                            >
+                                Subtotal
+                            </span>
+                            <span>
+                                {money(
+                                    cart.totals.subtotal,
+                                    cart.currency_symbol,
+                                )}
+                            </span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span
+                                style={{ color: 'var(--sb-muted-foreground)' }}
+                            >
+                                Shipping
+                            </span>
+                            <span>
+                                {cart.totals.shipping === '0.00'
+                                    ? 'Free'
+                                    : money(
+                                          cart.totals.shipping,
+                                          cart.currency_symbol,
+                                      )}
+                            </span>
+                        </div>
+                        {cart.totals.tax !== '0.00' && (
+                            <div className="flex justify-between">
+                                <span
+                                    style={{
+                                        color: 'var(--sb-muted-foreground)',
+                                    }}
+                                >
+                                    Tax
+                                </span>
+                                <span>
+                                    {money(
+                                        cart.totals.tax,
+                                        cart.currency_symbol,
+                                    )}
+                                </span>
+                            </div>
+                        )}
                     </div>
-                    <div className="mt-1 flex justify-between font-semibold">
+                    <div className="mt-2 flex justify-between font-semibold">
                         <span>Total</span>
-                        <span>{cart.subtotal}</span>
+                        <span>
+                            {money(cart.totals.total, cart.currency_symbol)}
+                        </span>
                     </div>
 
                     <p

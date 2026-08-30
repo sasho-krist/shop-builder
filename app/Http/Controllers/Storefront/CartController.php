@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Storefront;
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\ProductVariant;
+use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -15,7 +16,7 @@ class CartController extends Controller
     public function show(): Response
     {
         return Inertia::render('storefront/cart', [
-            'cart' => app(Cart::class)->presentation(),
+            'cart' => app(Cart::class)->presentation(Tenant::currentOrFail()->storeSettings()),
         ]);
     }
 
