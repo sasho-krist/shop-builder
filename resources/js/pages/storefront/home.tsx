@@ -1,5 +1,6 @@
 import { Head, usePage } from '@inertiajs/react';
 import { SquarePen } from 'lucide-react';
+import { useOwnerToolsHidden } from '@/hooks/use-owner-tools';
 import StorefrontLayout, {
     type StorefrontShared,
 } from '@/layouts/storefront-layout';
@@ -14,7 +15,9 @@ type Props = {
 export default function StorefrontHome({ blocks, sections }: Props) {
     const { storefront } = usePage<StorefrontShared>().props;
     const ctx: PreviewContext = { ...sections, hrefBase: '/p/' };
-    const editBase = storefront.manage?.homePage ?? null;
+    const [toolsHidden] = useOwnerToolsHidden();
+    const editBase =
+        !toolsHidden && storefront.manage ? storefront.manage.homePage : null;
 
     return (
         <StorefrontLayout

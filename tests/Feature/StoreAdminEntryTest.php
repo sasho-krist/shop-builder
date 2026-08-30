@@ -101,6 +101,26 @@ class StoreAdminEntryTest extends TestCase
         $this->assertSame($this->store->id, session('active_tenant_id'));
     }
 
+    public function test_an_owner_can_leave_the_owner_session_from_the_storefront(): void
+    {
+        $owner = User::factory()->create();
+        $this->store->users()->attach($owner, ['role' => 'owner']);
+
+        $this->actingAs($owner)
+            ->post($this->url('admin/logout'))
+            ->assertRedirect(rtrim($this->url(), '/'));
+
+        $this->assertGuest();
+    }
+
+    public function test_the_storefront_exposes_no_owner_context_to_anonymous_visitors(): void
+    {
+        $this->get($this->url())
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('storefront.manage', null)
+            );
+    }
+
     public function test_a_valid_account_that_does_not_manage_this_store_is_refused(): void
     {
         $stranger = User::factory()->create(['password' => bcrypt('secret-pass')]);

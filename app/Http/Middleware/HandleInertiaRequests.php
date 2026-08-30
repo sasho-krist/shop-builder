@@ -132,6 +132,7 @@ class HandleInertiaRequests extends Middleware
         $homePage = Page::query()->where('type', 'home')->first();
 
         return [
+            'name' => $user->name,
             'dashboard' => "{$base}/dashboard",
             'products' => "{$base}/products",
             'newProduct' => "{$base}/products/create",

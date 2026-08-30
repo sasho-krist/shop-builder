@@ -83,6 +83,19 @@ class StoreAdminController extends Controller
         return Inertia::location($this->dashboardUrl());
     }
 
+    /**
+     * Leave the owner session while staying on the storefront (the "exit owner
+     * view" action in the editing bar).
+     */
+    public function logout(Request $request): Response
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
+    }
+
     private function manages(?object $user, Tenant $tenant): bool
     {
         return $user instanceof User

@@ -49,4 +49,5 @@ Route::domain('{store}')
         Route::get('admin', [StoreAdminController::class, 'show'])->name('storefront.admin');
         Route::post('admin/login', [StoreAdminController::class, 'login'])->name('storefront.admin.login');
         Route::post('admin/register', [StoreAdminController::class, 'register'])->name('storefront.admin.register');
+        Route::post('admin/logout', [StoreAdminController::class, 'logout'])->name('storefront.admin.logout');
     });

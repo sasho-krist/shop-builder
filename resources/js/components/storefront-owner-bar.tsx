@@ -1,5 +1,7 @@
+import { router } from '@inertiajs/react';
 import {
     LayoutDashboard,
+    LogOut,
     Package,
     Palette,
     Plus,
@@ -7,9 +9,10 @@ import {
     SquarePen,
     X,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useOwnerToolsHidden } from '@/hooks/use-owner-tools';
 
 export type ManageContext = {
+    name: string;
     dashboard: string;
     products: string;
     newProduct: string;
@@ -17,16 +20,6 @@ export type ManageContext = {
     theme: string | null;
     homePage: string | null;
 };
-
-const STORAGE_KEY = 'sb_owner_bar_hidden';
-
-function readHidden(): boolean {
-    try {
-        return localStorage.getItem(STORAGE_KEY) === '1';
-    } catch {
-        return false;
-    }
-}
 
 export default function StorefrontOwnerBar({
     manage,
@@ -37,33 +30,21 @@ export default function StorefrontOwnerBar({
     editHref?: string | null;
     editLabel?: string;
 }) {
-    const [hidden, setHidden] = useState(readHidden);
+    const [hidden, setHidden] = useOwnerToolsHidden();
 
-    function hide() {
-        setHidden(true);
-        try {
-            localStorage.setItem(STORAGE_KEY, '1');
-        } catch {
-            /* ignore */
-        }
+    function signOut() {
+        router.post('/admin/logout');
     }
 
     if (hidden) {
         return (
             <button
                 type="button"
-                onClick={() => {
-                    setHidden(false);
-                    try {
-                        localStorage.removeItem(STORAGE_KEY);
-                    } catch {
-                        /* ignore */
-                    }
-                }}
+                onClick={() => setHidden(false)}
                 className="fixed bottom-4 left-4 z-50 flex items-center gap-1.5 rounded-full bg-neutral-900 px-3 py-2 text-xs font-medium text-white shadow-lg ring-1 ring-white/10"
             >
                 <SquarePen className="size-3.5" />
-                Edit store
+                Editing tools
             </button>
         );
     }
@@ -74,9 +55,9 @@ export default function StorefrontOwnerBar({
     return (
         <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 pb-3">
             <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-xl bg-neutral-900/95 p-1.5 text-xs font-medium shadow-2xl ring-1 ring-white/10 backdrop-blur">
-                <span className="hidden shrink-0 items-center gap-1.5 px-2 text-white/50 sm:flex">
+                <span className="hidden shrink-0 items-center gap-1.5 px-2 text-white/70 sm:flex">
                     <span className="size-2 rounded-full bg-emerald-400" />
-                    Owner view
+                    {manage.name}
                 </span>
 
                 {editHref && (
@@ -108,13 +89,25 @@ export default function StorefrontOwnerBar({
                     Admin
                 </a>
 
+                <span className="mx-0.5 h-4 w-px bg-white/15" />
+
                 <button
                     type="button"
-                    onClick={hide}
-                    aria-label="Hide toolbar"
-                    className="ml-0.5 rounded-md p-1.5 text-white/50 hover:bg-white/10 hover:text-white"
+                    onClick={() => setHidden(true)}
+                    className={link}
+                    title="Preview as a shopper"
                 >
                     <X className="size-3.5" />
+                    <span className="hidden sm:inline">Preview</span>
+                </button>
+                <button
+                    type="button"
+                    onClick={signOut}
+                    className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                    title="Sign out of the owner session"
+                >
+                    <LogOut className="size-3.5" />
+                    <span className="hidden sm:inline">Sign out</span>
                 </button>
             </div>
         </div>
