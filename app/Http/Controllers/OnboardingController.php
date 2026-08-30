@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTenantRequest;
 use App\Models\Tenant;
+use App\Support\Theme\ThemePresets;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -36,8 +38,15 @@ class OnboardingController extends Controller
             return redirect()->route('dashboard');
         }
 
-        $tenant = Tenant::create($request->safe()->only('name', 'slug'));
-        $tenant->users()->attach($user, ['role' => 'owner']);
+        DB::transaction(function () use ($request, $user): void {
+            $tenant = Tenant::create($request->safe()->only('name', 'slug'));
+            $tenant->users()->attach($user, ['role' => 'owner']);
+            $tenant->themes()->create([
+                'name' => 'Default',
+                'tokens' => ThemePresets::minimal(),
+                'is_active' => true,
+            ]);
+        });
 
         return redirect()->route('dashboard');
     }

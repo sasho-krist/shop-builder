@@ -6,6 +6,7 @@ import {
     LayoutGrid,
     Layers,
     Package,
+    Palette,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -24,6 +25,7 @@ import { dashboard } from '@/routes';
 import categories from '@/routes/categories';
 import collections from '@/routes/collections';
 import products from '@/routes/products';
+import themes from '@/routes/themes';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -46,6 +48,11 @@ const mainNavItems: NavItem[] = [
         title: 'Collections',
         href: collections.index(),
         icon: Layers,
+    },
+    {
+        title: 'Themes',
+        href: themes.index(),
+        icon: Palette,
     },
 ];
 

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -48,6 +49,14 @@ class Tenant extends Model
     }
 
     /**
+     * @return HasMany<Theme, $this>
+     */
+    public function themes(): HasMany
+    {
+        return $this->hasMany(Theme::class);
+    }
+
+    /**
      * The public URL of this store's storefront.
      */
     public function storefrontUrl(): string
@@ -79,6 +88,11 @@ class Tenant extends Model
     public static function setCurrent(self $tenant): void
     {
         app(TenantContext::class)->set($tenant);
+    }
+
+    public static function forgetCurrent(): void
+    {
+        app(TenantContext::class)->forget();
     }
 
     public static function hasCurrent(): bool

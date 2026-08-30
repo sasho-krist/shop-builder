@@ -77,7 +77,8 @@ _Забележка: изнасянето на админа на отделен 
 
 ### Тема и съдържание
 
-- `themes` — name, tokens (JSON: colors, typography, spacing, radius, shadows), is_active
+- `themes` — name, tokens (JSON: colors×7, typography, radius, spacing, container,
+  buttonStyle), is_active ✅ (една активна на магазин)
 - `pages` — type (home/product/category/cart/page), slug, blocks (JSON), seo_*, is_published
 - `menus` / `menu_items` — навигация (header, footer)
 - `settings` — key/value per tenant (валута, език, ДДС, зони за доставка, payment креденшъли)
@@ -94,28 +95,26 @@ _Забележка: изнасянето на админа на отделен 
 
 ---
 
-## 4. Theme engine
+## 4. Theme engine ✅
 
-1. **Дизайн токени** — JSON структура:
-    ```json
-    {
-        "colors": {
-            "primary": "#16a34a",
-            "bg": "#ffffff",
-            "text": "#0a0a0a",
-            "muted": "#6b7280",
-            "border": "#e5e7eb"
-        },
-        "typography": { "heading": "Inter", "body": "Inter", "scale": 1.25 },
-        "radius": "0.5rem",
-        "spacing": "1rem",
-        "container": "1280px"
-    }
-    ```
-2. Backend отдава активната тема → storefront я инжектира като `--color-primary`, `--radius` … на `<html>`.
-3. Tailwind класовете в компонентите сочат към тези променливи → смяна на тема без rebuild.
-4. **Presets** — 2–3 стартови теми (Minimal / Bold / Classic): различни token JSON + различен стартов layout на страниците.
-5. Редактор: форма с color pickers / font selects / slider-и → `postMessage` към preview iframe за мигновен ъпдейт.
+- **Token shape** — единствен източник на истина е `App\Support\Theme\ThemePresets`:
+  `colors` (primary, primaryForeground, background, foreground, muted,
+  mutedForeground, border), `typography` (headingFont, bodyFont, baseSize, scale),
+  `radius`, `spacing`, `container`, `buttonStyle`. `ThemeRequest` валидира всяко
+  поле (hex regex, диапазони, whitelist за шрифтове/бутон-стил).
+- **Presets** — Minimal / Bold / Classic (`ThemePresets::all()`); в редактора
+  бутон „Start from" ги зарежда в live формата.
+- **Pipeline** — `resources/js/lib/theme.ts` → `themeToCssVars()` мапва токените към
+  `--sb-*` custom properties. Ползва се и от редактора (live preview), и от
+  storefront-а (`coming-soon` вече е стилизиран от активната тема).
+- **Редактор** (`themes/edit`) — ляв панел с `ColorField` (swatch + popover +
+  native color input + hex), font selects, **slider-и** за baseSize / scale /
+  radius / spacing / container, ToggleGroup за button style; десен панел =
+  `ThemePreview` (мини storefront: header + hero + product grid) който се
+  прерисува мигновено.
+- Дефолтна активна тема се създава при onboarding.
+- Оставено за после: Google Fonts зареждане в storefront-а, per-section
+  override на product card стила (в Phase 4).
 
 ---
 
@@ -144,21 +143,21 @@ _Забележка: изнасянето на админа на отделен 
 
 ## 7. Фази на изпълнение
 
-| Фаза                                  | Съдържание                                                                                                                                                          | Критерий за готовност                                                                            |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| **0. Setup** ✅                       | Repo, Laravel 13 + React starter kit, БД (InnoDB), Pest/PHPStan/Pint, `.env` за `shop-builder.localhost`                                                            | `composer run dev` върви, `php artisan test` минава, login работи                                |
-| **1. Tenancy + Auth** ✅              | `tenants` + `tenant_user`, `TenantContext`, storefront/admin middleware, поддомейн роути, signup → onboarding → създава магазин + owner, dashboard показва магазина | Регистрация създава магазин, `{slug}.shop-builder.localhost` зарежда tenant контекст (200 / 404) |
-| **2a. Каталог — продукти** ✅         | `products` + `product_variants`, `BelongsToTenant`, админ CRUD (list/create/edit/delete) с variants repeater, sidebar nav                                           | Създаване/редакция/триене на продукт с вариации; изолация по магазин (404 за чужд)               |
-| **2b. Каталог — категории** ✅        | `categories` (nested, parent_id) + `category_product`, админ CRUD (dialog, tree, cycle-prevention), продукт ↔ категории от продуктовата форма                       | Влагане на подкатегории; забрана за цикли; продукт се маркира в категории                        |
-| **2c. Снимки + филтри** ✅            | `product_images` (public disk) — upload/drag-drop/reorder/alt/delete; списък с продукти: search (debounced) + status филтър + sort + thumbnail                      | Качване и подреждане на снимки; филтриране/търсене в списъка                                     |
-| **2d. Колекции** ✅                   | `collections` + `collection_product` (ordered), админ CRUD, searchable product picker (`GET products/search` JSON) с reorder/remove                                 | Създаване на колекция с подредени продукти; JSON search е scoped по магазин                      |
-| **2e. Каталог — останало** (по избор) | Атрибути (Размер/Цвят → вариантна матрица + storefront филтри); CSV импорт                                                                                          | Може да се направи и по-късно — не блокира builder-а                                             |
-| **3. Theme engine**                   | Token редактор, CSS var pipeline, 2–3 стартови теми, превключване                                                                                                   | Смяна и редакция на тема с жив preview                                                           |
-| **4. Page builder**                   | Регистър от секции, schema-driven форми, drag-reorder, live preview                                                                                                 | Сглобяване на home/category/product страници от блокове                                          |
-| **5. Storefront**                     | Inertia SSR storefront, роути, рендер на blocks, количка                                                                                                            | Работещ публичен магазин с разглеждане и количка                                                 |
-| **6. Checkout & поръчки**             | Checkout flow, Stripe, управление на поръчки, имейли, статуси                                                                                                       | Реална продажба end-to-end                                                                       |
-| **7. Клиенти, настройки, домейни**    | Клиентски акаунти, настройки за доставка/ДДС/валута, custom domain                                                                                                  | Готов за реален магазин                                                                          |
-| **8. SaaS billing**                   | Планове, Cashier абонаменти, onboarding wizard, лимити по план                                                                                                      | Готов за реални клиенти на платформата                                                           |
+| Фаза                                  | Съдържание                                                                                                                                                                           | Критерий за готовност                                                                            |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| **0. Setup** ✅                       | Repo, Laravel 13 + React starter kit, БД (InnoDB), Pest/PHPStan/Pint, `.env` за `shop-builder.localhost`                                                                             | `composer run dev` върви, `php artisan test` минава, login работи                                |
+| **1. Tenancy + Auth** ✅              | `tenants` + `tenant_user`, `TenantContext`, storefront/admin middleware, поддомейн роути, signup → onboarding → създава магазин + owner, dashboard показва магазина                  | Регистрация създава магазин, `{slug}.shop-builder.localhost` зарежда tenant контекст (200 / 404) |
+| **2a. Каталог — продукти** ✅         | `products` + `product_variants`, `BelongsToTenant`, админ CRUD (list/create/edit/delete) с variants repeater, sidebar nav                                                            | Създаване/редакция/триене на продукт с вариации; изолация по магазин (404 за чужд)               |
+| **2b. Каталог — категории** ✅        | `categories` (nested, parent_id) + `category_product`, админ CRUD (dialog, tree, cycle-prevention), продукт ↔ категории от продуктовата форма                                        | Влагане на подкатегории; забрана за цикли; продукт се маркира в категории                        |
+| **2c. Снимки + филтри** ✅            | `product_images` (public disk) — upload/drag-drop/reorder/alt/delete; списък с продукти: search (debounced) + status филтър + sort + thumbnail                                       | Качване и подреждане на снимки; филтриране/търсене в списъка                                     |
+| **2d. Колекции** ✅                   | `collections` + `collection_product` (ordered), админ CRUD, searchable product picker (`GET products/search` JSON) с reorder/remove                                                  | Създаване на колекция с подредени продукти; JSON search е scoped по магазин                      |
+| **2e. Каталог — останало** (по избор) | Атрибути (Размер/Цвят → вариантна матрица + storefront филтри); CSV импорт                                                                                                           | Може да се направи и по-късно — не блокира builder-а                                             |
+| **3. Theme engine** ✅                | `themes` + `ThemePresets`, редактор (color pickers, font selects, slider-и, ToggleGroup) + live `ThemePreview`, `lib/theme.ts` CSS-var pipeline, активна тема стилизира storefront-а | Смяна и редакция на тема с жив preview; storefront ползва активната тема                         |
+| **4. Page builder**                   | Регистър от секции, schema-driven форми, drag-reorder, live preview                                                                                                                  | Сглобяване на home/category/product страници от блокове                                          |
+| **5. Storefront**                     | Inertia SSR storefront, роути, рендер на blocks, количка                                                                                                                             | Работещ публичен магазин с разглеждане и количка                                                 |
+| **6. Checkout & поръчки**             | Checkout flow, Stripe, управление на поръчки, имейли, статуси                                                                                                                        | Реална продажба end-to-end                                                                       |
+| **7. Клиенти, настройки, домейни**    | Клиентски акаунти, настройки за доставка/ДДС/валута, custom domain                                                                                                                   | Готов за реален магазин                                                                          |
+| **8. SaaS billing**                   | Планове, Cashier абонаменти, onboarding wizard, лимити по план                                                                                                                       | Готов за реални клиенти на платформата                                                           |
 
 **MVP = Фази 0–6.** Фази 7–8 са за реално пускане в production.
 

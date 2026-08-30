@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
+use App\Http\Controllers\ThemeController;
 use App\Http\Middleware\EnsureTenantSelected;
 use Illuminate\Support\Facades\Route;
 
@@ -46,6 +47,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('collections/{collection}/edit', [CollectionController::class, 'edit'])->name('collections.edit');
         Route::put('collections/{collection}', [CollectionController::class, 'update'])->name('collections.update');
         Route::delete('collections/{collection}', [CollectionController::class, 'destroy'])->name('collections.destroy');
+
+        Route::get('themes', [ThemeController::class, 'index'])->name('themes.index');
+        Route::post('themes', [ThemeController::class, 'store'])->name('themes.store');
+        Route::get('themes/{theme}/edit', [ThemeController::class, 'edit'])->name('themes.edit');
+        Route::put('themes/{theme}', [ThemeController::class, 'update'])->name('themes.update');
+        Route::post('themes/{theme}/activate', [ThemeController::class, 'activate'])->name('themes.activate');
+        Route::delete('themes/{theme}', [ThemeController::class, 'destroy'])->name('themes.destroy');
     });
 });
 
