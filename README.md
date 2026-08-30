@@ -27,6 +27,7 @@ cp .env.example .env
 php artisan key:generate
 # create the database `shop_builder`, then:
 php artisan migrate
+php artisan storage:link
 composer run dev
 ```
 

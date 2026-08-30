@@ -1,6 +1,9 @@
 import { Head, useForm } from '@inertiajs/react';
 import { type FormEventHandler } from 'react';
 import InputError from '@/components/input-error';
+import ProductImageManager, {
+    type ProductImage,
+} from '@/components/product-image-manager';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -43,6 +46,7 @@ type ProductData = {
     seo_description: string | null;
     variants: Variant[];
     category_ids: number[];
+    images: ProductImage[];
 };
 
 type Props = {
@@ -382,6 +386,24 @@ export default function ProductForm({ product, statuses, categories }: Props) {
                             </div>
                         ))}
                         <InputError message={form.errors.variants} />
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Images</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {isEdit ? (
+                            <ProductImageManager
+                                productId={product.id}
+                                images={product.images}
+                            />
+                        ) : (
+                            <p className="text-muted-foreground text-sm">
+                                Save the product first to add images.
+                            </p>
+                        )}
                     </CardContent>
                 </Card>
 

@@ -28,6 +28,7 @@ PHP: `php`, Artisan: `php artisan`. Shell-ът е PowerShell — Bash tool-ът 
 ## Основни команди
 
 ```bash
+php artisan storage:link  # веднъж — за да се сервират качените снимки
 composer run dev          # PHP server + queue + Vite наведнъж
 npm run build             # build на frontend assets
 npm run dev               # само Vite

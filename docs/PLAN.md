@@ -66,7 +66,8 @@ _Забележка: изнасянето на админа на отделен 
 
 - `products` — title, slug, description, status, seo\_\* ✅
 - `product_variants` — name, sku, price, compare_at_price, stock_quantity, position, options (JSON) ✅
-- `product_images` — media_id, position, alt
+- `product_images` — disk, path, alt, width, height, position ✅ (директно, без media
+  таблица за MVP; shared media library — по-късно ако потрябва)
 - `categories` — parent_id (nested), name, slug, description, position ✅
 - `category_product` (pivot) ✅
 - `attributes` / `attribute_values` — за вариации и филтри
@@ -148,7 +149,8 @@ _Забележка: изнасянето на админа на отделен 
 | **1. Tenancy + Auth** ✅           | `tenants` + `tenant_user`, `TenantContext`, storefront/admin middleware, поддомейн роути, signup → onboarding → създава магазин + owner, dashboard показва магазина | Регистрация създава магазин, `{slug}.shop-builder.localhost` зарежда tenant контекст (200 / 404) |
 | **2a. Каталог — продукти** ✅      | `products` + `product_variants`, `BelongsToTenant`, админ CRUD (list/create/edit/delete) с variants repeater, sidebar nav                                           | Създаване/редакция/триене на продукт с вариации; изолация по магазин (404 за чужд)               |
 | **2b. Каталог — категории** ✅     | `categories` (nested, parent_id) + `category_product`, админ CRUD (dialog, tree, cycle-prevention), продукт ↔ категории от продуктовата форма                       | Влагане на подкатегории; забрана за цикли; продукт се маркира в категории                        |
-| **2c–2d. Каталог — останало**      | Атрибути (за вариации/филтри); media library + product images; колекции + CSV импорт                                                                                | Пълен каталог със снимки и импорт                                                                |
+| **2c. Снимки + филтри** ✅         | `product_images` (public disk) — upload/drag-drop/reorder/alt/delete; списък с продукти: search (debounced) + status филтър + sort + thumbnail                      | Качване и подреждане на снимки; филтриране/търсене в списъка                                     |
+| **2d. Каталог — останало**         | Атрибути (за вариации/филтри); колекции; CSV импорт                                                                                                                 | Атрибути + колекции + импорт                                                                     |
 | **3. Theme engine**                | Token редактор, CSS var pipeline, 2–3 стартови теми, превключване                                                                                                   | Смяна и редакция на тема с жив preview                                                           |
 | **4. Page builder**                | Регистър от секции, schema-driven форми, drag-reorder, live preview                                                                                                 | Сглобяване на home/category/product страници от блокове                                          |
 | **5. Storefront**                  | Inertia SSR storefront, роути, рендер на blocks, количка                                                                                                            | Работещ публичен магазин с разглеждане и количка                                                 |

@@ -5,20 +5,48 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProductRequest;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Models\ProductVariant;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProductController extends Controller
 {
-    public function index(): Response
+    private const SORTS = ['latest', 'oldest', 'title', 'title_desc'];
+
+    public function index(Request $request): Response
     {
-        $products = Product::query()
-            ->with('variants:id,product_id,price')
-            ->latest()
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+            'status' => ['nullable', Rule::in(Product::STATUSES)],
+            'sort' => ['nullable', Rule::in(self::SORTS)],
+        ]);
+
+        $search = $filters['search'] ?? null;
+        $status = $filters['status'] ?? null;
+        $sort = $filters['sort'] ?? 'latest';
+
+        $query = Product::query()
+            ->with(['variants:id,product_id,price', 'images:id,product_id,disk,path'])
+            ->when($search, fn (Builder $builder, string $term) => $builder->where('title', 'like', "%{$term}%"))
+            ->when($status, fn (Builder $builder, string $value) => $builder->where('status', $value));
+
+        [$column, $direction] = match ($sort) {
+            'oldest' => ['created_at', 'asc'],
+            'title' => ['title', 'asc'],
+            'title_desc' => ['title', 'desc'],
+            default => ['created_at', 'desc'],
+        };
+        $query->orderBy($column, $direction);
+
+        $products = $query
             ->paginate(20)
+            ->withQueryString()
             ->through(fn (Product $product): array => [
                 'id' => $product->id,
                 'title' => $product->title,
@@ -26,11 +54,18 @@ class ProductController extends Controller
                 'status' => $product->status,
                 'variants_count' => $product->variants->count(),
                 'price_from' => $product->variants->min('price'),
+                'thumbnail' => $product->images->first()?->url(),
                 'updated_at' => $product->updated_at?->diffForHumans(),
             ]);
 
         return Inertia::render('admin/products/index', [
             'products' => $products,
+            'statuses' => Product::STATUSES,
+            'filters' => [
+                'search' => $search ?? '',
+                'status' => $status ?? '',
+                'sort' => $sort,
+            ],
         ]);
     }
 
@@ -60,7 +95,7 @@ class ProductController extends Controller
 
     public function edit(int $product): Response
     {
-        $model = Product::with(['variants', 'categories:id'])->findOrFail($product);
+        $model = Product::with(['variants', 'categories:id', 'images'])->findOrFail($product);
 
         return Inertia::render('admin/products/form', [
             'product' => [
@@ -80,6 +115,11 @@ class ProductController extends Controller
                     'stock_quantity' => $variant->stock_quantity,
                 ]),
                 'category_ids' => $model->categories->pluck('id'),
+                'images' => $model->images->map(fn (ProductImage $image): array => [
+                    'id' => $image->id,
+                    'url' => $image->url(),
+                    'alt' => $image->alt,
+                ]),
             ],
             'statuses' => Product::STATUSES,
             'categories' => $this->categoryOptions(),
