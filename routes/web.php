@@ -12,6 +12,7 @@ use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\ProductImportController;
 use App\Http\Controllers\StoreDomainController;
 use App\Http\Controllers\StoreSettingController;
+use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\ThemeController;
 use App\Http\Middleware\EnsureTenantSelected;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,8 @@ use Illuminate\Support\Facades\Route;
 require __DIR__.'/storefront.php';
 
 Route::inertia('/', 'welcome')->name('home');
+
+Route::post('stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('onboarding', [OnboardingController::class, 'create'])->name('onboarding.create');

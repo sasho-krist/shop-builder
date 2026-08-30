@@ -8,6 +8,7 @@ type Props = {
         number: number;
         status: string;
         payment_status: string;
+        payment_method: string;
         email: string;
         customer_name: string;
         shipping_address: Record<string, string>;
@@ -53,6 +54,25 @@ export default function StorefrontOrder({ order }: Props) {
                         Order #{order.number} is confirmed. A copy was sent to{' '}
                         {order.email}.
                     </p>
+                    <span
+                        style={{
+                            background:
+                                order.payment_status === 'paid'
+                                    ? 'var(--sb-primary)'
+                                    : 'var(--sb-muted)',
+                            color:
+                                order.payment_status === 'paid'
+                                    ? 'var(--sb-primary-foreground)'
+                                    : 'var(--sb-muted-foreground)',
+                        }}
+                        className="rounded-full px-2.5 py-0.5 text-xs font-medium"
+                    >
+                        {order.payment_status === 'paid'
+                            ? 'Paid'
+                            : order.payment_method === 'card'
+                              ? 'Awaiting payment confirmation'
+                              : 'Payment on delivery'}
+                    </span>
                 </div>
 
                 <div

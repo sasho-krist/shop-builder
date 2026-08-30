@@ -61,4 +61,12 @@ class Order extends Model
     {
         return $this->hasMany(OrderLine::class);
     }
+
+    /**
+     * @return HasMany<Payment, $this>
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
 }

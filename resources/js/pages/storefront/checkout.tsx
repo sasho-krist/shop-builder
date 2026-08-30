@@ -24,12 +24,18 @@ type Props = {
         };
     };
     customer: { name: string; email: string } | null;
+    cardPaymentsEnabled: boolean;
 };
 
 const inputClass = 'w-full rounded-md border px-3 py-2 text-sm outline-none';
 
-export default function StorefrontCheckout({ cart, customer }: Props) {
+export default function StorefrontCheckout({
+    cart,
+    customer,
+    cardPaymentsEnabled,
+}: Props) {
     const form = useForm({
+        payment_method: cardPaymentsEnabled ? 'card' : 'offline',
         email: customer?.email ?? '',
         customer_name: customer?.name ?? '',
         phone: '',
@@ -183,6 +189,66 @@ export default function StorefrontCheckout({ cart, customer }: Props) {
                         )}
                     </section>
 
+                    {cardPaymentsEnabled && (
+                        <section className="flex flex-col gap-3">
+                            <h2 className="font-semibold">Payment</h2>
+                            {[
+                                {
+                                    value: 'card',
+                                    label: 'Pay by card',
+                                    hint: 'Secure checkout — you will be redirected to complete payment.',
+                                },
+                                {
+                                    value: 'offline',
+                                    label: 'Pay on delivery',
+                                    hint: 'Pay in cash or card when your order arrives.',
+                                },
+                            ].map((option) => (
+                                <label
+                                    key={option.value}
+                                    style={{
+                                        borderColor:
+                                            form.data.payment_method ===
+                                            option.value
+                                                ? 'var(--sb-primary)'
+                                                : 'var(--sb-border)',
+                                        borderRadius: 'var(--sb-radius)',
+                                    }}
+                                    className="flex cursor-pointer items-start gap-3 border p-3 text-sm"
+                                >
+                                    <input
+                                        type="radio"
+                                        name="payment_method"
+                                        className="mt-0.5"
+                                        checked={
+                                            form.data.payment_method ===
+                                            option.value
+                                        }
+                                        onChange={() =>
+                                            form.setData(
+                                                'payment_method',
+                                                option.value,
+                                            )
+                                        }
+                                    />
+                                    <span>
+                                        <span className="font-medium">
+                                            {option.label}
+                                        </span>
+                                        <span
+                                            style={{
+                                                color: 'var(--sb-muted-foreground)',
+                                            }}
+                                            className="block text-xs"
+                                        >
+                                            {option.hint}
+                                        </span>
+                                    </span>
+                                </label>
+                            ))}
+                        </section>
+                    )}
+
                     <section className="flex flex-col gap-3">
                         <h2 className="font-semibold">Order notes</h2>
                         <textarea
@@ -289,7 +355,9 @@ export default function StorefrontCheckout({ cart, customer }: Props) {
                         style={{ color: 'var(--sb-muted-foreground)' }}
                         className="mt-4 text-xs"
                     >
-                        Payment on delivery. Card payments coming soon.
+                        {form.data.payment_method === 'card'
+                            ? 'You will be redirected to a secure page to pay by card.'
+                            : 'Pay in cash or card on delivery.'}
                     </p>
 
                     <button
@@ -302,7 +370,9 @@ export default function StorefrontCheckout({ cart, customer }: Props) {
                         }}
                         className="mt-3 w-full px-4 py-3 font-semibold disabled:opacity-50"
                     >
-                        Place order
+                        {form.data.payment_method === 'card'
+                            ? 'Continue to payment'
+                            : 'Place order'}
                     </button>
                 </aside>
             </form>

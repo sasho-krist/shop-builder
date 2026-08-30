@@ -42,8 +42,17 @@ type Props = {
         currency_symbol: string;
         created_at: string | null;
         lines: Line[];
+        payments: Payment[];
     };
     statuses: string[];
+};
+
+type Payment = {
+    provider: string;
+    status: string;
+    amount: string;
+    reference: string | null;
+    created_at: string | null;
 };
 
 const PAYMENT_STATUSES = ['unpaid', 'paid', 'refunded'];
@@ -122,6 +131,43 @@ export default function OrderShow({ order, statuses }: Props) {
                         </div>
                     </CardContent>
                 </Card>
+
+                {order.payments.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Payments</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col gap-2 text-sm">
+                            {order.payments.map((payment, index) => (
+                                <div
+                                    key={index}
+                                    className="flex items-center justify-between gap-2"
+                                >
+                                    <span>
+                                        <span className="capitalize">
+                                            {payment.provider}
+                                        </span>
+                                        <span className="text-muted-foreground">
+                                            {' '}
+                                            · {payment.created_at}
+                                        </span>
+                                        {payment.reference && (
+                                            <span className="text-muted-foreground block font-mono text-xs">
+                                                {payment.reference}
+                                            </span>
+                                        )}
+                                    </span>
+                                    <span className="flex items-center gap-2">
+                                        <span>{payment.amount}</span>
+                                        <span className="bg-muted rounded-full px-2 py-0.5 text-xs capitalize">
+                                            {payment.status}
+                                        </span>
+                                    </span>
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+                )}
 
                 <div className="grid gap-6 sm:grid-cols-2">
                     <Card>

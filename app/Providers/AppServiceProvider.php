@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\Payments\PaymentGateway;
+use App\Services\Payments\StripePaymentGateway;
 use App\Support\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
@@ -17,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(TenantContext::class);
+        $this->app->singleton(PaymentGateway::class, StripePaymentGateway::class);
     }
 
     /**

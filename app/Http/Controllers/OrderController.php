@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,7 +36,7 @@ class OrderController extends Controller
 
     public function show(int $order): Response
     {
-        $model = Order::with('lines')->findOrFail($order);
+        $model = Order::with(['lines', 'payments' => fn ($q) => $q->latest()])->findOrFail($order);
 
         return Inertia::render('admin/orders/show', [
             'order' => [
@@ -63,6 +64,13 @@ class OrderController extends Controller
                     'unit_price' => $line->unit_price,
                     'quantity' => $line->quantity,
                     'subtotal' => $line->subtotal,
+                ]),
+                'payments' => $model->payments->map(fn (Payment $payment): array => [
+                    'provider' => $payment->provider,
+                    'status' => $payment->status,
+                    'amount' => $payment->amount,
+                    'reference' => $payment->provider_ref,
+                    'created_at' => $payment->created_at?->toDayDateTimeString(),
                 ]),
             ],
             'statuses' => Order::STATUSES,

@@ -8,7 +8,9 @@ use App\Mail\OrderPlaced;
 use App\Models\Cart;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\OrderLine;
 use App\Models\Tenant;
+use App\Services\Payments\PaymentGateway;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +37,7 @@ class CheckoutController extends Controller
             'customer' => $customer instanceof Customer
                 ? ['name' => $customer->name, 'email' => $customer->email]
                 : null,
+            'cardPaymentsEnabled' => app(PaymentGateway::class)->enabled(),
         ]);
     }
 
@@ -49,8 +52,9 @@ class CheckoutController extends Controller
 
         $settings = Tenant::currentOrFail()->storeSettings();
         $data = $request->validated();
+        $payWithCard = $data['payment_method'] === 'card' && app(PaymentGateway::class)->enabled();
 
-        $order = DB::transaction(function () use ($cart, $data, $settings): Order {
+        $order = DB::transaction(function () use ($cart, $data, $settings, $payWithCard): Order {
             $nextNumber = (int) Order::query()->lockForUpdate()->max('number') ?: 1000;
             $totals = $cart->totals($settings);
 
@@ -60,7 +64,7 @@ class CheckoutController extends Controller
                 'token' => Str::random(40),
                 'status' => 'pending',
                 'payment_status' => 'unpaid',
-                'payment_method' => 'offline',
+                'payment_method' => $payWithCard ? 'card' : 'offline',
                 'email' => $data['email'],
                 'customer_name' => $data['customer_name'],
                 'phone' => $data['phone'] ?? null,
@@ -92,9 +96,37 @@ class CheckoutController extends Controller
             return $order;
         });
 
+        if ($payWithCard) {
+            return $this->startCardPayment($order);
+        }
+
         Mail::to($order->email)->send(new OrderPlaced($order, $settings));
 
         return redirect("/order/{$order->token}");
+    }
+
+    private function startCardPayment(Order $order): RedirectResponse
+    {
+        $gateway = app(PaymentGateway::class);
+        $base = Tenant::currentOrFail()->storefrontUrl();
+
+        $payment = $order->payments()->create([
+            'provider' => 'stripe',
+            'status' => 'pending',
+            'amount' => $order->total,
+            'currency' => $order->currency,
+        ]);
+
+        $session = $gateway->createCheckoutSession(
+            $order,
+            "{$base}/order/{$order->token}",
+            "{$base}/checkout",
+        );
+
+        $payment->update(['provider_ref' => $session->id]);
+
+        // Leave the Inertia app for Stripe's hosted checkout page.
+        return redirect()->away($session->url);
     }
 
     public function confirmation(string $token): Response
@@ -107,6 +139,7 @@ class CheckoutController extends Controller
                 'number' => $order->number,
                 'status' => $order->status,
                 'payment_status' => $order->payment_status,
+                'payment_method' => $order->payment_method,
                 'email' => $order->email,
                 'customer_name' => $order->customer_name,
                 'shipping_address' => $order->shipping_address,
@@ -116,7 +149,7 @@ class CheckoutController extends Controller
                 'total' => $order->total,
                 'currency' => $order->currency,
                 'currency_symbol' => $settings->currency_symbol,
-                'lines' => $order->lines->map(fn ($line): array => [
+                'lines' => $order->lines->map(fn (OrderLine $line): array => [
                     'product_title' => $line->product_title,
                     'variant_name' => $line->variant_name,
                     'unit_price' => $line->unit_price,
