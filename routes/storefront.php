@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Storefront\CartController;
+use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Middleware\ResolveCart;
@@ -19,4 +20,8 @@ Route::domain('{store}.'.config('app.central_domain'))
         Route::post('cart', [CartController::class, 'store'])->name('storefront.cart.add');
         Route::patch('cart/{item}', [CartController::class, 'update'])->name('storefront.cart.update');
         Route::delete('cart/{item}', [CartController::class, 'destroy'])->name('storefront.cart.remove');
+
+        Route::get('checkout', [CheckoutController::class, 'show'])->name('storefront.checkout');
+        Route::post('checkout', [CheckoutController::class, 'store'])->name('storefront.checkout.place');
+        Route::get('order/{token}', [CheckoutController::class, 'confirmation'])->name('storefront.order');
     });

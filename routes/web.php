@@ -5,6 +5,7 @@ use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
@@ -56,6 +57,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('themes/{theme}', [ThemeController::class, 'update'])->name('themes.update');
         Route::post('themes/{theme}/activate', [ThemeController::class, 'activate'])->name('themes.activate');
         Route::delete('themes/{theme}', [ThemeController::class, 'destroy'])->name('themes.destroy');
+
+        Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+        Route::patch('orders/{order}', [OrderController::class, 'update'])->name('orders.update');
 
         Route::get('pages', [PageController::class, 'index'])->name('pages.index');
         Route::post('pages', [PageController::class, 'store'])->name('pages.store');

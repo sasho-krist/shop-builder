@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
-use App\Models\CartItem;
 use App\Models\ProductVariant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,7 +14,9 @@ class CartController extends Controller
 {
     public function show(): Response
     {
-        return Inertia::render('storefront/cart', ['cart' => $this->payload()]);
+        return Inertia::render('storefront/cart', [
+            'cart' => app(Cart::class)->presentation(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -62,34 +63,5 @@ class CartController extends Controller
     private function cart(): Cart
     {
         return app(Cart::class);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function payload(): array
-    {
-        $cart = $this->cart();
-        $cart->load(['items.variant.product.images']);
-
-        return [
-            'items' => $cart->items->map(function (CartItem $item): array {
-                $variant = $item->variant;
-                $product = $variant->product;
-
-                return [
-                    'id' => $item->id,
-                    'quantity' => $item->quantity,
-                    'unit_price' => $variant->price,
-                    'subtotal' => $item->subtotal(),
-                    'variant_name' => $variant->name,
-                    'product_title' => $product->title,
-                    'product_slug' => $product->slug,
-                    'image' => $product->images->first()?->url(),
-                ];
-            })->all(),
-            'subtotal' => $cart->subtotal(),
-            'count' => $cart->itemCount(),
-        ];
     }
 }

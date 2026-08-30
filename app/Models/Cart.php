@@ -46,4 +46,34 @@ class Cart extends Model
     {
         return (int) $this->items->sum('quantity');
     }
+
+    /**
+     * Storefront-facing cart payload (line items + totals).
+     *
+     * @return array<string, mixed>
+     */
+    public function presentation(): array
+    {
+        $this->load(['items.variant.product.images']);
+
+        return [
+            'items' => $this->items->map(function (CartItem $item): array {
+                $variant = $item->variant;
+                $product = $variant->product;
+
+                return [
+                    'id' => $item->id,
+                    'quantity' => $item->quantity,
+                    'unit_price' => $variant->price,
+                    'subtotal' => $item->subtotal(),
+                    'variant_name' => $variant->name,
+                    'product_title' => $product->title,
+                    'product_slug' => $product->slug,
+                    'image' => $product->images->first()?->url(),
+                ];
+            })->all(),
+            'subtotal' => $this->subtotal(),
+            'count' => $this->itemCount(),
+        ];
+    }
 }

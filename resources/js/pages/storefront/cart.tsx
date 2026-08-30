@@ -166,18 +166,17 @@ export default function StorefrontCart({ cart }: Props) {
                                     {cart.subtotal}
                                 </span>
                             </div>
-                            <button
-                                type="button"
-                                disabled
+                            <Link
+                                href="/checkout"
                                 style={{
                                     background: 'var(--sb-primary)',
                                     color: 'var(--sb-primary-foreground)',
                                     borderRadius: 'var(--sb-radius)',
                                 }}
-                                className="mt-4 w-full px-4 py-3 font-semibold opacity-60"
+                                className="mt-4 block w-full px-4 py-3 text-center font-semibold"
                             >
-                                Checkout (soon)
-                            </button>
+                                Checkout
+                            </Link>
                         </div>
                     </div>
                 )}

@@ -88,10 +88,11 @@ _Забележка: изнасянето на админа на отделен 
 - `customers` — акаунти на купувачите (per tenant)
 - `addresses` — за customer и за поръчки
 - `carts` (tenant_id, token) / `cart_items` (cart_id, product_variant_id, quantity) ✅
-- `orders` — number, status, financial_status, суми (subtotal/tax/shipping/total), currency
-- `order_lines` — product/variant snapshot, qty, unit_price
-- `order_events` — история на статусите
-- `payments` — provider, provider_ref, amount, status
+- `orders` — number, token, status, payment_status, payment_method, email/name/phone,
+  shipping_address (JSON), subtotal/shipping_total/total, currency ✅
+- `order_lines` — product/variant snapshot (title, variant_name, sku), unit_price,
+  quantity, subtotal ✅
+- `payments` — provider, provider_ref, amount, status (Фаза 6b)
 
 ---
 
@@ -157,12 +158,29 @@ _Забележка: изнасянето на админа на отделен 
   вариант, количество, „Add to cart".
 - **Количка** — `carts` + `cart_items`, идентифицирана с `sb_cart` cookie (в
   `encryptCookies except`); add/update/remove; subtotal с `bcmath`.
-- Checkout, категорийни/колекционни storefront страници, клиентски акаунти,
-  ДДС/доставка — следващи фази.
+- Категорийни/колекционни storefront страници, клиентски акаунти, ДДС/доставка
+  — следващи фази.
 
 ---
 
-## 7. Фази на изпълнение
+## 7. Checkout & поръчки ✅ (6a)
+
+- `orders` (tenant_id, number seq per store from 1001, token, status, payment_status,
+  payment_method, email/name/phone, shipping_address JSON, subtotal/shipping/total,
+  currency BGN) + `order_lines` (snapshot: product_title, variant_name, sku,
+  unit_price, quantity, subtotal; `product_variant_id` nullOnDelete).
+- **Storefront checkout** — `/checkout` (contact + address форма, cart summary),
+  `POST /checkout` създава order + lines в транзакция, изчиства количката,
+  redirect към `/order/{token}` (публична потвърждаваща страница по token).
+- **Плащане** — за MVP само „offline" (плащане при доставка); `payment_status`
+  се управлява ръчно от админа. Stripe / `payments` таблица — следваща стъпка.
+- **Админ** — `orders.index` (списък + пагинация), `orders.show` (артикули,
+  клиент, адрес, бележки) + смяна на status / payment_status.
+- Доставка = 0 (flat/зони са Фаза 8).
+
+---
+
+## 8. Фази на изпълнение
 
 | Фаза                                  | Съдържание                                                                                                                                                                           | Критерий за готовност                                                                            |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
@@ -176,7 +194,8 @@ _Забележка: изнасянето на админа на отделен 
 | **3. Theme engine** ✅                | `themes` + `ThemePresets`, редактор (color pickers, font selects, slider-и, ToggleGroup) + live `ThemePreview`, `lib/theme.ts` CSS-var pipeline, активна тема стилизира storefront-а | Смяна и редакция на тема с жив preview; storefront ползва активната тема                         |
 | **4a. Page builder** ✅               | `pages` + `BlockRegistry`, 5 секции с schema, @dnd-kit drag-reorder, schema форми, `PageCanvas` жив preview с реални данни + тема, `MediaController` upload                          | Сглобяване на home страницата от секции; блоковете се пазят и рендерират в preview               |
 | **5a. Storefront** ✅                 | Themed layout, home рендерира `pages.blocks` с реални данни, product listing/detail, `carts`/`cart_items` (cookie), add/update/remove                                                | Публичен магазин: разглеждане, продуктова страница, работеща количка                             |
-| **6. Checkout & поръчки**             | Checkout flow, Stripe, управление на поръчки, имейли, статуси                                                                                                                        | Реална продажба end-to-end                                                                       |
+| **6a. Checkout & поръчки** ✅         | `orders` + `order_lines` (snapshot), storefront checkout → order + token confirmation, offline плащане, админ orders list/detail + status                                            | Клиент прави поръчка end-to-end; админът я вижда и управлява                                     |
+| **6b. Плащане**                       | Stripe (или друг provider), `payments` таблица, имейл потвърждения                                                                                                                   | Реално онлайн плащане                                                                            |
 | **7. Клиенти, настройки, домейни**    | Клиентски акаунти, настройки за доставка/ДДС/валута, custom domain                                                                                                                   | Готов за реален магазин                                                                          |
 | **8. SaaS billing**                   | Планове, Cashier абонаменти, onboarding wizard, лимити по план                                                                                                                       | Готов за реални клиенти на платформата                                                           |
 

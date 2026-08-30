@@ -8,6 +8,7 @@ import {
     Layers,
     Package,
     Palette,
+    ShoppingCart,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -25,6 +26,7 @@ import {
 import { dashboard } from '@/routes';
 import categories from '@/routes/categories';
 import collections from '@/routes/collections';
+import orders from '@/routes/orders';
 import pages from '@/routes/pages';
 import products from '@/routes/products';
 import themes from '@/routes/themes';
@@ -50,6 +52,11 @@ const mainNavItems: NavItem[] = [
         title: 'Collections',
         href: collections.index(),
         icon: Layers,
+    },
+    {
+        title: 'Orders',
+        href: orders.index(),
+        icon: ShoppingCart,
     },
     {
         title: 'Themes',
