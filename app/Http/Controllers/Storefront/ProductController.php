@@ -17,7 +17,7 @@ class ProductController extends Controller
     public function index(): Response
     {
         return Inertia::render('storefront/listing', [
-            'heading' => 'Shop',
+            'heading' => __('Shop'),
             'description' => null,
             'products' => $this->paginateProducts(Product::query()),
         ]);

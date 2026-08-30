@@ -1,4 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
+import { useT } from '@/lib/i18n';
 import StorefrontLayout from '@/layouts/storefront-layout';
 import { money } from '@/lib/money';
 
@@ -34,6 +35,7 @@ export default function StorefrontCheckout({
     customer,
     cardPaymentsEnabled,
 }: Props) {
+    const { t } = useT();
     const form = useForm({
         payment_method: cardPaymentsEnabled ? 'card' : 'offline',
         email: customer?.email ?? '',
@@ -44,7 +46,7 @@ export default function StorefrontCheckout({
             line2: '',
             city: '',
             postal_code: '',
-            country: 'Bulgaria',
+            country: t('Bulgaria'),
         },
         notes: '',
     });
@@ -62,7 +64,7 @@ export default function StorefrontCheckout({
 
     return (
         <StorefrontLayout>
-            <Head title="Checkout" />
+            <Head title={t('Checkout')} />
 
             <form
                 onSubmit={submit}
@@ -74,15 +76,15 @@ export default function StorefrontCheckout({
                         style={{ fontFamily: 'var(--sb-heading-font)' }}
                         className="text-3xl font-bold"
                     >
-                        Checkout
+                        {t('Checkout')}
                     </h1>
 
                     <section className="flex flex-col gap-3">
-                        <h2 className="font-semibold">Contact</h2>
+                        <h2 className="font-semibold">{t('Contact')}</h2>
                         <div>
                             <input
                                 type="email"
-                                placeholder="Email"
+                                placeholder={t('Email')}
                                 value={form.data.email}
                                 style={{ borderColor: 'var(--sb-border)' }}
                                 className={inputClass}
@@ -98,7 +100,7 @@ export default function StorefrontCheckout({
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <input
-                                placeholder="Full name"
+                                placeholder={t('Full name')}
                                 value={form.data.customer_name}
                                 style={{ borderColor: 'var(--sb-border)' }}
                                 className={inputClass}
@@ -110,7 +112,7 @@ export default function StorefrontCheckout({
                                 }
                             />
                             <input
-                                placeholder="Phone (optional)"
+                                placeholder={t('Phone (optional)')}
                                 value={form.data.phone}
                                 style={{ borderColor: 'var(--sb-border)' }}
                                 className={inputClass}
@@ -127,9 +129,11 @@ export default function StorefrontCheckout({
                     </section>
 
                     <section className="flex flex-col gap-3">
-                        <h2 className="font-semibold">Shipping address</h2>
+                        <h2 className="font-semibold">
+                            {t('Shipping address')}
+                        </h2>
                         <input
-                            placeholder="Address line 1"
+                            placeholder={t('Address line 1')}
                             value={form.data.address.line1}
                             style={{ borderColor: 'var(--sb-border)' }}
                             className={inputClass}
@@ -143,7 +147,7 @@ export default function StorefrontCheckout({
                             </p>
                         )}
                         <input
-                            placeholder="Address line 2 (optional)"
+                            placeholder={t('Address line 2 (optional)')}
                             value={form.data.address.line2}
                             style={{ borderColor: 'var(--sb-border)' }}
                             className={inputClass}
@@ -153,7 +157,7 @@ export default function StorefrontCheckout({
                         />
                         <div className="grid gap-3 sm:grid-cols-3">
                             <input
-                                placeholder="City"
+                                placeholder={t('City')}
                                 value={form.data.address.city}
                                 style={{ borderColor: 'var(--sb-border)' }}
                                 className={inputClass}
@@ -162,7 +166,7 @@ export default function StorefrontCheckout({
                                 }
                             />
                             <input
-                                placeholder="Postal code"
+                                placeholder={t('Postal code')}
                                 value={form.data.address.postal_code}
                                 style={{ borderColor: 'var(--sb-border)' }}
                                 className={inputClass}
@@ -171,7 +175,7 @@ export default function StorefrontCheckout({
                                 }
                             />
                             <input
-                                placeholder="Country"
+                                placeholder={t('Country')}
                                 value={form.data.address.country}
                                 style={{ borderColor: 'var(--sb-border)' }}
                                 className={inputClass}
@@ -184,24 +188,30 @@ export default function StorefrontCheckout({
                             errors['address.postal_code'] ||
                             errors['address.country']) && (
                             <p className="text-destructive text-xs">
-                                Please complete the address.
+                                {errors['address.city'] ||
+                                    errors['address.postal_code'] ||
+                                    errors['address.country']}
                             </p>
                         )}
                     </section>
 
                     {cardPaymentsEnabled && (
                         <section className="flex flex-col gap-3">
-                            <h2 className="font-semibold">Payment</h2>
+                            <h2 className="font-semibold">{t('Payment')}</h2>
                             {[
                                 {
                                     value: 'card',
-                                    label: 'Pay by card',
-                                    hint: 'Secure checkout — you will be redirected to complete payment.',
+                                    label: t('Pay by card'),
+                                    hint: t(
+                                        'Secure checkout — you will be redirected to complete payment.',
+                                    ),
                                 },
                                 {
                                     value: 'offline',
-                                    label: 'Pay on delivery',
-                                    hint: 'Pay in cash or card when your order arrives.',
+                                    label: t('Pay on delivery'),
+                                    hint: t(
+                                        'Pay in cash or card when your order arrives.',
+                                    ),
                                 },
                             ].map((option) => (
                                 <label
@@ -250,10 +260,12 @@ export default function StorefrontCheckout({
                     )}
 
                     <section className="flex flex-col gap-3">
-                        <h2 className="font-semibold">Order notes</h2>
+                        <h2 className="font-semibold">{t('Order notes')}</h2>
                         <textarea
                             rows={3}
-                            placeholder="Anything we should know? (optional)"
+                            placeholder={t(
+                                'Anything we should know? (optional)',
+                            )}
                             value={form.data.notes}
                             style={{ borderColor: 'var(--sb-border)' }}
                             className={inputClass}
@@ -271,7 +283,7 @@ export default function StorefrontCheckout({
                     }}
                     className="h-fit border p-5"
                 >
-                    <h2 className="mb-3 font-semibold">Your order</h2>
+                    <h2 className="mb-3 font-semibold">{t('Your order')}</h2>
                     <ul className="flex flex-col gap-2 text-sm">
                         {cart.items.map((item) => (
                             <li
@@ -302,7 +314,7 @@ export default function StorefrontCheckout({
                             <span
                                 style={{ color: 'var(--sb-muted-foreground)' }}
                             >
-                                Subtotal
+                                {t('Subtotal')}
                             </span>
                             <span>
                                 {money(
@@ -315,11 +327,11 @@ export default function StorefrontCheckout({
                             <span
                                 style={{ color: 'var(--sb-muted-foreground)' }}
                             >
-                                Shipping
+                                {t('Shipping')}
                             </span>
                             <span>
                                 {cart.totals.shipping === '0.00'
-                                    ? 'Free'
+                                    ? t('Free')
                                     : money(
                                           cart.totals.shipping,
                                           cart.currency_symbol,
@@ -333,7 +345,7 @@ export default function StorefrontCheckout({
                                         color: 'var(--sb-muted-foreground)',
                                     }}
                                 >
-                                    Tax
+                                    {t('Tax')}
                                 </span>
                                 <span>
                                     {money(
@@ -345,7 +357,7 @@ export default function StorefrontCheckout({
                         )}
                     </div>
                     <div className="mt-2 flex justify-between font-semibold">
-                        <span>Total</span>
+                        <span>{t('Total')}</span>
                         <span>
                             {money(cart.totals.total, cart.currency_symbol)}
                         </span>
@@ -356,8 +368,10 @@ export default function StorefrontCheckout({
                         className="mt-4 text-xs"
                     >
                         {form.data.payment_method === 'card'
-                            ? 'You will be redirected to a secure page to pay by card.'
-                            : 'Pay in cash or card on delivery.'}
+                            ? t(
+                                  'You will be redirected to a secure page to pay by card.',
+                              )
+                            : t('Pay in cash or card when your order arrives.')}
                     </p>
 
                     <button
@@ -371,8 +385,8 @@ export default function StorefrontCheckout({
                         className="mt-3 w-full px-4 py-3 font-semibold disabled:opacity-50"
                     >
                         {form.data.payment_method === 'card'
-                            ? 'Continue to payment'
-                            : 'Place order'}
+                            ? t('Continue to payment')
+                            : t('Place order')}
                     </button>
                 </aside>
             </form>

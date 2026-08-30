@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { Minus, Plus, X } from 'lucide-react';
+import { useT } from '@/lib/i18n';
 import StorefrontLayout from '@/layouts/storefront-layout';
 import { money } from '@/lib/money';
 
@@ -24,6 +25,8 @@ type Props = {
 };
 
 export default function StorefrontCart({ cart }: Props) {
+    const { t } = useT();
+
     function setQuantity(item: CartItem, quantity: number) {
         router.patch(
             `/cart/${item.id}`,
@@ -38,7 +41,7 @@ export default function StorefrontCart({ cart }: Props) {
 
     return (
         <StorefrontLayout>
-            <Head title="Cart" />
+            <Head title={t('Cart')} />
 
             <div
                 className="mx-auto w-full px-5 py-10 sm:px-8"
@@ -48,14 +51,14 @@ export default function StorefrontCart({ cart }: Props) {
                     style={{ fontFamily: 'var(--sb-heading-font)' }}
                     className="mb-6 text-3xl font-bold"
                 >
-                    Your cart
+                    {t('Your cart')}
                 </h1>
 
                 {cart.items.length === 0 ? (
                     <p style={{ color: 'var(--sb-muted-foreground)' }}>
-                        Your cart is empty.{' '}
+                        {t('Your cart is empty.')}{' '}
                         <Link href="/products" className="underline">
-                            Browse products
+                            {t('Browse products')}
                         </Link>
                     </p>
                 ) : (
@@ -168,7 +171,7 @@ export default function StorefrontCart({ cart }: Props) {
                                         color: 'var(--sb-muted-foreground)',
                                     }}
                                 >
-                                    Subtotal
+                                    {t('Subtotal')}
                                 </span>
                                 <span className="font-semibold">
                                     {money(cart.subtotal, cart.currency_symbol)}
@@ -183,7 +186,7 @@ export default function StorefrontCart({ cart }: Props) {
                                 }}
                                 className="mt-4 block w-full px-4 py-3 text-center font-semibold"
                             >
-                                Checkout
+                                {t('Checkout')}
                             </Link>
                         </div>
                     </div>

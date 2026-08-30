@@ -1,9 +1,10 @@
 import { Link, usePage } from '@inertiajs/react';
-import { ShoppingBag, User } from 'lucide-react';
+import { Globe, ShoppingBag, User } from 'lucide-react';
 import type { ReactNode } from 'react';
 import StorefrontOwnerBar, {
     type ManageContext,
 } from '@/components/storefront-owner-bar';
+import { useT } from '@/lib/i18n';
 import { fontStack, type ThemeTokens, themeToCssVars } from '@/lib/theme';
 
 type NavLink = { label: string; href: string };
@@ -17,6 +18,8 @@ export type StorefrontShared = {
         categories: { name: string; slug: string }[];
         customer: { name: string } | null;
         manage: ManageContext | null;
+        locale: string;
+        i18n: Record<string, string>;
         nav: {
             header: NavLink[];
             footer: NavLink[];
@@ -25,6 +28,20 @@ export type StorefrontShared = {
         };
     };
 };
+
+function LanguageSwitcher({ locale }: { locale: string }) {
+    const other = locale === 'bg' ? 'en' : 'bg';
+    return (
+        <a
+            href={`/locale/${other}`}
+            className="flex items-center gap-1"
+            title={other === 'bg' ? 'Български' : 'English'}
+        >
+            <Globe className="size-4" />
+            <span className="uppercase">{other}</span>
+        </a>
+    );
+}
 
 function NavAnchor({ link, className }: { link: NavLink; className?: string }) {
     if (link.href.startsWith('/')) {
@@ -54,8 +71,17 @@ export default function StorefrontLayout({
     ownerEdit?: { href: string; label: string };
 }) {
     const { storefront } = usePage<StorefrontShared>().props;
-    const { theme, storeName, cartCount, categories, customer, manage, nav } =
-        storefront;
+    const {
+        theme,
+        storeName,
+        cartCount,
+        categories,
+        customer,
+        manage,
+        nav,
+        locale,
+    } = storefront;
+    const { t } = useT();
     const year = new Date().getFullYear();
 
     return (
@@ -96,7 +122,7 @@ export default function StorefrontLayout({
                                 />
                             ))
                         ) : (
-                            <Link href="/products">Shop</Link>
+                            <Link href="/products">{t('Shop')}</Link>
                         )}
                         {nav.showCategoryNav &&
                             categories.map((category) => (
@@ -108,6 +134,7 @@ export default function StorefrontLayout({
                                     {category.name}
                                 </Link>
                             ))}
+                        <LanguageSwitcher locale={locale} />
                         {manage ? (
                             <a
                                 href={manage.dashboard}
@@ -124,7 +151,7 @@ export default function StorefrontLayout({
                                         }}
                                         className="rounded-full px-1.5 py-0.5 text-[10px] leading-none font-semibold tracking-wide uppercase"
                                     >
-                                        Owner
+                                        {t('Owner')}
                                     </span>
                                 </span>
                             </a>
@@ -132,11 +159,11 @@ export default function StorefrontLayout({
                             <Link
                                 href={customer ? '/account' : '/account/login'}
                                 className="flex items-center gap-1.5"
-                                title={customer ? customer.name : 'Sign in'}
+                                title={customer ? customer.name : t('Sign in')}
                             >
                                 <User className="size-4" />
                                 <span className="hidden sm:inline">
-                                    {customer ? customer.name : 'Sign in'}
+                                    {customer ? customer.name : t('Sign in')}
                                 </span>
                             </Link>
                         )}
@@ -209,7 +236,7 @@ export default function StorefrontLayout({
                     <StorefrontOwnerBar
                         manage={manage}
                         editHref={ownerEdit?.href ?? manage.homePage}
-                        editLabel={ownerEdit?.label ?? 'Edit home'}
+                        editLabel={ownerEdit?.label ?? t('Edit home')}
                     />
                 </>
             )}

@@ -27,7 +27,7 @@ class StoreOwnerRegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.unique' => 'An account with this email already exists — sign in instead.',
+            'email.unique' => __('An account with this email already exists — sign in instead.'),
         ];
     }
 }

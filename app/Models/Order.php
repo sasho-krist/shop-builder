@@ -26,13 +26,14 @@ use Illuminate\Support\Carbon;
  * @property numeric-string $tax_total
  * @property numeric-string $total
  * @property string $currency
+ * @property string $locale
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable([
     'customer_id', 'number', 'token', 'status', 'payment_status', 'payment_method',
     'email', 'customer_name', 'phone', 'shipping_address', 'notes',
-    'subtotal', 'shipping_total', 'tax_total', 'total', 'currency',
+    'subtotal', 'shipping_total', 'tax_total', 'total', 'currency', 'locale',
 ])]
 class Order extends Model
 {

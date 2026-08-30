@@ -46,7 +46,7 @@ class CustomerAuthController extends Controller
             (bool) ($data['remember'] ?? false),
         )) {
             throw ValidationException::withMessages([
-                'email' => 'Those credentials do not match our records.',
+                'email' => __('Those credentials do not match our records.'),
             ]);
         }
 

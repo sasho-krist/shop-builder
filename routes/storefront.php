@@ -7,11 +7,13 @@ use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\CollectionController;
 use App\Http\Controllers\Storefront\CustomerAuthController;
 use App\Http\Controllers\Storefront\HomeController;
+use App\Http\Controllers\Storefront\LocaleController;
 use App\Http\Controllers\Storefront\PageController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\StoreAdminController;
 use App\Http\Middleware\ResolveCart;
 use App\Http\Middleware\ResolveStorefrontTenant;
+use App\Http\Middleware\SetStorefrontLocale;
 use Illuminate\Support\Facades\Route;
 
 $central = (string) config('app.central_domain');
@@ -22,9 +24,11 @@ $central = (string) config('app.central_domain');
 // `ResolveStorefrontTenant` resolves the tenant from the request host.
 Route::domain('{store}')
     ->where(['store' => '^(?!'.preg_quote($central, '/').'$).+$'])
-    ->middleware([ResolveStorefrontTenant::class, ResolveCart::class])
+    ->middleware([SetStorefrontLocale::class, ResolveStorefrontTenant::class, ResolveCart::class])
     ->group(function (): void {
         Route::get('/', HomeController::class)->name('storefront.home');
+
+        Route::get('locale/{locale}', LocaleController::class)->name('storefront.locale');
 
         Route::get('products', [ProductController::class, 'index'])->name('storefront.products');
         Route::get('p/{slug}', [ProductController::class, 'show'])->name('storefront.product');

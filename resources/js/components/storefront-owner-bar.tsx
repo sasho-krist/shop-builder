@@ -10,6 +10,7 @@ import {
     X,
 } from 'lucide-react';
 import { useOwnerToolsHidden } from '@/hooks/use-owner-tools';
+import { useT } from '@/lib/i18n';
 
 export type ManageContext = {
     name: string;
@@ -31,6 +32,7 @@ export default function StorefrontOwnerBar({
     editLabel?: string;
 }) {
     const [hidden, setHidden] = useOwnerToolsHidden();
+    const { t } = useT();
 
     function signOut() {
         router.post('/admin/logout');
@@ -44,7 +46,7 @@ export default function StorefrontOwnerBar({
                 className="fixed bottom-4 left-4 z-50 flex items-center gap-1.5 rounded-full bg-neutral-900 px-3 py-2 text-xs font-medium text-white shadow-lg ring-1 ring-white/10"
             >
                 <SquarePen className="size-3.5" />
-                Editing tools
+                {t('Editing tools')}
             </button>
         );
     }
@@ -63,30 +65,30 @@ export default function StorefrontOwnerBar({
                 {editHref && (
                     <a href={editHref} className={link}>
                         <SquarePen className="size-3.5" />
-                        {editLabel ?? 'Edit page'}
+                        {editLabel ?? t('Edit page')}
                     </a>
                 )}
                 {manage.theme && (
                     <a href={manage.theme} className={link}>
                         <Palette className="size-3.5" />
-                        Theme
+                        {t('Theme')}
                     </a>
                 )}
                 <a href={manage.newProduct} className={link}>
                     <Plus className="size-3.5" />
-                    Product
+                    {t('Product')}
                 </a>
                 <a href={manage.products} className={link}>
                     <Package className="size-3.5" />
-                    Catalog
+                    {t('Catalog')}
                 </a>
                 <a href={manage.orders} className={link}>
                     <ShoppingCart className="size-3.5" />
-                    Orders
+                    {t('Orders')}
                 </a>
                 <a href={manage.dashboard} className={link}>
                     <LayoutDashboard className="size-3.5" />
-                    Admin
+                    {t('Admin')}
                 </a>
 
                 <span className="mx-0.5 h-4 w-px bg-white/15" />
@@ -95,19 +97,19 @@ export default function StorefrontOwnerBar({
                     type="button"
                     onClick={() => setHidden(true)}
                     className={link}
-                    title="Preview as a shopper"
+                    title={t('Preview as a shopper')}
                 >
                     <X className="size-3.5" />
-                    <span className="hidden sm:inline">Preview</span>
+                    <span className="hidden sm:inline">{t('Preview')}</span>
                 </button>
                 <button
                     type="button"
                     onClick={signOut}
                     className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-                    title="Sign out of the owner session"
+                    title={t('Sign out of the owner session')}
                 >
                     <LogOut className="size-3.5" />
-                    <span className="hidden sm:inline">Sign out</span>
+                    <span className="hidden sm:inline">{t('Sign out')}</span>
                 </button>
             </div>
         </div>

@@ -1,4 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { useT } from '@/lib/i18n';
 import StorefrontLayout from '@/layouts/storefront-layout';
 import { money } from '@/lib/money';
 
@@ -17,13 +18,15 @@ type Props = {
 };
 
 export default function StorefrontAccount({ customer, orders }: Props) {
+    const { t } = useT();
+
     function logout() {
         router.post('/account/logout');
     }
 
     return (
         <StorefrontLayout>
-            <Head title="My account" />
+            <Head title={t('My account')} />
 
             <div
                 className="mx-auto w-full px-5 py-10 sm:px-8"
@@ -50,17 +53,17 @@ export default function StorefrontAccount({ customer, orders }: Props) {
                         style={{ borderColor: 'var(--sb-border)' }}
                         className="rounded-md border px-3 py-1.5 text-sm"
                     >
-                        Sign out
+                        {t('Sign out')}
                     </button>
                 </div>
 
-                <h2 className="mb-3 font-semibold">Order history</h2>
+                <h2 className="mb-3 font-semibold">{t('Order history')}</h2>
 
                 {orders.length === 0 ? (
                     <p style={{ color: 'var(--sb-muted-foreground)' }}>
-                        No orders yet.{' '}
+                        {t('No orders yet.')}{' '}
                         <Link href="/products" className="underline">
-                            Start shopping
+                            {t('Start shopping')}
                         </Link>
                     </p>
                 ) : (
@@ -80,16 +83,16 @@ export default function StorefrontAccount({ customer, orders }: Props) {
                                     }}
                                 >
                                     <th className="px-4 py-2 text-left font-medium">
-                                        Order
+                                        {t('Order')}
                                     </th>
                                     <th className="px-4 py-2 text-left font-medium">
-                                        Date
+                                        {t('Date')}
                                     </th>
                                     <th className="px-4 py-2 text-left font-medium">
-                                        Status
+                                        {t('Status')}
                                     </th>
                                     <th className="px-4 py-2 text-right font-medium">
-                                        Total
+                                        {t('Total')}
                                     </th>
                                 </tr>
                             </thead>
@@ -119,7 +122,7 @@ export default function StorefrontAccount({ customer, orders }: Props) {
                                             {order.placed_at ?? '—'}
                                         </td>
                                         <td className="px-4 py-2 capitalize">
-                                            {order.status}
+                                            {t(order.status)}
                                         </td>
                                         <td className="px-4 py-2 text-right">
                                             {money(

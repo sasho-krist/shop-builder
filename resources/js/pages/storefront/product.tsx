@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { useT } from '@/lib/i18n';
 import StorefrontLayout from '@/layouts/storefront-layout';
 
 type Variant = {
@@ -22,6 +23,7 @@ type Props = {
 };
 
 export default function StorefrontProduct({ product }: Props) {
+    const { t } = useT();
     const [variantId, setVariantId] = useState(product.variants[0]?.id ?? 0);
     const [activeImage, setActiveImage] = useState(0);
     const [quantity, setQuantity] = useState(1);
@@ -160,7 +162,9 @@ export default function StorefrontProduct({ product }: Props) {
                             }}
                             className="flex-1 px-6 py-3 font-semibold disabled:opacity-50"
                         >
-                            {variant?.in_stock ? 'Add to cart' : 'Out of stock'}
+                            {variant?.in_stock
+                                ? t('Add to cart')
+                                : t('Out of stock')}
                         </button>
                     </div>
 

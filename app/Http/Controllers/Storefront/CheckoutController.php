@@ -14,6 +14,7 @@ use App\Services\Billing\PlanGate;
 use App\Services\Payments\PaymentGateway;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -90,6 +91,7 @@ class CheckoutController extends Controller
                 'tax_total' => $totals['tax'],
                 'total' => $totals['total'],
                 'currency' => $settings->currency,
+                'locale' => App::getLocale(),
             ]);
 
             foreach ($cart->items as $item) {

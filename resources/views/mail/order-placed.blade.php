@@ -1,27 +1,31 @@
 @component('mail::message')
-# Thank you for your order
+# {{ __('Thank you for your order') }}
 
-Hi {{ $order->customer_name }}, your order **#{{ $order->number }}** is confirmed.
+{{ __('Hi :name, your order #:number is confirmed.', ['name' => $order->customer_name, 'number' => $order->number]) }}
 
 @component('mail::table')
-| Item | Qty | Subtotal |
+| {{ __('Item') }} | {{ __('Qty') }} | {{ __('Subtotal') }} |
 |:-----|:---:|---------:|
 @foreach ($order->lines as $line)
 | {{ $line->product_title }} — {{ $line->variant_name }} | {{ $line->quantity }} | {{ $line->subtotal }} {{ $symbol }} |
 @endforeach
 @endcomponent
 
-- Subtotal: {{ $order->subtotal }} {{ $symbol }}
-- Shipping: {{ $order->shipping_total }} {{ $symbol }}
+- {{ __('Subtotal') }}: {{ $order->subtotal }} {{ $symbol }}
+- {{ __('Shipping') }}: {{ $order->shipping_total }} {{ $symbol }}
 @if (bccomp($order->tax_total, '0', 2) > 0)
-- Tax: {{ $order->tax_total }} {{ $symbol }}
+- {{ __('Tax') }}: {{ $order->tax_total }} {{ $symbol }}
 @endif
-- **Total: {{ $order->total }} {{ $symbol }}**
+- **{{ __('Total') }}: {{ $order->total }} {{ $symbol }}**
 
-**Ships to:** {{ $order->shipping_address['line1'] ?? '' }}, {{ $order->shipping_address['postal_code'] ?? '' }} {{ $order->shipping_address['city'] ?? '' }}, {{ $order->shipping_address['country'] ?? '' }}
+**{{ __('Ships to') }}:** {{ $order->shipping_address['line1'] ?? '' }}, {{ $order->shipping_address['postal_code'] ?? '' }} {{ $order->shipping_address['city'] ?? '' }}, {{ $order->shipping_address['country'] ?? '' }}
 
-Payment is due on delivery.
+@if ($order->payment_method === 'card')
+{{ __('Payment received — thank you.') }}
+@else
+{{ __('Payment is due on delivery.') }}
+@endif
 
-Thanks,<br>
-{{ config('app.name') }}
+{{ __('Thanks,') }}<br>
+{{ $order->tenant->name ?? config('app.name') }}
 @endcomponent

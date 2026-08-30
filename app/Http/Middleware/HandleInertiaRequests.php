@@ -12,7 +12,9 @@ use App\Models\User;
 use App\Support\Storefront\NavLinks;
 use App\Support\Theme\ThemePresets;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -118,8 +120,34 @@ class HandleInertiaRequests extends Middleware
                 'footerNote' => $nav->footer_note,
                 'showCategoryNav' => $nav->show_category_nav,
             ],
+            'locale' => App::getLocale(),
+            'i18n' => $this->translations(App::getLocale()),
             'manage' => $this->manageContext($request, $tenant, $activeTheme),
         ];
+    }
+
+    /**
+     * Flat `english => translation` map for the active locale, for the React
+     * `t()` helper. English is the source language, so it needs no map.
+     *
+     * @return array<string, string>
+     */
+    private function translations(string $locale): array
+    {
+        if ($locale === 'en') {
+            return [];
+        }
+
+        $path = lang_path("{$locale}.json");
+
+        if (! File::exists($path)) {
+            return [];
+        }
+
+        /** @var array<string, string> $strings */
+        $strings = json_decode(File::get($path), true) ?: [];
+
+        return $strings;
     }
 
     /**

@@ -1,9 +1,11 @@
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useT } from '@/lib/i18n';
 import StorefrontLayout from '@/layouts/storefront-layout';
 
 const inputClass = 'w-full rounded-md border px-3 py-2 text-sm outline-none';
 
 export default function StorefrontLogin() {
+    const { t } = useT();
     const form = useForm({
         email: '',
         password: '',
@@ -19,24 +21,24 @@ export default function StorefrontLogin() {
 
     return (
         <StorefrontLayout>
-            <Head title="Sign in" />
+            <Head title={t('Sign in')} />
 
             <div
-                className="mx-auto w-full px-4 py-14"
+                className="mx-auto w-full px-5 py-14 sm:px-8"
                 style={{ maxWidth: '420px' }}
             >
                 <h1
                     style={{ fontFamily: 'var(--sb-heading-font)' }}
                     className="mb-6 text-3xl font-bold"
                 >
-                    Sign in
+                    {t('Sign in')}
                 </h1>
 
                 <form onSubmit={submit} className="flex flex-col gap-4">
                     <div>
                         <input
                             type="email"
-                            placeholder="Email"
+                            placeholder={t('Email')}
                             value={form.data.email}
                             style={{ borderColor: 'var(--sb-border)' }}
                             className={inputClass}
@@ -53,7 +55,7 @@ export default function StorefrontLogin() {
                     <div>
                         <input
                             type="password"
-                            placeholder="Password"
+                            placeholder={t('Password')}
                             value={form.data.password}
                             style={{ borderColor: 'var(--sb-border)' }}
                             className={inputClass}
@@ -78,7 +80,7 @@ export default function StorefrontLogin() {
                                 form.setData('remember', e.target.checked)
                             }
                         />
-                        Remember me
+                        {t('Remember me')}
                     </label>
 
                     <button
@@ -91,7 +93,7 @@ export default function StorefrontLogin() {
                         }}
                         className="w-full px-4 py-3 font-semibold disabled:opacity-50"
                     >
-                        Sign in
+                        {t('Sign in')}
                     </button>
                 </form>
 
@@ -99,9 +101,9 @@ export default function StorefrontLogin() {
                     style={{ color: 'var(--sb-muted-foreground)' }}
                     className="mt-4 text-sm"
                 >
-                    New here?{' '}
+                    {t('New here?')}{' '}
                     <Link href="/account/register" className="underline">
-                        Create an account
+                        {t('Create an account')}
                     </Link>
                 </p>
             </div>

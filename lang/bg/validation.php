@@ -1,0 +1,51 @@
+<?php
+
+return [
+    'accepted' => 'Полето :attribute трябва да бъде прието.',
+    'active_url' => 'Полето :attribute не е валиден URL адрес.',
+    'after' => 'Полето :attribute трябва да е дата след :date.',
+    'array' => 'Полето :attribute трябва да бъде масив.',
+    'before' => 'Полето :attribute трябва да е дата преди :date.',
+    'between' => [
+        'numeric' => 'Полето :attribute трябва да е между :min и :max.',
+        'string' => 'Полето :attribute трябва да е между :min и :max символа.',
+        'array' => 'Полето :attribute трябва да има между :min и :max елемента.',
+    ],
+    'boolean' => 'Полето :attribute трябва да е вярно или невярно.',
+    'confirmed' => 'Потвърждението на полето :attribute не съвпада.',
+    'date' => 'Полето :attribute не е валидна дата.',
+    'email' => 'Полето :attribute трябва да е валиден имейл адрес.',
+    'in' => 'Избраната стойност за :attribute е невалидна.',
+    'integer' => 'Полето :attribute трябва да бъде цяло число.',
+    'max' => [
+        'numeric' => 'Полето :attribute не може да бъде по-голямо от :max.',
+        'string' => 'Полето :attribute не може да бъде по-дълго от :max символа.',
+        'array' => 'Полето :attribute не може да има повече от :max елемента.',
+    ],
+    'min' => [
+        'numeric' => 'Полето :attribute трябва да бъде поне :min.',
+        'string' => 'Полето :attribute трябва да бъде поне :min символа.',
+        'array' => 'Полето :attribute трябва да има поне :min елемента.',
+    ],
+    'not_regex' => 'Форматът на полето :attribute е невалиден.',
+    'numeric' => 'Полето :attribute трябва да бъде число.',
+    'regex' => 'Форматът на полето :attribute е невалиден.',
+    'required' => 'Полето :attribute е задължително.',
+    'string' => 'Полето :attribute трябва да бъде текст.',
+    'unique' => 'Стойността на :attribute вече е заета.',
+    'url' => 'Полето :attribute трябва да е валиден URL адрес.',
+
+    'attributes' => [
+        'email' => 'имейл',
+        'password' => 'парола',
+        'name' => 'име',
+        'customer_name' => 'име',
+        'phone' => 'телефон',
+        'address.line1' => 'адрес',
+        'address.line2' => 'адрес, ред 2',
+        'address.city' => 'град',
+        'address.postal_code' => 'пощенски код',
+        'address.country' => 'държава',
+        'payment_method' => 'начин на плащане',
+    ],
+];

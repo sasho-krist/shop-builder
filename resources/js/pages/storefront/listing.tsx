@@ -1,6 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import type { StorefrontShared } from '@/layouts/storefront-layout';
 import StorefrontLayout from '@/layouts/storefront-layout';
+import { useT } from '@/lib/i18n';
 import { money } from '@/lib/money';
 
 type ProductRow = {
@@ -32,6 +33,7 @@ export default function StorefrontListing({
 }: Props) {
     const { storefront } = usePage<StorefrontShared>().props;
     const symbol = storefront.currencySymbol;
+    const { t } = useT();
 
     return (
         <StorefrontLayout>
@@ -61,7 +63,7 @@ export default function StorefrontListing({
                         style={{ color: 'var(--sb-muted-foreground)' }}
                         className="mt-6"
                     >
-                        No products here yet.
+                        {t('No products here yet.')}
                     </p>
                 ) : (
                     <div className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
@@ -123,7 +125,7 @@ export default function StorefrontListing({
                                 router.visit(products.prev_page_url)
                             }
                         >
-                            ← Previous
+                            ← {t('Previous')}
                         </button>
                         <span style={{ color: 'var(--sb-muted-foreground)' }}>
                             {products.current_page} / {products.last_page}
@@ -137,7 +139,7 @@ export default function StorefrontListing({
                                 router.visit(products.next_page_url)
                             }
                         >
-                            Next →
+                            {t('Next')} →
                         </button>
                     </div>
                 )}

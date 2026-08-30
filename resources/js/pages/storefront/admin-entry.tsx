@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 
 type Props = {
     storeName: string;
@@ -13,6 +14,7 @@ type Props = {
 type Mode = 'login' | 'register';
 
 export default function StoreAdminEntry({ storeName }: Props) {
+    const { t } = useT();
     const [mode, setMode] = useState<Mode>('login');
 
     const login = useForm({ email: '', password: '' });
@@ -38,13 +40,13 @@ export default function StoreAdminEntry({ storeName }: Props) {
 
     return (
         <div className="bg-background text-foreground flex min-h-dvh flex-col items-center justify-center px-5 py-12">
-            <Head title={`${storeName} — admin`} />
+            <Head title={`${storeName} — ${t('Admin')}`} />
 
             <div className="w-full max-w-sm">
                 <div className="mb-6 text-center">
                     <h1 className="text-2xl font-bold">{storeName}</h1>
                     <p className="text-muted-foreground text-sm">
-                        Store admin — owners only
+                        {t('Store admin — owners only')}
                     </p>
                 </div>
 
@@ -58,7 +60,7 @@ export default function StoreAdminEntry({ storeName }: Props) {
                                 : `${tab} text-muted-foreground`
                         }
                     >
-                        Sign in
+                        {t('Sign in')}
                     </button>
                     <button
                         type="button"
@@ -69,7 +71,7 @@ export default function StoreAdminEntry({ storeName }: Props) {
                                 : `${tab} text-muted-foreground`
                         }
                     >
-                        Register
+                        {t('Register')}
                     </button>
                 </div>
 
@@ -79,7 +81,7 @@ export default function StoreAdminEntry({ storeName }: Props) {
                         className="flex flex-col gap-4"
                     >
                         <div className="grid gap-2">
-                            <Label htmlFor="l-email">Email</Label>
+                            <Label htmlFor="l-email">{t('Email')}</Label>
                             <Input
                                 id="l-email"
                                 type="email"
@@ -92,7 +94,7 @@ export default function StoreAdminEntry({ storeName }: Props) {
                             <InputError message={login.errors.email} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="l-password">Password</Label>
+                            <Label htmlFor="l-password">{t('Password')}</Label>
                             <Input
                                 id="l-password"
                                 type="password"
@@ -110,7 +112,7 @@ export default function StoreAdminEntry({ storeName }: Props) {
                             disabled={login.processing}
                         >
                             {login.processing && <Spinner />}
-                            Sign in to admin
+                            {t('Sign in to admin')}
                         </Button>
                     </form>
                 ) : (
@@ -119,7 +121,7 @@ export default function StoreAdminEntry({ storeName }: Props) {
                         className="flex flex-col gap-4"
                     >
                         <div className="grid gap-2">
-                            <Label htmlFor="r-name">Your name</Label>
+                            <Label htmlFor="r-name">{t('Your name')}</Label>
                             <Input
                                 id="r-name"
                                 value={register.data.name}
@@ -130,7 +132,7 @@ export default function StoreAdminEntry({ storeName }: Props) {
                             <InputError message={register.errors.name} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="r-email">Email</Label>
+                            <Label htmlFor="r-email">{t('Email')}</Label>
                             <Input
                                 id="r-email"
                                 type="email"
@@ -143,7 +145,7 @@ export default function StoreAdminEntry({ storeName }: Props) {
                             <InputError message={register.errors.email} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="r-password">Password</Label>
+                            <Label htmlFor="r-password">{t('Password')}</Label>
                             <Input
                                 id="r-password"
                                 type="password"
@@ -157,7 +159,7 @@ export default function StoreAdminEntry({ storeName }: Props) {
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="r-password2">
-                                Confirm password
+                                {t('Confirm password')}
                             </Label>
                             <Input
                                 id="r-password2"
@@ -173,9 +175,10 @@ export default function StoreAdminEntry({ storeName }: Props) {
                             />
                         </div>
                         <p className="text-muted-foreground text-xs">
-                            Registering gives you full owner access to{' '}
-                            {storeName}. Your password is yours to change later
-                            from your profile.
+                            {t(
+                                'Registering gives you full owner access to :store. Your password is yours to change later from your profile.',
+                                { store: storeName },
+                            )}
                         </p>
                         <Button
                             type="submit"
@@ -183,14 +186,14 @@ export default function StoreAdminEntry({ storeName }: Props) {
                             disabled={register.processing}
                         >
                             {register.processing && <Spinner />}
-                            Create owner account
+                            {t('Create owner account')}
                         </Button>
                     </form>
                 )}
 
                 <p className="text-muted-foreground mt-6 text-center text-sm">
                     <a href="/" className="underline">
-                        ← Back to {storeName}
+                        ← {storeName}
                     </a>
                 </p>
             </div>

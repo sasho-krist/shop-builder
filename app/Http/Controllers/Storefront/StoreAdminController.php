@@ -45,7 +45,7 @@ class StoreAdminController extends Controller
 
         if (! Auth::attempt(['email' => $data['email'], 'password' => $data['password']])) {
             throw ValidationException::withMessages([
-                'email' => 'Those credentials do not match our records.',
+                'email' => __('Those credentials do not match our records.'),
             ]);
         }
 
@@ -53,7 +53,7 @@ class StoreAdminController extends Controller
             Auth::logout();
 
             throw ValidationException::withMessages([
-                'email' => "This account doesn't manage {$tenant->name}.",
+                'email' => __("This account doesn't manage :store.", ['store' => $tenant->name]),
             ]);
         }
 

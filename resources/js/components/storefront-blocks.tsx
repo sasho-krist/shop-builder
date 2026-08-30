@@ -1,6 +1,7 @@
 import { SquarePen } from 'lucide-react';
 import { useOwnerToolsHidden } from '@/hooks/use-owner-tools';
 import type { Block, PreviewContext } from '@/lib/blocks';
+import { useT } from '@/lib/i18n';
 import { getSection } from '@/sections/registry';
 
 /**
@@ -11,7 +12,7 @@ export default function StorefrontBlocks({
     blocks,
     sections,
     editBase,
-    emptyMessage = 'Nothing here yet.',
+    emptyMessage,
 }: {
     blocks: Block[];
     sections: Omit<PreviewContext, 'hrefBase'>;
@@ -19,6 +20,7 @@ export default function StorefrontBlocks({
     emptyMessage?: string;
 }) {
     const [toolsHidden] = useOwnerToolsHidden();
+    const { t } = useT();
     const ctx: PreviewContext = { ...sections, hrefBase: '/p/' };
     const canEdit = !toolsHidden && editBase !== null;
 
@@ -28,7 +30,7 @@ export default function StorefrontBlocks({
                 className="mx-auto max-w-lg px-4 py-24 text-center text-sm"
                 style={{ color: 'var(--sb-muted-foreground)' }}
             >
-                {emptyMessage}
+                {emptyMessage ?? t('Nothing here yet.')}
             </div>
         );
     }

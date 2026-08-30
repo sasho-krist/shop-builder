@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { CheckCircle2 } from 'lucide-react';
+import { useT } from '@/lib/i18n';
 import StorefrontLayout from '@/layouts/storefront-layout';
 import { money } from '@/lib/money';
 
@@ -29,11 +30,12 @@ type Props = {
 };
 
 export default function StorefrontOrder({ order }: Props) {
+    const { t } = useT();
     const address = order.shipping_address;
 
     return (
         <StorefrontLayout>
-            <Head title={`Order #${order.number}`} />
+            <Head title={`${t('Order')} #${order.number}`} />
 
             <div
                 className="mx-auto w-full max-w-xl px-5 py-14 sm:px-8"
@@ -48,11 +50,16 @@ export default function StorefrontOrder({ order }: Props) {
                         style={{ fontFamily: 'var(--sb-heading-font)' }}
                         className="text-2xl font-bold"
                     >
-                        Thank you, {order.customer_name}!
+                        {t('Thank you, :name!', { name: order.customer_name })}
                     </h1>
                     <p style={{ color: 'var(--sb-muted-foreground)' }}>
-                        Order #{order.number} is confirmed. A copy was sent to{' '}
-                        {order.email}.
+                        {t(
+                            'Order #:number is confirmed. A copy was sent to :email.',
+                            {
+                                number: order.number,
+                                email: order.email,
+                            },
+                        )}
                     </p>
                     <span
                         style={{
@@ -68,10 +75,10 @@ export default function StorefrontOrder({ order }: Props) {
                         className="rounded-full px-2.5 py-0.5 text-xs font-medium"
                     >
                         {order.payment_status === 'paid'
-                            ? 'Paid'
+                            ? t('Paid')
                             : order.payment_method === 'card'
-                              ? 'Awaiting payment confirmation'
-                              : 'Payment on delivery'}
+                              ? t('Awaiting payment confirmation')
+                              : t('Payment on delivery')}
                     </span>
                 </div>
 
@@ -116,7 +123,7 @@ export default function StorefrontOrder({ order }: Props) {
                             <span
                                 style={{ color: 'var(--sb-muted-foreground)' }}
                             >
-                                Subtotal
+                                {t('Subtotal')}
                             </span>
                             <span>
                                 {money(order.subtotal, order.currency_symbol)}
@@ -126,7 +133,7 @@ export default function StorefrontOrder({ order }: Props) {
                             <span
                                 style={{ color: 'var(--sb-muted-foreground)' }}
                             >
-                                Shipping
+                                {t('Shipping')}
                             </span>
                             <span>
                                 {money(
@@ -142,7 +149,7 @@ export default function StorefrontOrder({ order }: Props) {
                                         color: 'var(--sb-muted-foreground)',
                                     }}
                                 >
-                                    Tax
+                                    {t('Tax')}
                                 </span>
                                 <span>
                                     {money(
@@ -153,7 +160,9 @@ export default function StorefrontOrder({ order }: Props) {
                             </div>
                         )}
                         <div className="flex justify-between font-semibold">
-                            <span>Total ({order.currency})</span>
+                            <span>
+                                {t('Total')} ({order.currency})
+                            </span>
                             <span>
                                 {money(order.total, order.currency_symbol)}
                             </span>
@@ -166,7 +175,7 @@ export default function StorefrontOrder({ order }: Props) {
                     style={{ color: 'var(--sb-muted-foreground)' }}
                 >
                     <p className="font-medium text-[color:var(--sb-foreground)]">
-                        Ships to
+                        {t('Ships to')}
                     </p>
                     <p>
                         {address.line1}
@@ -179,7 +188,7 @@ export default function StorefrontOrder({ order }: Props) {
 
                 <div className="mt-8 text-center">
                     <Link href="/products" className="underline">
-                        Continue shopping
+                        {t('Continue shopping')}
                     </Link>
                 </div>
             </div>

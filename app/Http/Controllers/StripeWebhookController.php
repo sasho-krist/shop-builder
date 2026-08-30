@@ -8,6 +8,7 @@ use App\Models\Tenant;
 use App\Services\Payments\PaymentGateway;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Mail;
 
 class StripeWebhookController extends Controller
@@ -48,6 +49,7 @@ class StripeWebhookController extends Controller
         $payment->update(['status' => 'paid']);
         $order->update(['payment_status' => 'paid', 'status' => 'paid']);
 
+        App::setLocale($order->locale);
         Mail::to($order->email)->send(new OrderPlaced($order, $tenant->storeSettings()));
 
         Tenant::forgetCurrent();

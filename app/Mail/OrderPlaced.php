@@ -17,12 +17,14 @@ class OrderPlaced extends Mailable
     public function __construct(
         public Order $order,
         public StoreSetting $settings,
-    ) {}
+    ) {
+        $this->locale($order->locale);
+    }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Order #{$this->order->number} confirmed",
+            subject: __('Order #:number confirmed', ['number' => $this->order->number]),
         );
     }
 
