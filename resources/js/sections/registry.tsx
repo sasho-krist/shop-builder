@@ -6,20 +6,33 @@ import {
     type SectionDef,
 } from '@/lib/blocks';
 
+function hrefFor(
+    ctx: PreviewContext,
+    product: PreviewProduct,
+): string | undefined {
+    return ctx.hrefBase && product.slug
+        ? `${ctx.hrefBase}${product.slug}`
+        : undefined;
+}
+
 function ProductCard({
     product,
     showPrice,
+    href,
 }: {
     product: PreviewProduct;
     showPrice: boolean;
+    href?: string;
 }) {
+    const Wrapper = href ? 'a' : 'div';
     return (
-        <div
+        <Wrapper
+            href={href}
             style={{
                 borderColor: 'var(--sb-border)',
                 borderRadius: 'var(--sb-radius)',
             }}
-            className="overflow-hidden border"
+            className="block overflow-hidden border"
         >
             <div
                 style={{ background: 'var(--sb-muted)' }}
@@ -49,7 +62,7 @@ function ProductCard({
                     </span>
                 )}
             </div>
-        </div>
+        </Wrapper>
     );
 }
 
@@ -418,6 +431,7 @@ export const SECTIONS: SectionDef[] = [
                                     key={product.id}
                                     product={product}
                                     showPrice={showPrice}
+                                    href={hrefFor(ctx, product)}
                                 />
                             ))}
                         </div>
@@ -486,6 +500,7 @@ export const SECTIONS: SectionDef[] = [
                                         key={product.id}
                                         product={product}
                                         showPrice
+                                        href={hrefFor(ctx, product)}
                                     />
                                 ))}
                         </div>

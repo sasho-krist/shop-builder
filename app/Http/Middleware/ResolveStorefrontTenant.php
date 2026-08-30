@@ -27,6 +27,9 @@ class ResolveStorefrontTenant
 
         Tenant::setCurrent($tenant);
 
+        // Drop the subdomain param so controllers bind only their path params.
+        $request->route()?->forgetParameter('store');
+
         return $next($request);
     }
 }

@@ -87,7 +87,7 @@ _Забележка: изнасянето на админа на отделен 
 
 - `customers` — акаунти на купувачите (per tenant)
 - `addresses` — за customer и за поръчки
-- `carts` / `cart_items` — persistнати
+- `carts` (tenant_id, token) / `cart_items` (cart_id, product_variant_id, quantity) ✅
 - `orders` — number, status, financial_status, суми (subtotal/tax/shipping/total), currency
 - `order_lines` — product/variant snapshot, qty, unit_price
 - `order_events` — история на статусите
@@ -140,14 +140,25 @@ _Забележка: изнасянето на админа на отделен 
 
 ---
 
-## 6. Storefront
+## 6. Storefront ✅ (5a)
 
-Роути per tenant: `/`, `/c/{category}`, `/p/{product}`, `/collections/{slug}`, `/cart`, `/checkout`, `/account`.
+Роути на поддомейна (`routes/storefront.php`, група `ResolveStorefrontTenant` +
+`ResolveCart`): `/`, `/products`, `/p/{slug}`, `/cart` (GET/POST/PATCH/DELETE).
+`ResolveStorefrontTenant` прави `forgetParameter('store')` за да не чупи binding-а.
 
-- Inertia SSR рендерира `pages.blocks` през регистъра от секции.
-- Количка: persistната (`carts` по session/customer), add/update/remove, преизчисляване на суми + ДДС + доставка.
-- Checkout: адрес → метод на доставка → Stripe плащане → `order` → потвърждаващ имейл.
-- Клиентски акаунт: история на поръчки, адреси (Фаза 7).
+- **Layout** (`storefront-layout.tsx`) — themed header (име, Shop, cart badge) +
+  footer; целият wrapper е `themeToCssVars(активна тема)`. Темата + `cartCount`
+  идват като **lazy** shared Inertia prop (`storefront`) — резолвва се след route
+  middleware, не при `share()`.
+- **Home** — рендерира `pages.blocks` през същия `sections/registry.tsx`; секциите
+  получават реален `sectionContext` (активни продукти + видими колекции); product
+  карти линкват към `/p/{slug}` (`ctx.hrefBase`).
+- **Product listing / detail** — grid + пагинация; detail с галерия, избор на
+  вариант, количество, „Add to cart".
+- **Количка** — `carts` + `cart_items`, идентифицирана с `sb_cart` cookie (в
+  `encryptCookies except`); add/update/remove; subtotal с `bcmath`.
+- Checkout, категорийни/колекционни storefront страници, клиентски акаунти,
+  ДДС/доставка — следващи фази.
 
 ---
 
@@ -164,7 +175,7 @@ _Забележка: изнасянето на админа на отделен 
 | **2e. Каталог — останало** (по избор) | Атрибути (Размер/Цвят → вариантна матрица + storefront филтри); CSV импорт                                                                                                           | Може да се направи и по-късно — не блокира builder-а                                             |
 | **3. Theme engine** ✅                | `themes` + `ThemePresets`, редактор (color pickers, font selects, slider-и, ToggleGroup) + live `ThemePreview`, `lib/theme.ts` CSS-var pipeline, активна тема стилизира storefront-а | Смяна и редакция на тема с жив preview; storefront ползва активната тема                         |
 | **4a. Page builder** ✅               | `pages` + `BlockRegistry`, 5 секции с schema, @dnd-kit drag-reorder, schema форми, `PageCanvas` жив preview с реални данни + тема, `MediaController` upload                          | Сглобяване на home страницата от секции; блоковете се пазят и рендерират в preview               |
-| **5. Storefront**                     | Inertia SSR storefront, роути, рендер на blocks, количка                                                                                                                             | Работещ публичен магазин с разглеждане и количка                                                 |
+| **5a. Storefront** ✅                 | Themed layout, home рендерира `pages.blocks` с реални данни, product listing/detail, `carts`/`cart_items` (cookie), add/update/remove                                                | Публичен магазин: разглеждане, продуктова страница, работеща количка                             |
 | **6. Checkout & поръчки**             | Checkout flow, Stripe, управление на поръчки, имейли, статуси                                                                                                                        | Реална продажба end-to-end                                                                       |
 | **7. Клиенти, настройки, домейни**    | Клиентски акаунти, настройки за доставка/ДДС/валута, custom domain                                                                                                                   | Готов за реален магазин                                                                          |
 | **8. SaaS billing**                   | Планове, Cashier абонаменти, onboarding wizard, лимити по план                                                                                                                       | Готов за реални клиенти на платформата                                                           |

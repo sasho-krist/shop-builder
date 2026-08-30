@@ -39,6 +39,7 @@ export type FieldDef =
 export type PreviewProduct = {
     id: number;
     title: string;
+    slug?: string;
     price: string | null;
     image: string | null;
 };
@@ -52,6 +53,8 @@ export type PreviewCollection = {
 export type PreviewContext = {
     products: PreviewProduct[];
     collections: PreviewCollection[];
+    /** When set, product cards link to `${hrefBase}${slug}` (storefront only). */
+    hrefBase?: string;
 };
 
 export type SectionDef = {

@@ -16,8 +16,8 @@ use Illuminate\Support\Carbon;
  * @property int $product_id
  * @property string $name
  * @property string|null $sku
- * @property string $price
- * @property string|null $compare_at_price
+ * @property numeric-string $price
+ * @property numeric-string|null $compare_at_price
  * @property int $stock_quantity
  * @property int $position
  * @property array<string, string>|null $options

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Page;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
@@ -13,13 +14,13 @@ class StorefrontTenantTest extends TestCase
 
     public function test_a_store_subdomain_resolves_its_tenant(): void
     {
-        Tenant::factory()->create(['slug' => 'acme', 'name' => 'Acme Supplies']);
+        $tenant = Tenant::factory()->create(['slug' => 'acme', 'name' => 'Acme Supplies']);
+        Page::factory()->for($tenant)->home()->create(['blocks' => []]);
 
         $this->get('http://acme.shop-builder.localhost/')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->component('storefront/coming-soon')
-                ->where('store.name', 'Acme Supplies')
+                ->component('storefront/home')
             );
     }
 

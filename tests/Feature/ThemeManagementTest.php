@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Page;
 use App\Models\Tenant;
 use App\Models\Theme;
 use App\Models\User;
@@ -146,6 +147,7 @@ class ThemeManagementTest extends TestCase
     {
         Tenant::forgetCurrent();
         $store = Tenant::factory()->create(['slug' => 'acme']);
+        Page::factory()->for($store)->home()->create(['blocks' => []]);
 
         $tokens = ThemePresets::minimal();
         $tokens['colors']['primary'] = '#ff0000';
@@ -154,8 +156,8 @@ class ThemeManagementTest extends TestCase
         $this->get('http://acme.shop-builder.localhost/')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->component('storefront/coming-soon')
-                ->where('theme.colors.primary', '#ff0000')
+                ->component('storefront/home')
+                ->where('storefront.theme.colors.primary', '#ff0000')
             );
     }
 }
