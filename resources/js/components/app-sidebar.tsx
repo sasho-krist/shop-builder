@@ -4,6 +4,7 @@ import {
     FolderGit2,
     FolderTree,
     LayoutGrid,
+    Layers,
     Package,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
@@ -21,6 +22,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import categories from '@/routes/categories';
+import collections from '@/routes/collections';
 import products from '@/routes/products';
 import type { NavItem } from '@/types';
 
@@ -39,6 +41,11 @@ const mainNavItems: NavItem[] = [
         title: 'Categories',
         href: categories.index(),
         icon: FolderTree,
+    },
+    {
+        title: 'Collections',
+        href: collections.index(),
+        icon: Layers,
     },
 ];
 

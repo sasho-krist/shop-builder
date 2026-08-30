@@ -1,0 +1,94 @@
+import { Head, Link, router } from '@inertiajs/react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { dashboard } from '@/routes';
+import collections from '@/routes/collections';
+
+type CollectionRow = {
+    id: number;
+    title: string;
+    slug: string;
+    is_visible: boolean;
+    products_count: number;
+};
+
+type Props = {
+    collections: CollectionRow[];
+};
+
+export default function CollectionsIndex({ collections: rows }: Props) {
+    function destroy(collection: CollectionRow) {
+        if (confirm(`Delete "${collection.title}"?`)) {
+            router.delete(collections.destroy(collection.id).url, {
+                preserveScroll: true,
+            });
+        }
+    }
+
+    return (
+        <>
+            <Head title="Collections" />
+
+            <div className="flex h-full flex-1 flex-col gap-4 p-4">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-xl font-semibold">Collections</h1>
+                        <p className="text-muted-foreground text-sm">
+                            {rows.length}{' '}
+                            {rows.length === 1 ? 'collection' : 'collections'}
+                        </p>
+                    </div>
+                    <Button asChild>
+                        <Link href={collections.create().url}>
+                            New collection
+                        </Link>
+                    </Button>
+                </div>
+
+                {rows.length === 0 ? (
+                    <div className="border-border text-muted-foreground rounded-xl border border-dashed p-12 text-center text-sm">
+                        No collections yet. Group products into collections to
+                        feature them on your storefront.
+                    </div>
+                ) : (
+                    <div className="border-border divide-border divide-y rounded-xl border">
+                        {rows.map((collection) => (
+                            <div
+                                key={collection.id}
+                                className="flex items-center gap-3 px-4 py-3"
+                            >
+                                <Link
+                                    href={collections.edit(collection.id).url}
+                                    className="font-medium hover:underline"
+                                >
+                                    {collection.title}
+                                </Link>
+                                {!collection.is_visible && (
+                                    <Badge variant="outline">Hidden</Badge>
+                                )}
+                                <Badge variant="secondary">
+                                    {collection.products_count} products
+                                </Badge>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="ml-auto"
+                                    onClick={() => destroy(collection)}
+                                >
+                                    Delete
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </>
+    );
+}
+
+CollectionsIndex.layout = {
+    breadcrumbs: [
+        { title: 'Dashboard', href: dashboard() },
+        { title: 'Collections', href: collections.index() },
+    ],
+};

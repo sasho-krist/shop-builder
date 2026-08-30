@@ -56,4 +56,12 @@ class Product extends Model
     {
         return $this->hasMany(ProductImage::class)->orderBy('position');
     }
+
+    /**
+     * @return BelongsToMany<Collection, $this>
+     */
+    public function collections(): BelongsToMany
+    {
+        return $this->belongsToMany(Collection::class)->withTimestamps();
+    }
 }

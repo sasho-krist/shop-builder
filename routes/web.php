@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProductController;
@@ -23,6 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('products', [ProductController::class, 'index'])->name('products.index');
         Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
+        Route::get('products/search', [ProductController::class, 'search'])->name('products.search');
         Route::post('products', [ProductController::class, 'store'])->name('products.store');
         Route::get('products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
         Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');
@@ -37,6 +39,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
         Route::put('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
         Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+        Route::get('collections', [CollectionController::class, 'index'])->name('collections.index');
+        Route::get('collections/create', [CollectionController::class, 'create'])->name('collections.create');
+        Route::post('collections', [CollectionController::class, 'store'])->name('collections.store');
+        Route::get('collections/{collection}/edit', [CollectionController::class, 'edit'])->name('collections.edit');
+        Route::put('collections/{collection}', [CollectionController::class, 'update'])->name('collections.update');
+        Route::delete('collections/{collection}', [CollectionController::class, 'destroy'])->name('collections.destroy');
     });
 });
 

@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -76,6 +77,28 @@ class ProductController extends Controller
             'statuses' => Product::STATUSES,
             'categories' => $this->categoryOptions(),
         ]);
+    }
+
+    /**
+     * Lightweight JSON search used by pickers (collections, page builder).
+     */
+    public function search(Request $request): JsonResponse
+    {
+        $term = trim((string) $request->query('q', ''));
+
+        $products = Product::query()
+            ->with('images:id,product_id,disk,path')
+            ->when($term !== '', fn (Builder $builder) => $builder->where('title', 'like', "%{$term}%"))
+            ->orderBy('title')
+            ->limit(20)
+            ->get()
+            ->map(fn (Product $product): array => [
+                'id' => $product->id,
+                'title' => $product->title,
+                'thumbnail' => $product->images->first()?->url(),
+            ]);
+
+        return response()->json($products);
     }
 
     public function store(ProductRequest $request): RedirectResponse
