@@ -197,13 +197,14 @@ custom properties, shared by the editor preview and the storefront.
 
 - `resources/js/sections/*` — each `SectionDef` has a `fields` schema and a
   `Render` component. Field types: `text`, `textarea`, `html`, `image`, `color`,
-  `icon` (curated icon set), `select`, `number` (slider), `boolean`,
-  `collection`, and `repeater` (arrays of sub-rows — used by lists, tabs,
-  galleries, etc.).
+  `icon` (curated icon set), `select`, `number` (buttons for short ranges,
+  slider otherwise), `boolean`, `collection`, and `repeater` (arrays of
+  sub-rows — used by lists, tabs, galleries, etc.).
 - ~40 sections, grouped in the "Add" menu, roughly matching a page-builder
   widget library:
-    - **Store** — Hero, Text block, Image + text, Product grid (source =
-      _Newest_ / _Best sellers_ / a collection), Featured collection.
+    - **Store** — Hero, Text block, Image + text, Product grid (2–6 columns,
+      small / medium / large card size, source = _Newest_ / _Best sellers_ / a
+      collection), Featured collection (same column and card-size options).
     - **Basic** — Heading, Text editor, Image, Button, Divider, Spacer, Icon,
       Blockquote, Alert, Star rating, Google map, HTML / embed.
     - **Media** — Video (YouTube/Vimeo), Image gallery, Image carousel.
