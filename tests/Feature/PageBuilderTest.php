@@ -199,6 +199,43 @@ class PageBuilderTest extends TestCase
             );
     }
 
+    public function test_cart_and_thankyou_are_system_pages_with_editable_sections(): void
+    {
+        $cart = Page::factory()->for($this->tenant)->system('cart', 'Cart')->create();
+        Page::factory()->for($this->tenant)->system('thankyou', 'Thank you')->create();
+
+        $this->actingAs($this->user)
+            ->get(route('pages.index'))
+            ->assertInertia(fn ($page) => $page->where(
+                'pages',
+                fn ($rows) => collect($rows)->pluck('type')->contains('cart')
+                    && collect($rows)->pluck('type')->contains('thankyou'),
+            ));
+
+        $this->actingAs($this->user)
+            ->delete(route('pages.destroy', $cart))
+            ->assertSessionHasErrors('page');
+
+        $this->actingAs($this->user)
+            ->put(route('pages.update', $cart), [
+                'title' => 'Cart',
+                'slug' => 'cart',
+                'is_published' => true,
+                'blocks' => [
+                    ['id' => 'c1', 'type' => 'alert', 'props' => ['kind' => 'info', 'title' => 'Note', 'body' => 'x']],
+                ],
+            ])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->get("http://{$this->tenant->slug}.shop-builder.localhost/cart")
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('storefront/cart')
+                ->where('blocks.0.type', 'alert'),
+            );
+    }
+
     public function test_a_user_cannot_edit_another_tenants_page(): void
     {
         $foreign = Page::factory()->for(Tenant::factory())->create();

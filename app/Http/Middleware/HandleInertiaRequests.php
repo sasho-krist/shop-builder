@@ -170,7 +170,7 @@ class HandleInertiaRequests extends Middleware
 
         $base = rtrim((string) config('app.url'), '/');
         $pages = Page::query()
-            ->whereIn('type', ['home', 'shop'])
+            ->whereIn('type', Page::SYSTEM_TYPES)
             ->get()
             ->keyBy('type');
 
@@ -187,6 +187,8 @@ class HandleInertiaRequests extends Middleware
             'theme' => $activeTheme instanceof Theme ? "{$base}/themes/{$activeTheme->getKey()}/edit" : null,
             'homePage' => $editUrl('home'),
             'shopPage' => $editUrl('shop'),
+            'cartPage' => $editUrl('cart'),
+            'thankyouPage' => $editUrl('thankyou'),
         ];
     }
 }

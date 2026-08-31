@@ -21,6 +21,8 @@ export type ManageContext = {
     theme: string | null;
     homePage: string | null;
     shopPage: string | null;
+    cartPage: string | null;
+    thankyouPage: string | null;
 };
 
 export default function StorefrontOwnerBar({

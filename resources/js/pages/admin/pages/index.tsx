@@ -30,6 +30,13 @@ type Props = {
     pages: PageRow[];
 };
 
+const SYSTEM_BADGE: Record<string, string> = {
+    home: 'Home',
+    shop: 'Shop',
+    cart: 'Cart',
+    thankyou: 'Thank you',
+};
+
 export default function PagesIndex({ pages }: Props) {
     const { t } = useT();
     const [open, setOpen] = useState(false);
@@ -86,11 +93,10 @@ export default function PagesIndex({ pages }: Props) {
                             >
                                 {page.title}
                             </button>
-                            {page.type === 'home' && (
-                                <Badge variant="secondary">{t('Home')}</Badge>
-                            )}
-                            {page.type === 'shop' && (
-                                <Badge variant="secondary">{t('Shop')}</Badge>
+                            {SYSTEM_BADGE[page.type] && (
+                                <Badge variant="secondary">
+                                    {t(SYSTEM_BADGE[page.type])}
+                                </Badge>
                             )}
                             {page.is_published ? (
                                 <Badge>{t('Published')}</Badge>

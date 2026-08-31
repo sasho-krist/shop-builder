@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Storefront\Concerns\BuildsSectionContext;
 use App\Http\Requests\CheckoutRequest;
 use App\Mail\OrderPlaced;
 use App\Models\Cart;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderLine;
+use App\Models\Page;
 use App\Models\Tenant;
 use App\Services\Billing\PlanGate;
 use App\Services\Payments\PaymentGateway;
@@ -25,6 +27,8 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class CheckoutController extends Controller
 {
+    use BuildsSectionContext;
+
     public function show(): Response|RedirectResponse
     {
         $cart = app(Cart::class);
@@ -180,7 +184,11 @@ class CheckoutController extends Controller
             $request->session()->forget('card_checkout_order');
         }
 
+        $page = Page::query()->where('type', 'thankyou')->first();
+
         return Inertia::render('storefront/order', [
+            'blocks' => $page instanceof Page ? $page->blocks : [],
+            'sections' => $this->sectionContext(),
             'order' => [
                 'number' => $order->number,
                 'status' => $order->status,

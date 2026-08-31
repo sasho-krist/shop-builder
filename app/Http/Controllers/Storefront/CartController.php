@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Storefront\Concerns\BuildsSectionContext;
 use App\Models\Cart;
+use App\Models\Page;
 use App\Models\ProductVariant;
 use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
@@ -13,10 +15,16 @@ use Inertia\Response;
 
 class CartController extends Controller
 {
+    use BuildsSectionContext;
+
     public function show(): Response
     {
+        $page = Page::query()->where('type', 'cart')->first();
+
         return Inertia::render('storefront/cart', [
             'cart' => app(Cart::class)->presentation(Tenant::currentOrFail()->storeSettings()),
+            'blocks' => $page instanceof Page ? $page->blocks : [],
+            'sections' => $this->sectionContext(),
         ]);
     }
 

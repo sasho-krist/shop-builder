@@ -1,7 +1,10 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { CheckCircle2 } from 'lucide-react';
-import { useT } from '@/lib/i18n';
+import StorefrontBlocks from '@/components/storefront-blocks';
+import type { StorefrontShared } from '@/layouts/storefront-layout';
 import StorefrontLayout from '@/layouts/storefront-layout';
+import type { Block, PreviewContext } from '@/lib/blocks';
+import { useT } from '@/lib/i18n';
 import { money } from '@/lib/money';
 
 type Props = {
@@ -27,14 +30,24 @@ type Props = {
             subtotal: string;
         }[];
     };
+    blocks?: Block[];
+    sections?: Omit<PreviewContext, 'hrefBase'>;
 };
 
-export default function StorefrontOrder({ order }: Props) {
+export default function StorefrontOrder({ order, blocks, sections }: Props) {
     const { t } = useT();
     const address = order.shipping_address;
+    const { storefront } = usePage<StorefrontShared>().props;
+    const editBase = storefront.manage?.thankyouPage ?? null;
 
     return (
-        <StorefrontLayout>
+        <StorefrontLayout
+            ownerEdit={
+                editBase
+                    ? { href: editBase, label: t('Edit thank-you page') }
+                    : undefined
+            }
+        >
             <Head title={`${t('Order')} #${order.number}`} />
 
             <div
@@ -192,6 +205,14 @@ export default function StorefrontOrder({ order }: Props) {
                     </Link>
                 </div>
             </div>
+
+            {blocks && blocks.length > 0 && sections && (
+                <StorefrontBlocks
+                    blocks={blocks}
+                    sections={sections}
+                    editBase={editBase}
+                />
+            )}
         </StorefrontLayout>
     );
 }

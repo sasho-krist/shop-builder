@@ -356,6 +356,13 @@ export default function PageEdit({ page, context, theme }: Props) {
                     </div>
 
                     <div className="overflow-y-auto bg-neutral-50 p-4 dark:bg-neutral-900">
+                        {page.type === 'thankyou' && (
+                            <div className="border-border text-muted-foreground mb-2 rounded-lg border border-dashed p-6 text-center text-xs">
+                                {t(
+                                    'The order summary renders above your sections on the confirmation page.',
+                                )}
+                            </div>
+                        )}
                         <PageCanvas
                             blocks={form.data.blocks}
                             theme={theme}
@@ -367,6 +374,13 @@ export default function PageEdit({ page, context, theme }: Props) {
                             <div className="border-border text-muted-foreground mt-2 rounded-lg border border-dashed p-6 text-center text-xs">
                                 {t(
                                     'The product grid and pagination render here, below your sections.',
+                                )}
+                            </div>
+                        )}
+                        {page.type === 'cart' && (
+                            <div className="border-border text-muted-foreground mt-2 rounded-lg border border-dashed p-6 text-center text-xs">
+                                {t(
+                                    'The cart items and totals render here, below your sections.',
                                 )}
                             </div>
                         )}

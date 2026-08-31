@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTenantRequest;
+use App\Models\Page;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\Theme\ThemePresets;
@@ -53,20 +54,7 @@ class OnboardingController extends Controller
                 'tokens' => ThemePresets::minimal(),
                 'is_active' => true,
             ]);
-            $tenant->pages()->create([
-                'type' => 'home',
-                'title' => 'Home',
-                'slug' => 'home',
-                'blocks' => [],
-                'is_published' => true,
-            ]);
-            $tenant->pages()->create([
-                'type' => 'shop',
-                'title' => 'Shop',
-                'slug' => 'shop',
-                'blocks' => [],
-                'is_published' => true,
-            ]);
+            Page::seedSystemPages($tenant->getKey());
             $tenant->settings()->create([]);
         });
 

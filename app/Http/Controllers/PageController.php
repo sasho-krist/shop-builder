@@ -20,8 +20,9 @@ class PageController extends Controller
     public function index(): Response
     {
         $pages = Page::query()
-            ->orderByRaw("type = 'home' desc")
-            ->orderByRaw("type = 'shop' desc")
+            ->orderByRaw(
+                "case type when 'home' then 0 when 'shop' then 1 when 'cart' then 2 when 'thankyou' then 3 else 4 end"
+            )
             ->orderBy('title')
             ->get()
             ->map(fn (Page $page): array => [

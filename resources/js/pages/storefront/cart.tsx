@@ -1,7 +1,10 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Minus, Plus, X } from 'lucide-react';
-import { useT } from '@/lib/i18n';
+import StorefrontBlocks from '@/components/storefront-blocks';
+import type { StorefrontShared } from '@/layouts/storefront-layout';
 import StorefrontLayout from '@/layouts/storefront-layout';
+import type { Block, PreviewContext } from '@/lib/blocks';
+import { useT } from '@/lib/i18n';
 import { money } from '@/lib/money';
 
 type CartItem = {
@@ -22,10 +25,14 @@ type Props = {
         count: number;
         currency_symbol: string;
     };
+    blocks?: Block[];
+    sections?: Omit<PreviewContext, 'hrefBase'>;
 };
 
-export default function StorefrontCart({ cart }: Props) {
+export default function StorefrontCart({ cart, blocks, sections }: Props) {
     const { t } = useT();
+    const { storefront } = usePage<StorefrontShared>().props;
+    const editBase = storefront.manage?.cartPage ?? null;
 
     function setQuantity(item: CartItem, quantity: number) {
         router.patch(
@@ -40,8 +47,20 @@ export default function StorefrontCart({ cart }: Props) {
     }
 
     return (
-        <StorefrontLayout>
+        <StorefrontLayout
+            ownerEdit={
+                editBase ? { href: editBase, label: t('Edit cart') } : undefined
+            }
+        >
             <Head title={t('Cart')} />
+
+            {blocks && blocks.length > 0 && sections && (
+                <StorefrontBlocks
+                    blocks={blocks}
+                    sections={sections}
+                    editBase={editBase}
+                />
+            )}
 
             <div
                 className="mx-auto w-full px-5 py-10 sm:px-8"

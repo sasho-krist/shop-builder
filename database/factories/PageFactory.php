@@ -42,4 +42,9 @@ class PageFactory extends Factory
     {
         return $this->state(['type' => 'shop', 'title' => 'Shop', 'slug' => 'shop', 'is_published' => true]);
     }
+
+    public function system(string $type, string $title): static
+    {
+        return $this->state(['type' => $type, 'title' => $title, 'slug' => $type, 'is_published' => true]);
+    }
 }

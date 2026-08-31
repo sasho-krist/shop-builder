@@ -30,10 +30,50 @@ class Page extends Model
     /** @use HasFactory<PageFactory> */
     use HasFactory;
 
-    public const TYPES = ['home', 'shop', 'page'];
+    public const TYPES = ['home', 'shop', 'cart', 'thankyou', 'page'];
 
-    /** Pages the owner cannot create, rename the slug of, or delete. */
-    public const SYSTEM_TYPES = ['home', 'shop'];
+    /**
+     * Pages the owner cannot create, rename the slug of, or delete. Every store
+     * gets one of each (seeded at onboarding, backfilled by migration). The slug
+     * always equals the type.
+     *
+     * @var array<string, string>
+     */
+    public const SYSTEM_PAGES = [
+        'home' => 'Home',
+        'shop' => 'Shop',
+        'cart' => 'Cart',
+        'thankyou' => 'Thank you',
+    ];
+
+    public const SYSTEM_TYPES = ['home', 'shop', 'cart', 'thankyou'];
+
+    /**
+     * Create any missing system pages for the given tenant.
+     */
+    public static function seedSystemPages(int $tenantId): void
+    {
+        foreach (self::SYSTEM_PAGES as $type => $title) {
+            $exists = self::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('type', $type)
+                ->exists();
+
+            if ($exists) {
+                continue;
+            }
+
+            $page = new self([
+                'type' => $type,
+                'title' => $title,
+                'slug' => $type,
+                'blocks' => [],
+                'is_published' => true,
+            ]);
+            $page->tenant_id = $tenantId;
+            $page->save();
+        }
+    }
 
     /**
      * @return array<string, string>
