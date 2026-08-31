@@ -258,21 +258,51 @@ function FieldInput({
                     </SelectContent>
                 </Select>
             );
-        case 'number':
+        case 'number': {
+            const current = Number(value ?? field.default);
+            const span = field.max - field.min;
+
+            // Short ranges (columns, small counts) are far easier to set with
+            // buttons than a slider with two or three stops.
+            if (span <= 8) {
+                return (
+                    <div className="flex flex-wrap gap-1">
+                        {Array.from(
+                            { length: span + 1 },
+                            (_, i) => field.min + i,
+                        ).map((n) => (
+                            <button
+                                key={n}
+                                type="button"
+                                onClick={() => onChange(n)}
+                                className={`h-8 min-w-8 rounded-md border px-2 text-sm ${
+                                    n === current
+                                        ? 'bg-primary text-primary-foreground border-primary'
+                                        : 'border-input hover:bg-accent'
+                                }`}
+                            >
+                                {n}
+                            </button>
+                        ))}
+                    </div>
+                );
+            }
+
             return (
                 <div className="flex items-center gap-3">
                     <Slider
                         min={field.min}
                         max={field.max}
                         step={1}
-                        value={[Number(value ?? field.default)]}
+                        value={[current]}
                         onValueChange={([v]) => onChange(v)}
                     />
-                    <span className="text-muted-foreground w-8 text-right text-xs">
-                        {Number(value ?? field.default)}
+                    <span className="text-muted-foreground w-10 text-right text-xs">
+                        {current}
                     </span>
                 </div>
             );
+        }
         case 'boolean':
             return (
                 <label className="flex items-center gap-2 text-sm">

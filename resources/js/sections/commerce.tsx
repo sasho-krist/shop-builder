@@ -273,15 +273,26 @@ export const COMMERCE_SECTIONS: SectionDef[] = [
                 key: 'columns',
                 label: 'Columns',
                 min: 2,
-                max: 4,
+                max: 6,
                 default: 3,
+            },
+            {
+                type: 'select',
+                key: 'cardSize',
+                label: 'Card size',
+                options: [
+                    { value: 'sm', label: 'Small' },
+                    { value: 'md', label: 'Medium' },
+                    { value: 'lg', label: 'Large' },
+                ],
+                default: 'md',
             },
             {
                 type: 'number',
                 key: 'limit',
                 label: 'Max products',
                 min: 2,
-                max: 12,
+                max: 18,
                 default: 8,
             },
             {
@@ -309,6 +320,8 @@ export const COMMERCE_SECTIONS: SectionDef[] = [
             const showPrice = Boolean(prop(props, 'showPrice', true));
             const display = String(prop(props, 'display', 'grid'));
             const columns = Number(prop(props, 'columns', 3));
+            const cardSize = String(prop(props, 'cardSize', 'md')) as 'md';
+            const gap = columns >= 5 ? 'gap-3' : 'gap-4';
 
             return (
                 <SectionShell className="flex flex-col gap-4">
@@ -358,7 +371,7 @@ export const COMMERCE_SECTIONS: SectionDef[] = [
                         </div>
                     ) : (
                         <div
-                            className="grid grid-cols-2 gap-4 sm:[grid-template-columns:repeat(var(--sb-cols),minmax(0,1fr))]"
+                            className={`grid grid-cols-2 ${gap} sm:[grid-template-columns:repeat(var(--sb-cols),minmax(0,1fr))]`}
                             style={
                                 {
                                     '--sb-cols': columns,
@@ -371,6 +384,7 @@ export const COMMERCE_SECTIONS: SectionDef[] = [
                                     product={product}
                                     showPrice={showPrice}
                                     href={hrefFor(ctx, product)}
+                                    size={cardSize}
                                 />
                             ))}
                         </div>
@@ -399,17 +413,38 @@ export const COMMERCE_SECTIONS: SectionDef[] = [
             },
             {
                 type: 'number',
+                key: 'columns',
+                label: 'Columns',
+                min: 2,
+                max: 6,
+                default: 4,
+            },
+            {
+                type: 'select',
+                key: 'cardSize',
+                label: 'Card size',
+                options: [
+                    { value: 'sm', label: 'Small' },
+                    { value: 'md', label: 'Medium' },
+                    { value: 'lg', label: 'Large' },
+                ],
+                default: 'md',
+            },
+            {
+                type: 'number',
                 key: 'limit',
                 label: 'Max products',
                 min: 2,
-                max: 8,
-                default: 4,
+                max: 12,
+                default: 8,
             },
         ],
         Render: ({ props, ctx }) => {
             const id = prop<number | null>(props, 'collectionId', null);
             const collection = ctx.collections.find((c) => c.id === id);
-            const limit = prop(props, 'limit', 4);
+            const limit = Number(prop(props, 'limit', 8));
+            const columns = Number(prop(props, 'columns', 4));
+            const cardSize = String(prop(props, 'cardSize', 'md')) as 'md';
             const heading =
                 prop(props, 'heading', '') || collection?.title || 'Collection';
 
@@ -419,7 +454,10 @@ export const COMMERCE_SECTIONS: SectionDef[] = [
                     {!collection ? (
                         <EmptyNote text="Pick a collection to feature." />
                     ) : (
-                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                        <div
+                            className="grid grid-cols-2 gap-3 sm:[grid-template-columns:repeat(var(--sb-cols),minmax(0,1fr))]"
+                            style={{ '--sb-cols': columns } as CSSProperties}
+                        >
                             {collection.products
                                 .slice(0, limit)
                                 .map((product) => (
@@ -428,6 +466,7 @@ export const COMMERCE_SECTIONS: SectionDef[] = [
                                         product={product}
                                         showPrice
                                         href={hrefFor(ctx, product)}
+                                        size={cardSize}
                                     />
                                 ))}
                         </div>

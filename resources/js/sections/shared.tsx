@@ -149,12 +149,23 @@ export function ProductCard({
     product,
     showPrice,
     href,
+    size = 'md',
 }: {
     product: PreviewProduct;
     showPrice: boolean;
     href?: string;
+    size?: 'sm' | 'md' | 'lg';
 }) {
     const Wrapper = href ? 'a' : 'div';
+    const pad = size === 'sm' ? 'p-2' : size === 'lg' ? 'p-4' : 'p-3';
+    const title =
+        size === 'sm'
+            ? 'text-xs font-medium'
+            : size === 'lg'
+              ? 'text-base font-semibold'
+              : 'text-sm font-semibold';
+    const price = size === 'sm' ? 'text-xs' : 'text-sm';
+
     return (
         <Wrapper
             href={href}
@@ -176,17 +187,17 @@ export function ProductCard({
                     />
                 )}
             </div>
-            <div className="flex flex-col gap-0.5 p-3">
+            <div className={`flex flex-col gap-0.5 ${pad}`}>
                 <span
                     style={{ fontFamily: 'var(--sb-heading-font)' }}
-                    className="truncate text-sm font-semibold"
+                    className={`truncate ${title}`}
                 >
                     {product.title}
                 </span>
                 {showPrice && product.price && (
                     <span
                         style={{ color: 'var(--sb-muted-foreground)' }}
-                        className="text-sm"
+                        className={price}
                     >
                         {product.price}
                     </span>

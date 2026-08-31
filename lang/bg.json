@@ -571,6 +571,11 @@
     "A banner with a heading and a button": "Банер със заглавие и бутон",
     "A card that flips on hover": "Карта, която се обръща при посочване",
 
+    "Divider": "Разделител",
+    "Spacer": "Отстояние",
+    "Blockquote": "Цитат",
+    "Alert": "Съобщение",
+    "Card size": "Размер на картата",
     "Star rating": "Оценка със звезди",
     "Google map": "Google карта",
     "HTML / embed": "HTML / embed",
