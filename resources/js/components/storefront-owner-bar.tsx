@@ -20,6 +20,7 @@ export type ManageContext = {
     orders: string;
     theme: string | null;
     homePage: string | null;
+    shopPage: string | null;
 };
 
 export default function StorefrontOwnerBar({

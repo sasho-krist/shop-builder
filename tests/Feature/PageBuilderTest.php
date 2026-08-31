@@ -147,6 +147,58 @@ class PageBuilderTest extends TestCase
         $this->assertDatabaseHas('pages', ['id' => $this->home->id]);
     }
 
+    public function test_the_shop_page_is_editable_but_not_deletable(): void
+    {
+        $shop = Page::factory()->for($this->tenant)->shop()->create();
+
+        $this->actingAs($this->user)
+            ->get(route('pages.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->where(
+                'pages',
+                fn ($rows) => collect($rows)->contains(
+                    fn ($r) => $r['type'] === 'shop',
+                ),
+            ));
+
+        // sections save, slug stays locked
+        $this->actingAs($this->user)
+            ->put(route('pages.update', $shop), [
+                'title' => 'Our products',
+                'slug' => 'anything-else',
+                'is_published' => true,
+                'blocks' => [
+                    ['id' => 'x1', 'type' => 'heading', 'props' => ['text' => 'Browse', 'tag' => 'h2']],
+                ],
+            ])
+            ->assertSessionHasErrors('slug');
+
+        $this->actingAs($this->user)
+            ->put(route('pages.update', $shop), [
+                'title' => 'Our products',
+                'slug' => 'shop',
+                'is_published' => true,
+                'blocks' => [
+                    ['id' => 'x1', 'type' => 'heading', 'props' => ['text' => 'Browse', 'tag' => 'h2']],
+                ],
+            ])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->actingAs($this->user)
+            ->delete(route('pages.destroy', $shop))
+            ->assertSessionHasErrors('page');
+
+        // its sections render on /products, with the store heading
+        $this->get("http://{$this->tenant->slug}.shop-builder.localhost/products")
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('storefront/listing')
+                ->where('heading', 'Our products')
+                ->where('blocks.0.type', 'heading')
+            );
+    }
+
     public function test_a_user_cannot_edit_another_tenants_page(): void
     {
         $foreign = Page::factory()->for(Tenant::factory())->create();

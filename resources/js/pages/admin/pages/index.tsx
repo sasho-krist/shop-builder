@@ -89,6 +89,9 @@ export default function PagesIndex({ pages }: Props) {
                             {page.type === 'home' && (
                                 <Badge variant="secondary">{t('Home')}</Badge>
                             )}
+                            {page.type === 'shop' && (
+                                <Badge variant="secondary">{t('Shop')}</Badge>
+                            )}
                             {page.is_published ? (
                                 <Badge>{t('Published')}</Badge>
                             ) : (
@@ -99,7 +102,7 @@ export default function PagesIndex({ pages }: Props) {
                                     count: page.blocks_count,
                                 })}
                             </span>
-                            {page.type !== 'home' && (
+                            {page.type === 'page' && (
                                 <Button
                                     variant="ghost"
                                     size="sm"

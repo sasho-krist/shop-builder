@@ -34,13 +34,13 @@ class PageRequest extends FormRequest
         $routeParam = $this->route('page');
         $pageId = $routeParam instanceof Page ? $routeParam->id : (int) $routeParam;
         $page = $routeParam instanceof Page ? $routeParam : Page::find($pageId);
-        $isHome = $page instanceof Page && $page->type === 'home';
+        $isSystem = $page instanceof Page && in_array($page->type, Page::SYSTEM_TYPES, true);
 
         return [
             'title' => ['required', 'string', 'max:255'],
             'slug' => [
                 'required', 'string', 'max:255',
-                $isHome ? 'in:home' : 'string',
+                $isSystem ? 'in:'.($page->slug ?? '') : 'string',
                 Rule::unique('pages', 'slug')
                     ->where('tenant_id', Tenant::currentOrFail()->id)
                     ->ignore($pageId),

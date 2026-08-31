@@ -1,6 +1,8 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import StorefrontBlocks from '@/components/storefront-blocks';
 import type { StorefrontShared } from '@/layouts/storefront-layout';
 import StorefrontLayout from '@/layouts/storefront-layout';
+import type { Block, PreviewContext } from '@/lib/blocks';
 import { useT } from '@/lib/i18n';
 import { money } from '@/lib/money';
 
@@ -24,20 +26,42 @@ type Props = {
     heading: string;
     description: string | null;
     products: Paginated<ProductRow>;
+    /** Present on the "Shop" page — builder sections rendered above the grid. */
+    blocks?: Block[];
+    sections?: Omit<PreviewContext, 'hrefBase'>;
 };
 
 export default function StorefrontListing({
     heading,
     description,
     products,
+    blocks,
+    sections,
 }: Props) {
     const { storefront } = usePage<StorefrontShared>().props;
     const symbol = storefront.currencySymbol;
     const { t } = useT();
 
     return (
-        <StorefrontLayout>
+        <StorefrontLayout
+            ownerEdit={
+                storefront.manage?.shopPage
+                    ? {
+                          href: storefront.manage.shopPage,
+                          label: t('Edit shop'),
+                      }
+                    : undefined
+            }
+        >
             <Head title={heading} />
+
+            {blocks && blocks.length > 0 && sections && (
+                <StorefrontBlocks
+                    blocks={blocks}
+                    sections={sections}
+                    editBase={storefront.manage?.shopPage ?? null}
+                />
+            )}
 
             <div
                 className="mx-auto w-full px-5 py-10 sm:px-8"

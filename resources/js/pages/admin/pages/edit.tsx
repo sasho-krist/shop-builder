@@ -224,7 +224,7 @@ export default function PageEdit({ page, context, theme }: Props) {
 
                 <div className="grid flex-1 gap-0 overflow-hidden lg:grid-cols-[minmax(0,340px)_1fr]">
                     <div className="border-border flex flex-col gap-4 overflow-y-auto border-r p-4">
-                        {page.type !== 'home' && (
+                        {page.type === 'page' && (
                             <div className="grid gap-1.5">
                                 <Label className="text-xs">
                                     {t('URL slug')}
@@ -363,6 +363,13 @@ export default function PageEdit({ page, context, theme }: Props) {
                             selectedId={selectedId}
                             onSelect={setSelectedId}
                         />
+                        {page.type === 'shop' && (
+                            <div className="border-border text-muted-foreground mt-2 rounded-lg border border-dashed p-6 text-center text-xs">
+                                {t(
+                                    'The product grid and pagination render here, below your sections.',
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </form>

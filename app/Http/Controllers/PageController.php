@@ -21,6 +21,7 @@ class PageController extends Controller
     {
         $pages = Page::query()
             ->orderByRaw("type = 'home' desc")
+            ->orderByRaw("type = 'shop' desc")
             ->orderBy('title')
             ->get()
             ->map(fn (Page $page): array => [
@@ -92,8 +93,8 @@ class PageController extends Controller
     {
         $model = Page::findOrFail($page);
 
-        if ($model->type === 'home') {
-            return back()->withErrors(['page' => __('The home page cannot be deleted.')]);
+        if (in_array($model->type, Page::SYSTEM_TYPES, true)) {
+            return back()->withErrors(['page' => __('This page is part of the store and cannot be deleted.')]);
         }
 
         $model->delete();

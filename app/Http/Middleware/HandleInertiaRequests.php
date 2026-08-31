@@ -169,7 +169,14 @@ class HandleInertiaRequests extends Middleware
         }
 
         $base = rtrim((string) config('app.url'), '/');
-        $homePage = Page::query()->where('type', 'home')->first();
+        $pages = Page::query()
+            ->whereIn('type', ['home', 'shop'])
+            ->get()
+            ->keyBy('type');
+
+        $editUrl = fn (string $type): ?string => $pages->has($type)
+            ? "{$base}/pages/{$pages->get($type)->getKey()}/edit"
+            : null;
 
         return [
             'name' => $user->name,
@@ -178,7 +185,8 @@ class HandleInertiaRequests extends Middleware
             'newProduct' => "{$base}/products/create",
             'orders' => "{$base}/orders",
             'theme' => $activeTheme instanceof Theme ? "{$base}/themes/{$activeTheme->getKey()}/edit" : null,
-            'homePage' => $homePage instanceof Page ? "{$base}/pages/{$homePage->getKey()}/edit" : null,
+            'homePage' => $editUrl('home'),
+            'shopPage' => $editUrl('shop'),
         ];
     }
 }

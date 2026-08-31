@@ -690,5 +690,9 @@
     "Website": "Уебсайт",
 
     "Add your heading here": "Добавете заглавие тук",
-    "Ready to try it?": "Готови ли сте да опитате?"
+    "Ready to try it?": "Готови ли сте да опитате?",
+
+    "Edit shop": "Редактирай магазина",
+    "This page is part of the store and cannot be deleted.": "Тази страница е част от магазина и не може да бъде изтрита.",
+    "The product grid and pagination render here, below your sections.": "Мрежата с продукти и страницирането се показват тук, под вашите секции."
 }

@@ -60,6 +60,13 @@ class OnboardingController extends Controller
                 'blocks' => [],
                 'is_published' => true,
             ]);
+            $tenant->pages()->create([
+                'type' => 'shop',
+                'title' => 'Shop',
+                'slug' => 'shop',
+                'blocks' => [],
+                'is_published' => true,
+            ]);
             $tenant->settings()->create([]);
         });
 

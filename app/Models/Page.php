@@ -30,7 +30,10 @@ class Page extends Model
     /** @use HasFactory<PageFactory> */
     use HasFactory;
 
-    public const TYPES = ['home', 'page'];
+    public const TYPES = ['home', 'shop', 'page'];
+
+    /** Pages the owner cannot create, rename the slug of, or delete. */
+    public const SYSTEM_TYPES = ['home', 'shop'];
 
     /**
      * @return array<string, string>

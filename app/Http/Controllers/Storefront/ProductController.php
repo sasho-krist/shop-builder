@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Storefront\Concerns\BuildsSectionContext;
 use App\Http\Controllers\Storefront\Concerns\PresentsProducts;
+use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
@@ -12,14 +14,20 @@ use Inertia\Response;
 
 class ProductController extends Controller
 {
-    use PresentsProducts;
+    use BuildsSectionContext, PresentsProducts;
 
     public function index(): Response
     {
+        $shop = Page::query()->where('type', 'shop')->first();
+
         return Inertia::render('storefront/listing', [
-            'heading' => __('Shop'),
-            'description' => null,
+            'heading' => $shop instanceof Page && $shop->title !== ''
+                ? $shop->title
+                : __('Shop'),
+            'description' => $shop instanceof Page ? $shop->seo_description : null,
             'products' => $this->paginateProducts(Product::query()),
+            'blocks' => $shop instanceof Page ? $shop->blocks : [],
+            'sections' => $this->sectionContext(),
         ]);
     }
 

@@ -35,6 +35,11 @@ class PageFactory extends Factory
 
     public function home(): static
     {
-        return $this->state(['type' => 'home', 'title' => 'Home', 'slug' => 'home']);
+        return $this->state(['type' => 'home', 'title' => 'Home', 'slug' => 'home', 'is_published' => true]);
+    }
+
+    public function shop(): static
+    {
+        return $this->state(['type' => 'shop', 'title' => 'Shop', 'slug' => 'shop', 'is_published' => true]);
     }
 }

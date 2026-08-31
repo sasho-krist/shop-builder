@@ -41,7 +41,7 @@ default language**, with a one-click switch to English.
 | **Categories**  | Nested categories (parent/child) with cycle prevention; assign products from the product form.                                                                                                                                                                                                         |
 | **Collections** | Curated, ordered product groups with a searchable product picker; visible/hidden toggle.                                                                                                                                                                                                               |
 | **Themes**      | Design-token editor — 7 colour swatches, heading/body fonts, sliders for base size, type scale, corner radius, spacing and container width, button style — with a live mini-storefront preview. Presets: Minimal / Bold / Classic. One active theme per store.                                         |
-| **Pages**       | Section-based page builder (see below). Home page plus any number of custom pages, each publishable independently.                                                                                                                                                                                     |
+| **Pages**       | Section-based page builder (see below). Home and Shop are built-in pages (slug locked, not deletable); Shop's sections render above the product listing. Plus any number of custom pages, each publishable independently.                                                                              |
 | **Navigation**  | Header and footer menu editor — repeatable link rows resolving to home / shop / cart / a category / a collection / a page / a custom URL; optional automatic top-level category links; footer note.                                                                                                    |
 | **Orders**      | List and detail (line items, customer, shipping address, notes, payments); change order status and payment status.                                                                                                                                                                                     |
 | **Customers**   | The store's account holders — list with search, edit name/email, reset password, delete (past orders are kept).                                                                                                                                                                                        |
@@ -217,6 +217,11 @@ custom properties, shared by the editor preview and the storefront.
   selected section's schema form (with inline repeater editing); right panel is
   `PageCanvas`, a live preview styled by the active theme with real sample
   products/collections.
+- `Page.type` is `home` / `shop` / `page`. `home` and `shop` are system pages
+  (`Page::SYSTEM_TYPES`) — seeded on onboarding, backfilled by migration, slug
+  locked, not deletable, always shown in the Pages list. The **Shop** page's
+  sections render above the product grid on `/products`, and its title/SEO
+  description become that page's heading and intro text.
 - `App\Support\Blocks\BlockRegistry` is the PHP allow-list; `PageRequest` validates
   block structure. The storefront renders the **same** section components from
   `pages.blocks` via the shared `StorefrontBlocks` component, so interactive
