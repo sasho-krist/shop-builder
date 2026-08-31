@@ -195,20 +195,35 @@ mutedForeground, border), `typography` (headingFont, bodyFont, baseSize, scale),
 field. `resources/js/lib/theme.ts` → `themeToCssVars()` maps tokens to `--sb-*`
 custom properties, shared by the editor preview and the storefront.
 
-### Page / section builder
-
-- `resources/js/sections/registry.tsx` — each `SectionDef` has a `fields` schema
-  and a `Render` component. Field types: `text`, `textarea`, `image`, `color`,
-  `select`, `number` (slider), `boolean`, `collection`.
-- Starter sections: **Hero**, **Text**, **Image + text**, **Product grid**
-  (grid/list, 2–4 columns, source = _Newest_ / _Best sellers_ / a collection,
-  show price), **Featured collection**.
+- `resources/js/sections/*` — each `SectionDef` has a `fields` schema and a
+  `Render` component. Field types: `text`, `textarea`, `html`, `image`, `color`,
+  `icon` (curated icon set), `select`, `number` (slider), `boolean`,
+  `collection`, and `repeater` (arrays of sub-rows — used by lists, tabs,
+  galleries, etc.).
+- ~40 sections, grouped in the "Add" menu, roughly matching a page-builder
+  widget library:
+    - **Store** — Hero, Text block, Image + text, Product grid (source =
+      _Newest_ / _Best sellers_ / a collection), Featured collection.
+    - **Basic** — Heading, Text editor, Image, Button, Divider, Spacer, Icon,
+      Blockquote, Alert, Star rating, Google map, HTML / embed.
+    - **Media** — Video (YouTube/Vimeo), Image gallery, Image carousel.
+    - **Content** — Icon box, Image box, Icon list, Features grid, Testimonial,
+      Team, Logo grid, Price list, Social icons.
+    - **Advanced** — Tabs, Accordion, Toggle, FAQ, Counters, Progress bars,
+      Countdown, Animated headline, Testimonial carousel, Pricing table, Call to
+      action, Flip box.
 - Editor (`pages/edit`): left panel is a `@dnd-kit` sortable section list plus the
-  selected section's schema form; right panel is `PageCanvas`, a live preview
-  styled by the active theme with real sample products/collections.
+  selected section's schema form (with inline repeater editing); right panel is
+  `PageCanvas`, a live preview styled by the active theme with real sample
+  products/collections.
 - `App\Support\Blocks\BlockRegistry` is the PHP allow-list; `PageRequest` validates
   block structure. The storefront renders the **same** section components from
-  `pages.blocks` via the shared `StorefrontBlocks` component.
+  `pages.blocks` via the shared `StorefrontBlocks` component, so interactive
+  widgets (tabs, carousels, counters) work identically in the editor and live.
+- What is deliberately **not** here (from a WordPress/Elementor comparison):
+  form builder (needs a backend), WordPress-post / shortcode / dynamic-tag
+  widgets, WooCommerce widgets (the storefront has its own cart and checkout),
+  and theme-builder / popup features.
 
 ### Storefront
 
@@ -278,7 +293,10 @@ resources/js/
     admin/                   # admin panel screens
     storefront/              # storefront screens
     auth/  settings/
-  sections/registry.tsx      # page-builder + storefront sections
+  sections/                  # page-builder + storefront sections
+    registry.tsx             #   aggregates every SectionDef
+    commerce.tsx basic.tsx boxes.tsx interactive.tsx
+    shared.tsx icons.tsx
   components/                # shared React components
   layouts/                   # app, auth, settings, storefront
   lib/                       # i18n, theme, blocks, money

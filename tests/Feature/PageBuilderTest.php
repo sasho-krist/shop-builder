@@ -73,6 +73,52 @@ class PageBuilderTest extends TestCase
         $this->assertTrue($fresh->is_published);
     }
 
+    public function test_repeater_sections_save_and_render_on_the_storefront(): void
+    {
+        $blocks = [
+            [
+                'id' => 'f1',
+                'type' => 'features',
+                'props' => [
+                    'heading' => 'Why us',
+                    'columns' => 3,
+                    'items' => [
+                        ['icon' => 'leaf', 'title' => 'Natural', 'body' => 'Clean.'],
+                        ['icon' => 'truck', 'title' => 'Fast', 'body' => 'Quick.'],
+                    ],
+                ],
+            ],
+            [
+                'id' => 'a1',
+                'type' => 'accordion',
+                'props' => [
+                    'items' => [
+                        ['title' => 'Q1', 'content' => 'A1'],
+                        ['title' => 'Q2', 'content' => 'A2'],
+                    ],
+                ],
+            ],
+            ['id' => 'h1', 'type' => 'heading', 'props' => ['text' => 'Hello', 'tag' => 'h2']],
+        ];
+
+        $this->actingAs($this->user)
+            ->put(route('pages.update', $this->home), [
+                'title' => 'Home',
+                'slug' => 'home',
+                'is_published' => true,
+                'blocks' => $blocks,
+            ])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $fresh = $this->home->fresh();
+        $this->assertSame('features', $fresh->blocks[0]['type']);
+        $this->assertCount(2, $fresh->blocks[0]['props']['items']);
+
+        $this->get("http://{$this->tenant->slug}.shop-builder.localhost/")
+            ->assertOk();
+    }
+
     public function test_unknown_block_types_are_rejected(): void
     {
         $this->actingAs($this->user)

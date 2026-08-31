@@ -23,6 +23,8 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -38,7 +40,7 @@ import { useT } from '@/lib/i18n';
 import type { ThemeTokens } from '@/lib/theme';
 import { dashboard } from '@/routes';
 import pageRoutes from '@/routes/pages';
-import { getSection, SECTIONS } from '@/sections/registry';
+import { getSection, SECTION_GROUPS, SECTIONS } from '@/sections/registry';
 
 type PageData = {
     id: number;
@@ -257,24 +259,50 @@ export default function PageEdit({ page, context, theme }: Props) {
                                             {t('Add')}
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        {SECTIONS.map((section) => (
-                                            <DropdownMenuItem
-                                                key={section.type}
-                                                onClick={() =>
-                                                    addSection(section.type)
-                                                }
-                                            >
-                                                <div className="flex flex-col">
-                                                    <span>
-                                                        {t(section.label)}
-                                                    </span>
-                                                    <span className="text-muted-foreground text-xs">
-                                                        {t(section.description)}
-                                                    </span>
+                                    <DropdownMenuContent
+                                        align="end"
+                                        className="max-h-[70vh] overflow-y-auto"
+                                    >
+                                        {SECTION_GROUPS.map((group, gi) => {
+                                            const inGroup = SECTIONS.filter(
+                                                (s) => s.group === group,
+                                            );
+                                            if (inGroup.length === 0)
+                                                return null;
+                                            return (
+                                                <div key={group}>
+                                                    {gi > 0 && (
+                                                        <DropdownMenuSeparator />
+                                                    )}
+                                                    <DropdownMenuLabel className="text-muted-foreground text-[11px] tracking-wide uppercase">
+                                                        {t(group)}
+                                                    </DropdownMenuLabel>
+                                                    {inGroup.map((section) => (
+                                                        <DropdownMenuItem
+                                                            key={section.type}
+                                                            onClick={() =>
+                                                                addSection(
+                                                                    section.type,
+                                                                )
+                                                            }
+                                                        >
+                                                            <div className="flex flex-col">
+                                                                <span>
+                                                                    {t(
+                                                                        section.label,
+                                                                    )}
+                                                                </span>
+                                                                <span className="text-muted-foreground text-xs">
+                                                                    {t(
+                                                                        section.description,
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        </DropdownMenuItem>
+                                                    ))}
                                                 </div>
-                                            </DropdownMenuItem>
-                                        ))}
+                                            );
+                                        })}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
