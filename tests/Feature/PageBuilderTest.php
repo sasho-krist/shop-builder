@@ -130,6 +130,56 @@ class PageBuilderTest extends TestCase
             ->assertSessionHasErrors('blocks.0.type');
     }
 
+    public function test_column_containers_nest_blocks_and_reject_bad_nested_types(): void
+    {
+        $good = [
+            [
+                'id' => 'k1',
+                'type' => 'columns',
+                'props' => ['layout' => '1-2', 'gap' => 'md'],
+                'columns' => [
+                    [
+                        ['id' => 'k1a', 'type' => 'heading', 'props' => ['text' => 'Left', 'tag' => 'h3']],
+                    ],
+                    [
+                        ['id' => 'k1b', 'type' => 'image', 'props' => ['image' => '']],
+                        ['id' => 'k1c', 'type' => 'button', 'props' => ['label' => 'Go', 'url' => '/products']],
+                    ],
+                ],
+            ],
+        ];
+
+        $this->actingAs($this->user)
+            ->put(route('pages.update', $this->home), [
+                'title' => 'Home',
+                'slug' => 'home',
+                'is_published' => true,
+                'blocks' => $good,
+            ])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $fresh = $this->home->fresh();
+        $this->assertSame('columns', $fresh->blocks[0]['type']);
+        $this->assertCount(2, $fresh->blocks[0]['columns']);
+        $this->assertCount(2, $fresh->blocks[0]['columns'][1]);
+
+        $this->get("http://{$this->tenant->slug}.shop-builder.localhost/")
+            ->assertOk();
+
+        // a bad type nested in a column is rejected
+        $bad = $good;
+        $bad[0]['columns'][0][0]['type'] = 'evil';
+
+        $this->actingAs($this->user)
+            ->put(route('pages.update', $this->home), [
+                'title' => 'Home',
+                'slug' => 'home',
+                'blocks' => $bad,
+            ])
+            ->assertSessionHasErrors('blocks');
+    }
+
     public function test_the_home_page_slug_is_locked_and_it_cannot_be_deleted(): void
     {
         $this->actingAs($this->user)

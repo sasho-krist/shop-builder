@@ -26,6 +26,7 @@ class PageController extends Controller
 
         return Inertia::render('storefront/page', [
             'title' => $page->title,
+            'slug' => $page->slug,
             'blocks' => $page->blocks,
             'sections' => $this->sectionContext(),
         ]);

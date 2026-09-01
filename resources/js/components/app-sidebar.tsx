@@ -3,6 +3,7 @@ import {
     CreditCard,
     FileText,
     FolderTree,
+    Inbox,
     LayoutGrid,
     Layers,
     Menu,
@@ -29,6 +30,7 @@ import { dashboard } from '@/routes';
 import categories from '@/routes/categories';
 import collections from '@/routes/collections';
 import orders from '@/routes/orders';
+import messages from '@/routes/messages';
 import pages from '@/routes/pages';
 import products from '@/routes/products';
 import { show as billingShow } from '@/routes/billing';
@@ -84,6 +86,11 @@ const mainNavItems: NavItem[] = [
         title: 'Pages',
         href: pages.index(),
         icon: FileText,
+    },
+    {
+        title: 'Messages',
+        href: messages.index(),
+        icon: Inbox,
     },
     {
         title: 'Navigation',

@@ -9,7 +9,10 @@ import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
+    SelectGroup,
     SelectItem,
+    SelectLabel,
+    SelectSeparator,
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
@@ -46,17 +49,24 @@ type Props = {
     };
 };
 
-const TYPE_LABEL_KEYS: Record<LinkType, string> = {
-    home: 'Home page',
-    shop: 'All products',
-    cart: 'Cart',
-    category: 'Category',
-    collection: 'Collection',
-    page: 'Page',
-    url: 'Custom URL',
-};
+// Only category / collection / url still need a second control after the main
+// selector — a specific page is chosen directly in the main list.
+const NEEDS_TARGET: LinkType[] = ['category', 'collection', 'url'];
 
-const NEEDS_TARGET: LinkType[] = ['category', 'collection', 'page', 'url'];
+/**
+ * The main selector's value encodes the row: a plain type (`home`, `category`…)
+ * or `page:<slug>` when a specific custom page is picked.
+ */
+function encodeChoice(row: NavRow): string {
+    return row.type === 'page' && row.value ? `page:${row.value}` : row.type;
+}
+
+function decodeChoice(choice: string): Partial<NavRow> {
+    if (choice.startsWith('page:')) {
+        return { type: 'page', value: choice.slice('page:'.length) };
+    }
+    return { type: choice as LinkType, value: '' };
+}
 
 function move<T>(list: T[], from: number, to: number): T[] {
     if (to < 0 || to >= list.length) return list;
@@ -88,7 +98,6 @@ function LinkRows({
     function targetOptions(type: LinkType): Target[] {
         if (type === 'category') return targets.categories;
         if (type === 'collection') return targets.collections;
-        if (type === 'page') return targets.pages;
         return [];
     }
 
@@ -113,22 +122,56 @@ function LinkRows({
                     </div>
 
                     <Select
-                        value={row.type}
-                        onValueChange={(v) =>
-                            patch(i, { type: v as LinkType, value: '' })
-                        }
+                        value={encodeChoice(row)}
+                        onValueChange={(v) => patch(i, decodeChoice(v))}
                     >
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            {(Object.keys(TYPE_LABEL_KEYS) as LinkType[]).map(
-                                (type) => (
-                                    <SelectItem key={type} value={type}>
-                                        {t(TYPE_LABEL_KEYS[type])}
-                                    </SelectItem>
-                                ),
+                            <SelectItem value="home">
+                                {t('Home page')}
+                            </SelectItem>
+                            <SelectItem value="shop">
+                                {t('All products')}
+                            </SelectItem>
+                            <SelectItem value="cart">{t('Cart')}</SelectItem>
+
+                            {targets.pages.length > 0 && (
+                                <SelectGroup>
+                                    <SelectSeparator />
+                                    <SelectLabel>{t('Pages')}</SelectLabel>
+                                    {targets.pages.map((p) => (
+                                        <SelectItem
+                                            key={p.value}
+                                            value={`page:${p.value}`}
+                                        >
+                                            {p.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
                             )}
+
+                            <SelectSeparator />
+                            <SelectItem value="category">
+                                {t('Category')}
+                            </SelectItem>
+                            <SelectItem value="collection">
+                                {t('Collection')}
+                            </SelectItem>
+                            <SelectItem value="url">
+                                {t('Custom URL')}
+                            </SelectItem>
+
+                            {row.type === 'page' &&
+                                row.value !== '' &&
+                                !targets.pages.some(
+                                    (p) => p.value === row.value,
+                                ) && (
+                                    <SelectItem value={`page:${row.value}`}>
+                                        {row.value}
+                                    </SelectItem>
+                                )}
                         </SelectContent>
                     </Select>
 

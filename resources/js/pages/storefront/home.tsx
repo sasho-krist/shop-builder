@@ -29,6 +29,7 @@ export default function StorefrontHome({ blocks, sections }: Props) {
                 sections={sections}
                 editBase={editBase}
                 emptyMessage={t('This store is just getting started.')}
+                pageSlug="home"
             />
         </StorefrontLayout>
     );

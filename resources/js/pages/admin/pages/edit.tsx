@@ -13,8 +13,9 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Head, useForm } from '@inertiajs/react';
-import { GripVertical, Plus, Trash2 } from 'lucide-react';
+import { ChevronLeft, GripVertical, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import ColumnsEditor from '@/components/columns-editor';
 import PageCanvas from '@/components/page-canvas';
 import SectionFields from '@/components/section-fields';
 import { Button } from '@/components/ui/button';
@@ -32,9 +33,13 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import {
     type Block,
+    findBlock,
+    layoutCols,
+    mapBlock,
     newBlock,
     type PreviewContext,
     type PropValue,
+    resizeColumns,
 } from '@/lib/blocks';
 import { useT } from '@/lib/i18n';
 import type { ThemeTokens } from '@/lib/theme';
@@ -97,6 +102,12 @@ function SortableRow({
                 onClick={onSelect}
             >
                 {section ? t(section.label) : block.type}
+                {block.columns && (
+                    <span className="text-muted-foreground">
+                        {' '}
+                        · {block.columns.reduce((n, col) => n + col.length, 0)}
+                    </span>
+                )}
             </button>
             <Button
                 type="button"
@@ -116,11 +127,23 @@ function initialSelection(blocks: Block[]): string | null {
         const requested = new URLSearchParams(window.location.search).get(
             'section',
         );
-        if (requested && blocks.some((b) => b.id === requested)) {
+        if (requested && findBlock(blocks, requested)) {
             return requested;
         }
     }
     return blocks[0]?.id ?? null;
+}
+
+/** The container block that holds `childId` in one of its columns, if any. */
+function findParent(blocks: Block[], childId: string): Block | undefined {
+    for (const block of blocks) {
+        for (const col of block.columns ?? []) {
+            if (col.some((c) => c.id === childId)) return block;
+            const deeper = findParent(col, childId);
+            if (deeper) return deeper;
+        }
+    }
+    return undefined;
 }
 
 export default function PageEdit({ page, context, theme }: Props) {
@@ -148,8 +171,13 @@ export default function PageEdit({ page, context, theme }: Props) {
         is_published: page.is_published,
     });
 
-    const selected = form.data.blocks.find((block) => block.id === selectedId);
+    const selected = selectedId
+        ? findBlock(form.data.blocks, selectedId)
+        : undefined;
     const selectedSection = selected ? getSection(selected.type) : undefined;
+    const parentContainer = selectedId
+        ? findParent(form.data.blocks, selectedId)
+        : undefined;
     const errors = form.errors as Record<string, string>;
 
     function setBlocks(blocks: Block[]) {
@@ -165,18 +193,36 @@ export default function PageEdit({ page, context, theme }: Props) {
     }
 
     function updateProps(key: string, value: PropValue) {
+        if (!selectedId) return;
         setBlocks(
-            form.data.blocks.map((block) =>
-                block.id === selectedId
-                    ? { ...block, props: { ...block.props, [key]: value } }
-                    : block,
-            ),
+            mapBlock(form.data.blocks, selectedId, (block) => {
+                const props = { ...block.props, [key]: value };
+                // Changing a container's layout resizes its column child-lists.
+                if (getSection(block.type)?.container && key === 'layout') {
+                    const layout = typeof value === 'string' ? value : '1-1';
+                    return {
+                        ...block,
+                        props,
+                        columns: resizeColumns(
+                            block.columns ?? [],
+                            layoutCols(layout).length,
+                        ),
+                    };
+                }
+                return { ...block, props };
+            }),
         );
     }
 
+    function replaceBlock(next: Block) {
+        setBlocks(mapBlock(form.data.blocks, next.id, () => next));
+    }
+
     function removeBlock(id: string) {
-        setBlocks(form.data.blocks.filter((block) => block.id !== id));
-        if (selectedId === id) setSelectedId(null);
+        setBlocks(mapBlock(form.data.blocks, id, () => null));
+        if (selectedId === id || findParent(form.data.blocks, id)?.id === id) {
+            setSelectedId(null);
+        }
     }
 
     function onDragEnd(event: DragEndEvent) {
@@ -340,6 +386,18 @@ export default function PageEdit({ page, context, theme }: Props) {
 
                         {selected && selectedSection && (
                             <div className="border-border flex flex-col gap-3 border-t pt-4">
+                                {parentContainer && (
+                                    <button
+                                        type="button"
+                                        className="text-muted-foreground hover:text-foreground -mt-1 flex items-center gap-1 self-start text-xs"
+                                        onClick={() =>
+                                            setSelectedId(parentContainer.id)
+                                        }
+                                    >
+                                        <ChevronLeft className="size-3.5" />
+                                        {t('Back to Columns')}
+                                    </button>
+                                )}
                                 <h2 className="text-sm font-semibold">
                                     {t(':section settings', {
                                         section: t(selectedSection.label),
@@ -351,6 +409,14 @@ export default function PageEdit({ page, context, theme }: Props) {
                                     ctx={context}
                                     onChange={updateProps}
                                 />
+                                {selectedSection.container && (
+                                    <ColumnsEditor
+                                        block={selected}
+                                        selectedId={selectedId}
+                                        onChange={replaceBlock}
+                                        onSelect={setSelectedId}
+                                    />
+                                )}
                             </div>
                         )}
                     </div>

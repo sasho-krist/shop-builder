@@ -43,6 +43,10 @@ class StoreNavigationTest extends TestCase
     public function test_the_navigation_editor_renders_with_link_targets(): void
     {
         Category::create(['name' => 'Tea', 'slug' => 'tea', 'position' => 0]);
+        Page::factory()->for($this->store)->create([
+            'type' => 'page', 'title' => 'Contact', 'slug' => 'contact',
+            'blocks' => [], 'is_published' => true,
+        ]);
 
         $this->actingAs($this->owner)->get(route('navigation.edit'))
             ->assertOk()
@@ -50,6 +54,10 @@ class StoreNavigationTest extends TestCase
                 ->component('admin/navigation')
                 ->where('navigation.show_category_nav', true)
                 ->where('targets.categories.0.value', 'tea')
+                // every custom page is offered as a direct link target
+                ->where('targets.pages', fn ($rows) => collect($rows)->contains(
+                    fn ($r) => $r['value'] === 'contact' && $r['label'] === 'Contact',
+                ))
             );
     }
 

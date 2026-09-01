@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
@@ -82,6 +83,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('pages/{page}', [PageController::class, 'destroy'])->name('pages.destroy');
 
         Route::post('media', [MediaController::class, 'store'])->name('media.store');
+
+        Route::get('messages', [MessageController::class, 'index'])->name('messages.index');
+        Route::patch('messages/{message}', [MessageController::class, 'update'])->name('messages.update');
+        Route::delete('messages/{message}', [MessageController::class, 'destroy'])->name('messages.destroy');
 
         Route::get('store-settings', [StoreSettingController::class, 'edit'])->name('store-settings.edit');
         Route::put('store-settings', [StoreSettingController::class, 'update'])->name('store-settings.update');

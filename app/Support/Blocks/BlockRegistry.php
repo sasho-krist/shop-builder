@@ -10,6 +10,8 @@ namespace App\Support\Blocks;
 class BlockRegistry
 {
     public const TYPES = [
+        // Layout
+        'columns',
         // Store
         'hero',
         'richText',
@@ -43,6 +45,7 @@ class BlockRegistry
         'logoGrid',
         'priceList',
         'socialIcons',
+        'contactForm',
         // Advanced
         'tabs',
         'accordion',

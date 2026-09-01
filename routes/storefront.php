@@ -6,6 +6,7 @@ use App\Http\Controllers\Storefront\CategoryController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\CollectionController;
 use App\Http\Controllers\Storefront\CustomerAuthController;
+use App\Http\Controllers\Storefront\FormSubmissionController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\LocaleController;
 use App\Http\Controllers\Storefront\PageController;
@@ -39,6 +40,10 @@ Route::domain('{store}')
         Route::post('cart', [CartController::class, 'store'])->name('storefront.cart.add');
         Route::patch('cart/{item}', [CartController::class, 'update'])->name('storefront.cart.update');
         Route::delete('cart/{item}', [CartController::class, 'destroy'])->name('storefront.cart.remove');
+
+        Route::post('forms', [FormSubmissionController::class, 'store'])
+            ->middleware('throttle:20,1')
+            ->name('storefront.form');
 
         Route::get('checkout', [CheckoutController::class, 'show'])->name('storefront.checkout');
         Route::post('checkout', [CheckoutController::class, 'store'])->name('storefront.checkout.place');

@@ -1,6 +1,14 @@
-import type { CSSProperties, ReactNode } from 'react';
+import {
+    createContext,
+    type CSSProperties,
+    type ReactNode,
+    useContext,
+} from 'react';
 import type { PreviewContext, PreviewProduct } from '@/lib/blocks';
 import { useT } from '@/lib/i18n';
+
+/** True while rendering inside a container column — sections drop their gutters. */
+export const NestedContext = createContext(false);
 
 export function hrefFor(
     ctx: PreviewContext,
@@ -30,6 +38,18 @@ export function SectionShell({
     full?: boolean;
     style?: CSSProperties;
 }) {
+    const nested = useContext(NestedContext);
+
+    // Inside a column: no page gutters, no max-width, no vertical rhythm — the
+    // column already handles spacing.
+    if (nested) {
+        return (
+            <div className={className} style={style}>
+                {children}
+            </div>
+        );
+    }
+
     return (
         <div
             style={{

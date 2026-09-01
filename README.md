@@ -42,7 +42,8 @@ default language**, with a one-click switch to English.
 | **Collections** | Curated, ordered product groups with a searchable product picker; visible/hidden toggle.                                                                                                                                                                                                               |
 | **Themes**      | Design-token editor — 7 colour swatches, heading/body fonts, sliders for base size, type scale, corner radius, spacing and container width, button style — with a live mini-storefront preview. Presets: Minimal / Bold / Classic. One active theme per store.                                         |
 | **Pages**       | Section-based page builder (see below). Home, Shop, Cart and Thank-you are built-in pages (slug locked, not deletable) whose sections wrap the corresponding storefront view; plus any number of custom pages, each publishable independently.                                                         |
-| **Navigation**  | Header and footer menu editor — repeatable link rows resolving to home / shop / cart / a category / a collection / a page / a custom URL; optional automatic top-level category links; footer note.                                                                                                    |
+| **Navigation**  | Header and footer menu editor — repeatable link rows; the target picker lists Home / All products / Cart, then **every custom page by name**, then Category / Collection / Custom URL; optional automatic top-level category links; footer note.                                                       |
+| **Messages**    | Contact-form submissions from the storefront — expandable list with per-field values, unread indicator (auto-marked read on open), mark unread, delete. Also emailed to the store notification email when one is set.                                                                                  |
 | **Orders**      | List and detail (line items, customer, shipping address, notes, payments); change order status and payment status.                                                                                                                                                                                     |
 | **Customers**   | The store's account holders — list with search, edit name/email, reset password, delete (past orders are kept).                                                                                                                                                                                        |
 | **Owners**      | Store staff with full admin access — add an owner (new user or attach an existing one), edit name/email, remove (with "not yourself" / "not the last owner" guards). An owner's password can only be changed by that owner, from their own security settings.                                          |
@@ -202,6 +203,14 @@ custom properties, shared by the editor preview and the storefront.
   sub-rows — used by lists, tabs, galleries, etc.).
 - ~40 sections, grouped in the "Add" menu, roughly matching a page-builder
   widget library:
+    - **Layout** — Columns: a container block that splits into 2–4 columns
+      (equal or ratio layouts like 1 : 2, 3 : 1), each column holding its own
+      stack of elements. Gap, vertical alignment, and "stack on mobile" are
+      per-container options. Nesting is one level deep — a column cannot hold
+      another Columns block. Stored as `Block.columns` (`Block[][]`), validated
+      recursively by `PageRequest`, edited via `ColumnsEditor` (per-column
+      add / reorder / delete), rendered by the shared block renderer with a
+      `NestedContext` that drops section gutters inside a column.
     - **Store** — Hero, Text block, Image + text, Product grid (2–6 columns,
       small / medium / large card size, source = _Newest_ / _Best sellers_ / a
       collection), Featured collection (same column and card-size options).
@@ -209,7 +218,12 @@ custom properties, shared by the editor preview and the storefront.
       Blockquote, Alert, Star rating, Google map, HTML / embed.
     - **Media** — Video (YouTube/Vimeo), Image gallery, Image carousel.
     - **Content** — Icon box, Image box, Icon list, Features grid, Testimonial,
-      Team, Logo grid, Price list, Social icons.
+      Team, Logo grid, Price list, Social icons, **Contact form** (a working
+      form with a repeater of fields — short text / email / phone / long text /
+      dropdown / radio / checkbox / on-off switch, each full- or half-width and
+      optionally required; submissions POST to `/forms`, land in `form_submissions`
+      and show under **Messages** in the admin, and email the store's
+      `store_email` if set).
     - **Advanced** — Tabs, Accordion, Toggle, FAQ, Counters, Progress bars,
       Countdown, Animated headline, Testimonial carousel, Pricing table, Call to
       action, Flip box.
@@ -229,9 +243,9 @@ custom properties, shared by the editor preview and the storefront.
   `pages.blocks` via the shared `StorefrontBlocks` component, so interactive
   widgets (tabs, carousels, counters) work identically in the editor and live.
 - What is deliberately **not** here (from a WordPress/Elementor comparison):
-  form builder (needs a backend), WordPress-post / shortcode / dynamic-tag
-  widgets, WooCommerce widgets (the storefront has its own cart and checkout),
-  and theme-builder / popup features.
+  a multi-step / logic form builder (the Contact form covers the common case),
+  WordPress-post / shortcode / dynamic-tag widgets, WooCommerce widgets (the
+  storefront has its own cart and checkout), and theme-builder / popup features.
 
 ### Storefront
 
@@ -390,12 +404,18 @@ merchant + shopper flow, payments/billing (via fakes), and localisation.
 
 ## Deployment notes
 
-- The storefront is server-rendered through Inertia, so production wants a Node
-  process (`npm run build:ssr`) — Laravel Forge + a VPS is the simple option.
-- Production needs wildcard DNS (`*.example.com`) and wildcard TLS for store
-  subdomains, plus per-domain certificate issuing for connected custom domains.
+- Deploys as a **plain PHP/Laravel app** — no Node process in production. The
+  frontend is a static build (`npm run build` → `public/build`), committed or
+  uploaded. Inertia SSR is off (`INERTIA_SSR_ENABLED`, default false).
+- Every store needs its own hostname. Ideal: wildcard DNS (`*.example.com`) +
+  wildcard TLS. On hosting without wildcard TLS, create each store's subdomain
+  explicitly (its cert is then issued per-host); connected custom domains always
+  need their own cert.
+- No queue worker or scheduler is required (no queued jobs, no scheduled tasks);
+  `QUEUE_CONNECTION=sync` is fine.
 - Provide real Stripe keys, webhook secrets and Price IDs to enable payments and
   subscriptions.
+- Step-by-step shared-hosting (cPanel) walkthrough: [`DEPLOY.md`](DEPLOY.md).
 
 ## License
 
