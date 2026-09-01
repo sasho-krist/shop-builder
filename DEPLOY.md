@@ -6,11 +6,18 @@ machine, once, to build the frontend.
 
 What the server needs:
 
-- PHP **8.3** (cPanel → _Select PHP Version_) with `pdo_mysql`, `mbstring`,
-  `openssl`, `bcmath`, `curl`, `fileinfo`, `gd` (or `imagick`), `zip`, `intl`
+- PHP **8.3+** (cPanel → _Select PHP Version_) with `pdo_mysql`, `mbstring`,
+  `openssl`, `bcmath`, `curl`, `fileinfo`, `gd` (or `imagick`), `zip`, `intl`.
+  8.4 is fine.
 - A MySQL database
 - Composer (usually present in the shell; see step 4 if not)
 - SSH / Terminal access (jailshell is fine)
+
+> **If `proc_open` is disabled in CLI PHP** (common on cPanel — check with
+> `php -r 'var_dump(function_exists("proc_open"));'`): `composer install`'s
+> post-script and `php artisan about` will error harmlessly. You must then run
+> `php artisan package:discover` manually (step 4), and you must **not**
+> `route:cache` (step 7). Everything else works.
 
 ---
 
@@ -91,11 +98,11 @@ In the shell:
 php -v
 ```
 
-If it is not 8.3, use the EA path explicitly (and set the domain's MultiPHP to
-8.3 in cPanel):
+If it is below 8.3, use a newer EA path explicitly (and set the domain's
+MultiPHP version in cPanel to match):
 
 ```bash
-alias php='/opt/cpanel/ea-php83/root/usr/bin/php'
+alias php='/opt/cpanel/ea-php83/root/usr/bin/php'   # or ea-php84
 ```
 
 Use that `php` for every `artisan`/`composer` command below.
@@ -107,9 +114,17 @@ This account already has `~/composer.phar`:
 ```bash
 cd ~/shop-builder
 php ~/composer.phar install --no-dev --optimize-autoloader
+php artisan package:discover        # required — composer's post-script can't run it
 ```
 
 (If `composer` is also on `PATH`, `composer install --no-dev -o` works too.)
+
+The `install` will print an error at the end —
+`Process class relies on proc_open` on the `package:discover` post-script. That
+is expected here; the packages and autoloader are already written. The manual
+`php artisan package:discover` line finishes the job. Skipping it leaves
+package service providers (Fortify's auth routes, etc.) unregistered → `/login`
+and `/register` return 404.
 
 ## 5. Create the database
 
@@ -141,18 +156,23 @@ pay-on-delivery.
 php artisan migrate --force
 php artisan storage:link
 php artisan config:cache
-php artisan route:cache
 php artisan view:cache
 
 find storage bootstrap/cache -type d -exec chmod 775 {} \;
 ```
 
-Do **not** run `php artisan db:seed` on a `--no-dev` install — the default
-seeder needs `fakerphp/faker`, which is a dev dependency. You create the first
-account and store through the UI (step 10). To fill a store with the demo
-catalogue afterwards, run `php artisan db:seed --class=DemoCatalogSeeder --force`
-(it has no Faker dependency) with that store bound, or from the store's shell
-session.
+> **Do NOT run `php artisan route:cache` on this host.** With `proc_open`
+> disabled, the route-cache build misses package-registered routes, so
+> `/login` and `/register` start returning 404. `config:cache` gives almost all
+> of the performance benefit without the risk. If you ran it and hit 404s,
+> `php artisan optimize:clear` recovers. After any `route:cache` on a host where
+> it _does_ work, remember it must be re-run on every deploy.
+
+Do **not** run `php artisan db:seed` on a `--no-dev` install either — the
+default seeder needs `fakerphp/faker`, a dev dependency. You create the first
+account and store through the UI (steps 8–11). To fill a store with the demo
+catalogue afterwards: `php artisan db:seed --class=DemoCatalogSeeder --force`
+(no Faker dependency) with that store bound.
 
 ## 8. Create the central subdomain and point it at `public/`
 
@@ -171,19 +191,31 @@ folder it created.
 
 cPanel → **SSL/TLS Status** → tick `shop.sasho-dev.com` → **Run AutoSSL**.
 
-## 10. Add a store
+## 10. Wildcard subdomain — so every store just works
 
-1. Open `https://shop.sasho-dev.com`, register, complete onboarding, create a
-   store with slug `aura`.
-2. cPanel → **Domains** → **Create A New Domain** → `aura.shop.sasho-dev.com`,
-   document root **`shop-builder/public`** (the same folder as the central host).
-3. **SSL/TLS Status** → **Run AutoSSL** so `aura.shop.sasho-dev.com` gets a cert.
-4. Visit `https://aura.shop.sasho-dev.com`.
+Ask the host (ticket) to set up **once**:
 
-Repeat per store (one subdomain each). A store can instead use its **own
-domain**: Store Settings → custom domain, the owner points a CNAME at the server,
-you add that domain in cPanel (Alias/Addon) with document root
-`shop-builder/public`, then run AutoSSL.
+1. A **wildcard subdomain** `*.shop.sasho-dev.com` with document root
+   `/storage/sashodeo/shop-builder/public` (same as the central host).
+2. A **wildcard Let's Encrypt certificate** for `*.shop.sasho-dev.com`
+   (DNS-01 validation — the host does this, not you).
+
+After that, creating a store in the admin is all it takes — its subdomain
+(`{slug}.shop.sasho-dev.com`) resolves and serves immediately, no per-store
+cPanel work. This is the setup currently in production.
+
+**Without the wildcard**, create each store's subdomain by hand: cPanel →
+Domains → Create A New Domain → `{slug}.shop.sasho-dev.com`, doc root
+`shop-builder/public`, then Run AutoSSL. A store can also bring its **own
+domain**: Store Settings → custom domain, owner points a CNAME at the server,
+you add it in cPanel (Alias/Addon) with doc root `shop-builder/public` + AutoSSL.
+
+## 11. Fill the store
+
+`https://shop.sasho-dev.com` → **Pages → Home** → add sections (Hero, Product
+grid) → Save. Make sure products are **active** and have at least one variant
+**with a price** (a product without a priced variant fails to save). Set a
+**Theme**.
 
 ---
 
@@ -193,27 +225,48 @@ you add that domain in cPanel (Alias/Addon) with document root
 cd ~/shop-builder
 git pull                              # or re-upload
 php ~/composer.phar install --no-dev --optimize-autoloader
+php artisan package:discover
 # upload the fresh public/build/ from your PC (unless it rode in on the branch)
 php artisan migrate --force
 php artisan optimize:clear
-php artisan config:cache && php artisan route:cache && php artisan view:cache
+php artisan config:cache && php artisan view:cache
 ```
 
 ---
 
 ## Troubleshooting
 
-| Symptom                                    | Fix                                                                                                                                     |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Blank 500 page                             | `tail storage/logs/laravel.log`. Usually a missing `APP_KEY`, unwritable `storage/`, or wrong DB creds.                                 |
-| CSS/JS 404, unstyled page                  | `public/build/manifest.json` is missing — upload the `npm run build` output.                                                            |
-| "419 Page Expired" on login                | `SESSION_DOMAIN` must be `.shop.sasho-dev.com` (leading dot, = central host) and `APP_URL` must be `https://…`.                         |
-| Redirect loop / assets load over `http://` | Host is behind a proxy. In `bootstrap/app.php`, inside `withMiddleware`, add `$middleware->trustProxies(at: '*');` and re-cache config. |
-| Store subdomain returns 404                | The store `slug` must equal the subdomain label, and the store `status` must be `active`.                                               |
-| Emails not sending                         | Use a real cPanel mailbox; port 465 + `MAIL_SCHEME=smtps`, username is the full address.                                                |
+| Symptom                                                                                         | Fix                                                                                                                                                                                                  |
+| ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/login` or `/register` → 404 (rest of the app works)                                           | Package providers didn't register. Run `php artisan package:discover`, then `php artisan optimize:clear`. **Never** `route:cache` on a host with `proc_open` disabled.                               |
+| New (sub)domain serves a 163-byte page redirecting to `/cgi-sys/defaultwebpage.cgi`             | LiteSpeed hasn't rebuilt its vhost config for the new domain. Verify the docroot in cPanel → Domains, then open a host ticket: "please rebuild the httpd config + restart LiteSpeed for `<domain>`". |
+| Subdomain → browser `DNS_PROBE_FINISHED_NXDOMAIN`, but `nslookup <host> 1.1.1.1` returns the IP | Your resolver cached the old NXDOMAIN. Switch the PC's DNS to `1.1.1.1`, `ipconfig /flushdns`, clear `chrome://net-internals/#dns` — or just wait ~1h.                                               |
+| Blank 500 page                                                                                  | `tail storage/logs/laravel.log`. Usually a missing `APP_KEY`, unwritable `storage/`, or wrong DB creds.                                                                                              |
+| CSS/JS 404, unstyled page                                                                       | `public/build/manifest.json` is missing — upload the `npm run build` output.                                                                                                                         |
+| "419 Page Expired" on login                                                                     | `SESSION_DOMAIN` must be `.shop.sasho-dev.com` (leading dot, = central host) and `APP_URL` must be `https://…`.                                                                                      |
+| Redirect loop / assets load over `http://`                                                      | Host is behind a proxy. In `bootstrap/app.php`, inside `withMiddleware`, add `$middleware->trustProxies(at: '*');` and re-cache config.                                                              |
+| Store subdomain returns 404 (Laravel 404, not the cPanel page)                                  | The store `slug` must equal the subdomain label, and the store `status` must be `active`.                                                                                                            |
+| Product won't save, no visible error                                                            | It needs a variant with a **price** — scroll to the Variants section and fill Price on the "Default" row.                                                                                            |
+| Emails not sending                                                                              | Use a real cPanel mailbox; port 465 + `MAIL_SCHEME=smtps`, username is the full address.                                                                                                             |
+
+### Verifying a vhost without waiting for DNS
+
+```bash
+curl -skI --resolve <host>:443:109.206.237.11 https://<host>/
+```
+
+A working Laravel response has `vary: X-Inertia` and `set-cookie: sb_session=…`.
+A broken one is `Content-Length: 163` with a `Last-Modified` header (static
+default page → vhost not active).
 
 ## Notes
 
-- `public/.htaccess` is already correct for Apache / LiteSpeed.
+- `public/.htaccess` is already correct for Apache / LiteSpeed. cPanel appends a
+  `# BEGIN cPanel-generated php ini directives` block to it on domain creation —
+  harmless, the Laravel rewrite rules stay.
 - No queue worker and no cron are needed (no queued jobs, no scheduled tasks).
-- To reset caches during debugging: `php artisan optimize:clear`.
+- Inertia SSR is off (`INERTIA_SSR_ENABLED=false`) — there is no SSR bundle.
+- To reset caches during debugging: `php artisan optimize:clear` (then
+  `php artisan config:cache` again, **not** `route:cache`).
+- `php artisan about` fails with a `proc_open` error on this host — that's
+  expected and harmless; it doesn't affect serving requests.

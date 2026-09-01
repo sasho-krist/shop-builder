@@ -404,18 +404,22 @@ merchant + shopper flow, payments/billing (via fakes), and localisation.
 
 ## Deployment notes
 
+- Running in production on shared cPanel/LiteSpeed hosting at
+  `shop.sasho-dev.com`, stores on `*.shop.sasho-dev.com` (wildcard subdomain +
+  wildcard TLS).
 - Deploys as a **plain PHP/Laravel app** — no Node process in production. The
   frontend is a static build (`npm run build` → `public/build`), committed or
   uploaded. Inertia SSR is off (`INERTIA_SSR_ENABLED`, default false).
 - Every store needs its own hostname. Ideal: wildcard DNS (`*.example.com`) +
-  wildcard TLS. On hosting without wildcard TLS, create each store's subdomain
-  explicitly (its cert is then issued per-host); connected custom domains always
-  need their own cert.
+  wildcard TLS. Without wildcard TLS, create each store's subdomain explicitly;
+  connected custom domains always need their own cert.
 - No queue worker or scheduler is required (no queued jobs, no scheduled tasks);
   `QUEUE_CONNECTION=sync` is fine.
 - Provide real Stripe keys, webhook secrets and Price IDs to enable payments and
   subscriptions.
-- Step-by-step shared-hosting (cPanel) walkthrough: [`DEPLOY.md`](DEPLOY.md).
+- **Full step-by-step cPanel walkthrough + gotchas (`proc_open` disabled →
+  run `package:discover` manually and never `route:cache`; new-domain vhost
+  rebuilds; DNS cache): [`DEPLOY.md`](DEPLOY.md).**
 
 ## License
 
