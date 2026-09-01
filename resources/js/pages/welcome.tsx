@@ -53,9 +53,7 @@ export default function Welcome() {
 
             <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-5">
                 <span className="flex items-center gap-2 font-semibold">
-                    <span className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-md">
-                        <AppLogoIcon className="size-5 fill-current" />
-                    </span>
+                    <AppLogoIcon className="h-8 w-auto" />
                     {name}
                 </span>
 
