@@ -33,22 +33,22 @@ The admin panel and the storefront are **entirely in Bulgarian**.
 
 ### For the merchant (admin panel)
 
-| Area            | Capabilities                                                                                                                                                                                                                                                                                           |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Dashboard**   | Store name, live storefront link, current plan.                                                                                                                                                                                                                                                        |
-| **Products**    | Full CRUD; option groups (e.g. Size / Colour) that generate a variant matrix; per-variant SKU, price, compare-at price, stock; drag-and-drop images with alt text and reordering; SEO fields. List view with debounced search, status filter and sorting. **CSV import** with a column-mapping wizard. |
-| **Categories**  | Nested categories (parent/child) with cycle prevention; assign products from the product form.                                                                                                                                                                                                         |
-| **Collections** | Curated, ordered product groups with a searchable product picker; visible/hidden toggle.                                                                                                                                                                                                               |
-| **Themes**      | Design-token editor — 7 colour swatches, heading/body fonts, sliders for base size, type scale, corner radius, spacing and container width, button style — with a live mini-storefront preview. Presets: Minimal / Bold / Classic. One active theme per store.                                         |
-| **Pages**       | Section-based page builder (see below). Home, Shop, Cart and Thank-you are built-in pages (slug locked, not deletable) whose sections wrap the corresponding storefront view; plus any number of custom pages, each publishable independently.                                                         |
-| **Navigation**  | Header and footer menu editor — repeatable link rows; the target picker lists Home / All products / Cart, then **every custom page by name**, then Category / Collection / Custom URL; optional automatic top-level category links; footer note.                                                       |
-| **Messages**    | Contact-form submissions from the storefront — expandable list with per-field values, unread indicator (auto-marked read on open), mark unread, delete. Also emailed to the store notification email when one is set.                                                                                  |
-| **Orders**      | List and detail (line items, customer, shipping address, notes, payments); change order status and payment status.                                                                                                                                                                                     |
-| **Customers**   | The store's account holders — list with search, edit name/email, reset password, delete (past orders are kept).                                                                                                                                                                                        |
-| **Owners**      | Store staff with full admin access — add an owner (new user or attach an existing one), edit name/email, remove (with "not yourself" / "not the last owner" guards). An owner's password can only be changed by that owner, from their own security settings.                                          |
-| **Billing**     | Current plan, usage bars (products, team members), plan cards — "Choose plan" redirects to Stripe Checkout and returns to this page with a confirmation; "Manage subscription" opens the Stripe billing portal (cancel / resume). `BILLING_MOCK=true` swaps both for an in-app stand-in in local dev.  |
-| **Settings**    | Currency code & symbol, store notification email, flat shipping rate, free-shipping threshold, tax rate & tax-inclusive pricing, **the store's own Stripe connection** (secret + webhook secret + the webhook URL to paste into Stripe), and the custom-domain connection with CNAME instructions.     |
-| **Account**     | Profile (name/email), security (password, two-factor authentication, passkeys), and appearance (light/dark/system).                                                                                                                                                                                    |
+| Area            | Capabilities                                                                                                                                                                                                                                                                                                       |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Dashboard**   | Store name, live storefront link, current plan.                                                                                                                                                                                                                                                                    |
+| **Products**    | Full CRUD; option groups (e.g. Size / Colour) that generate a variant matrix; per-variant SKU, price, compare-at price, stock; drag-and-drop images with alt text and reordering; SEO fields. List view with debounced search, status filter and sorting. **CSV import** with a column-mapping wizard.             |
+| **Categories**  | Nested categories (parent/child) with cycle prevention; assign products from the product form.                                                                                                                                                                                                                     |
+| **Collections** | Curated, ordered product groups with a searchable product picker; visible/hidden toggle.                                                                                                                                                                                                                           |
+| **Themes**      | Design-token editor — 7 colour swatches, heading/body fonts, sliders for base size, type scale, corner radius, spacing and container width, button style — with a live mini-storefront preview. Presets: Minimal / Bold / Classic. One active theme per store.                                                     |
+| **Pages**       | Section-based page builder (see below). Home, Shop, Cart and Thank-you are built-in pages (slug locked, not deletable) whose sections wrap the corresponding storefront view; plus any number of custom pages, each publishable independently.                                                                     |
+| **Navigation**  | Header and footer menu editor — repeatable link rows; the target picker lists Home / All products / Cart, then **every custom page by name**, then Category / Collection / Custom URL; optional automatic top-level category links; footer note.                                                                   |
+| **Messages**    | Contact-form submissions from the storefront — expandable list with per-field values, unread indicator (auto-marked read on open), mark unread, delete. Also emailed to the store notification email when one is set.                                                                                              |
+| **Orders**      | List and detail (line items, customer, shipping address, notes, payments); change order status and payment status.                                                                                                                                                                                                 |
+| **Customers**   | The store's account holders — list with search, edit name/email, reset password, delete (past orders are kept).                                                                                                                                                                                                    |
+| **Owners**      | Store staff with full admin access — add an owner (new user or attach an existing one), edit name/email, remove (with "not yourself" / "not the last owner" guards). An owner's password can only be changed by that owner, from their own security settings.                                                      |
+| **Billing**     | Current plan, usage bars (products, team members), plan cards — "Choose plan" redirects to Stripe Checkout and returns to this page with a confirmation; "Manage subscription" opens the Stripe billing portal (cancel / resume). `BILLING_MOCK=true` swaps both for an in-app stand-in (used on the public demo). |
+| **Settings**    | Currency code & symbol, store notification email, flat shipping rate, free-shipping threshold, tax rate & tax-inclusive pricing, **the store's own Stripe connection** (secret + webhook secret + the webhook URL to paste into Stripe), and the custom-domain connection with CNAME instructions.                 |
+| **Account**     | Profile (name/email), security (password, two-factor authentication, passkeys), and appearance (light/dark/system).                                                                                                                                                                                                |
 
 ### For the shopper (storefront)
 
@@ -173,10 +173,11 @@ never falls through to the central marketing/admin routes.
   owners for their plan), configured from the operator panel's Settings tab or
   `.env`. `BillingController::checkout` redirects to the gateway's hosted checkout
   (success → `/billing?checkout=success` with a flash toast); `portal` opens the
-  billing portal. `BILLING_MOCK=true` (local only, never production) binds
+  billing portal. `BILLING_MOCK=true` (opt-in, off by default) binds
   `MockBillingGateway`, which redirects to an in-app `/billing/mock-*` checkout
   (a fake card form — only `4242 4242 4242 4242` succeeds) / portal that completes
-  the subscription without Stripe — the same subscribe → pay → return shape.
+  the subscription without Stripe — the same subscribe → pay → return shape. It
+  never charges a card; it just flips `tenants.plan` (used on the public demo).
 - `PlanGate` enforces `config/plans.php` limits (a free-plan store can't take
   card payments even with keys set).
 
@@ -396,21 +397,21 @@ php artisan db:seed --class=DemoCatalogSeeder
 
 Key `.env` values beyond the Laravel defaults:
 
-| Variable                                     | Purpose                                                                                                                                                                             |
-| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `APP_URL`                                    | Central app origin, e.g. `http://shop-builder.localhost:8000`                                                                                                                       |
-| `APP_CENTRAL_DOMAIN`                         | Bare central domain used to tell storefront hosts apart, e.g. `shop-builder.localhost`                                                                                              |
-| `SESSION_DOMAIN`                             | `.shop-builder.localhost` — shares the session across subdomains                                                                                                                    |
-| `SESSION_COOKIE`                             | `sb_session`                                                                                                                                                                        |
-| `STRIPE_KEY` / `STRIPE_SECRET`               | The **platform's** Stripe keys for subscription billing (Cashier). Storefront card payments use each store's own keys, set in the store admin. Overridable from the operator panel. |
-| `STRIPE_WEBHOOK_SECRET`                      | Cashier billing webhook signing secret (`/billing/webhook`)                                                                                                                         |
-| `STRIPE_STOREFRONT_WEBHOOK_SECRET`           | Fallback storefront webhook secret for the central `/stripe/webhook` route (per-store secrets, set in each store's admin, take precedence)                                          |
-| `STRIPE_PRICE_PRO` / `STRIPE_PRICE_BUSINESS` | Cashier Price IDs for the paid plans                                                                                                                                                |
-| `BILLING_MOCK`                               | Local only — `true` replaces Stripe subscription checkout with an in-app mock so the subscribe flow is demonstrable without a Stripe account. Ignored in production.                |
+| Variable                                     | Purpose                                                                                                                                                                                        |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `APP_URL`                                    | Central app origin, e.g. `http://shop-builder.localhost:8000`                                                                                                                                  |
+| `APP_CENTRAL_DOMAIN`                         | Bare central domain used to tell storefront hosts apart, e.g. `shop-builder.localhost`                                                                                                         |
+| `SESSION_DOMAIN`                             | `.shop-builder.localhost` — shares the session across subdomains                                                                                                                               |
+| `SESSION_COOKIE`                             | `sb_session`                                                                                                                                                                                   |
+| `STRIPE_KEY` / `STRIPE_SECRET`               | The **platform's** Stripe keys for subscription billing (Cashier). Storefront card payments use each store's own keys, set in the store admin. Overridable from the operator panel.            |
+| `STRIPE_WEBHOOK_SECRET`                      | Cashier billing webhook signing secret (`/billing/webhook`)                                                                                                                                    |
+| `STRIPE_STOREFRONT_WEBHOOK_SECRET`           | Fallback storefront webhook secret for the central `/stripe/webhook` route (per-store secrets, set in each store's admin, take precedence)                                                     |
+| `STRIPE_PRICE_PRO` / `STRIPE_PRICE_BUSINESS` | Cashier Price IDs for the paid plans                                                                                                                                                           |
+| `BILLING_MOCK`                               | `true` replaces Stripe subscription checkout with an in-app mock so the subscribe flow works without a Stripe account (used on the public demo). Opt-in, off by default; never charges a card. |
 
 Everything Stripe is optional for local development — without keys, card payments
 and paid-plan checkout are simply hidden and the fake gateways drive the tests.
-Set `BILLING_MOCK=true` to click through the plan-subscription flow locally.
+Set `BILLING_MOCK=true` to click through the plan-subscription flow without Stripe.
 
 ---
 

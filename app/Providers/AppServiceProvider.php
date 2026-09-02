@@ -30,9 +30,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(TenantContext::class);
         $this->app->singleton(PaymentGateway::class, StripePaymentGateway::class);
 
-        // `BILLING_MOCK=true` swaps in a local stand-in for Stripe subscription
-        // checkout, so the subscribe → pay → return flow is demonstrable without
-        // a Stripe account. Never in production.
+        // `BILLING_MOCK=true` swaps in an in-app stand-in for Stripe subscription
+        // checkout, so the subscribe → pay → return flow is demonstrable without a
+        // Stripe account (e.g. on the public demo). Opt-in, off by default; it
+        // does not move real money — it just flips `tenants.plan`.
         $this->app->singleton(
             BillingGateway::class,
             $this->usesMockBilling() ? MockBillingGateway::class : StripeBillingGateway::class,
@@ -41,8 +42,7 @@ class AppServiceProvider extends ServiceProvider
 
     private function usesMockBilling(): bool
     {
-        return ! $this->app->isProduction()
-            && filter_var(config('cashier.mock_checkout'), FILTER_VALIDATE_BOOL);
+        return filter_var(config('cashier.mock_checkout'), FILTER_VALIDATE_BOOL);
     }
 
     /**

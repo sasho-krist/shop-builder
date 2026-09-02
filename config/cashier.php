@@ -27,9 +27,10 @@ return [
     | Mock Subscription Checkout
     |--------------------------------------------------------------------------
     |
-    | Local only: when true, an in-app stand-in replaces Stripe's hosted
-    | checkout for plan subscriptions, so the subscribe -> pay -> return flow
-    | works without a Stripe account. Ignored in production.
+    | When true, an in-app stand-in replaces Stripe's hosted checkout for plan
+    | subscriptions, so the subscribe -> pay -> return flow works without a
+    | Stripe account (handy for the public demo). Opt-in and off by default; it
+    | never charges a card, it only flips `tenants.plan`.
     |
     */
 
