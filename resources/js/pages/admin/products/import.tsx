@@ -15,7 +15,7 @@ import { xsrfToken } from '@/lib/csrf';
 import { useT } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import productRoutes from '@/routes/products';
-import { preview, store } from '@/routes/products/import';
+import { preview, sample, store } from '@/routes/products/import';
 
 type Props = {
     fields: string[];
@@ -116,8 +116,13 @@ export default function ProductImport({ fields }: Props) {
                 <Card>
                     <CardHeader>
                         <CardTitle>{t('CSV file')}</CardTitle>
+                        <p className="text-muted-foreground text-sm">
+                            {t(
+                                'Columns: title, slug, description, status, price, sku, stock, category. Only title is required; you map the columns after choosing the file.',
+                            )}
+                        </p>
                     </CardHeader>
-                    <CardContent className="flex items-center gap-3">
+                    <CardContent className="flex flex-wrap items-center gap-3">
                         <Button
                             type="button"
                             variant="outline"
@@ -127,6 +132,12 @@ export default function ProductImport({ fields }: Props) {
                             {loading ? <Spinner /> : null}
                             {file ? file.name : t('Choose a .csv file')}
                         </Button>
+                        <a
+                            href={sample().url}
+                            className="text-muted-foreground hover:text-foreground text-sm underline underline-offset-4"
+                        >
+                            {t('Download a sample CSV')}
+                        </a>
                         <input
                             ref={inputRef}
                             type="file"

@@ -1,4 +1,6 @@
 {
+    "Download a sample CSV": "Свали примерен CSV",
+    "Columns: title, slug, description, status, price, sku, stock, category. Only title is required; you map the columns after choosing the file.": "Колони: title, slug, description, status, price, sku, stock, category. Само title е задължителна; колоните се съпоставят след избор на файла.",
     "Build your online store, no code": "Направете онлайн магазина си без код",
     "Online store builder": "Конструктор на онлайн магазини",
     "Your online store, built without code.": "Вашият онлайн магазин, направен без код.",

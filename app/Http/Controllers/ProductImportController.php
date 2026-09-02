@@ -26,6 +26,33 @@ class ProductImportController extends Controller
         return Inertia::render('admin/products/import', ['fields' => self::FIELDS]);
     }
 
+    /** A ready-to-fill CSV with the expected header row and a few example rows. */
+    public function sample(): \Illuminate\Http\Response
+    {
+        $rows = [
+            self::FIELDS,
+            ['Organic Green Tea', 'organic-green-tea', 'Loose-leaf sencha, 100g pouch', 'active', '12.90', 'TEA-001', '48', 'Tea'],
+            ['Wildflower Honey', '', 'Raw, unfiltered, 450g jar', 'active', '9.50', 'HON-014', '20', 'Pantry'],
+            ['Beeswax Candle', 'beeswax-candle', '', 'draft', '7.00', '', '0', ''],
+        ];
+
+        $handle = fopen('php://temp', 'r+');
+        if ($handle === false) {
+            abort(500);
+        }
+        foreach ($rows as $row) {
+            fputcsv($handle, $row);
+        }
+        rewind($handle);
+        $csv = (string) stream_get_contents($handle);
+        fclose($handle);
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="products-sample.csv"',
+        ]);
+    }
+
     public function preview(Request $request): JsonResponse
     {
         $request->validate(['file' => ['required', 'file', 'mimes:csv,txt', 'max:5120']]);

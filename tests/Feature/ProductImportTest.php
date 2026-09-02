@@ -34,6 +34,19 @@ class ProductImportTest extends TestCase
         return UploadedFile::fake()->createWithContent('products.csv', $contents);
     }
 
+    public function test_a_sample_csv_can_be_downloaded(): void
+    {
+        $response = $this->actingAs($this->user)->get(route('products.import.sample'));
+
+        $response->assertOk();
+        $this->assertStringContainsString('text/csv', (string) $response->headers->get('content-type'));
+        $this->assertStringContainsString('attachment; filename="products-sample.csv"', (string) $response->headers->get('content-disposition'));
+
+        $body = $response->content();
+        $this->assertStringStartsWith('title,slug,description,status,price,sku,stock,category', $body);
+        $this->assertStringContainsString('Organic Green Tea', $body);
+    }
+
     public function test_preview_returns_headers_and_rows(): void
     {
         $file = $this->csv("Name,Price,Stock\nGreen Tea,12.50,10\nBlack Coffee,9.00,5\n");

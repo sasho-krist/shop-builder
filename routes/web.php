@@ -41,6 +41,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
         Route::get('products/search', [ProductController::class, 'search'])->name('products.search');
         Route::get('products/import', [ProductImportController::class, 'show'])->name('products.import');
+        Route::get('products/import/sample', [ProductImportController::class, 'sample'])->name('products.import.sample');
         Route::post('products/import/preview', [ProductImportController::class, 'preview'])->name('products.import.preview');
         Route::post('products/import', [ProductImportController::class, 'store'])->name('products.import.store');
         Route::post('products', [ProductController::class, 'store'])->name('products.store');
