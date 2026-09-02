@@ -24,6 +24,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Mock Subscription Checkout
+    |--------------------------------------------------------------------------
+    |
+    | Local only: when true, an in-app stand-in replaces Stripe's hosted
+    | checkout for plan subscriptions, so the subscribe -> pay -> return flow
+    | works without a Stripe account. Ignored in production.
+    |
+    */
+
+    'mock_checkout' => env('BILLING_MOCK', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Cashier Path
     |--------------------------------------------------------------------------
     |

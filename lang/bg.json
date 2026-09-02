@@ -843,5 +843,26 @@
     "In Stripe → Developers → Webhooks, add an endpoint for the \"checkout.session.completed\" event pointing to:": "В Stripe → Developers → Webhooks добавете endpoint за събитието „checkout.session.completed“ към:",
     "Disconnect Stripe": "Разкачи Stripe",
     "Disconnect Stripe? Card payments will stop.": "Да разкача ли Stripe? Плащанията с карта ще спрат.",
-    "Stripe disconnected.": "Stripe е разкачен."
+    "Stripe disconnected.": "Stripe е разкачен.",
+
+    "Plan updated. Thanks!": "Планът е обновен. Благодарим!",
+    "Checkout cancelled — your plan is unchanged.": "Плащането е отказано — планът ви остава непроменен.",
+    "Subscription cancelled — active until the period ends.": "Абонаментът е отказан — активен до края на периода.",
+    "Subscription resumed.": "Абонаментът е възобновен.",
+    "Test checkout — no real card is charged": "Тестово плащане — не се таксува реална карта",
+    "Subscribe to :plan": "Абонамент за :plan",
+    ":amount per month, billed monthly. Cancel any time.": ":amount на месец, таксува се месечно. Отказ по всяко време.",
+    "Pay :amount": "Плати :amount",
+    "Cancel and go back": "Откажи и се върни",
+    "Name on card": "Име на картата",
+    "Card number": "Номер на картата",
+    "Expiry (MM / YY)": "Валидност (ММ / ГГ)",
+    "CVC": "CVC",
+    "Card declined. Use the test card 4242 4242 4242 4242.": "Картата е отхвърлена. Използвайте тестовата карта 4242 4242 4242 4242.",
+    "Mock payment — enter 4242 4242 4242 4242, any future date and CVC.": "Тестово плащане — въведете 4242 4242 4242 4242, произволна бъдеща дата и CVC.",
+    "Current plan: :plan": "Текущ план: :plan",
+    "Cancelled — active until :date.": "Отказан — активен до :date.",
+    "Resume subscription": "Възобнови абонамента",
+    "Cancel subscription": "Откажи абонамента",
+    "Back to billing": "Назад към плащания"
 }

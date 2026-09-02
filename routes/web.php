@@ -104,6 +104,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
         Route::get('billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
 
+        // Local mock checkout (only reachable when BILLING_MOCK binds MockBillingGateway).
+        Route::get('billing/mock-checkout', [BillingController::class, 'mockShow'])->name('billing.mock.show');
+        Route::post('billing/mock-checkout', [BillingController::class, 'mockComplete'])->name('billing.mock.complete');
+        Route::post('billing/mock-checkout/cancel', [BillingController::class, 'mockCancelCheckout'])->name('billing.mock.cancel');
+        Route::get('billing/mock-portal', [BillingController::class, 'mockPortal'])->name('billing.mock.portal');
+        Route::post('billing/mock-portal', [BillingController::class, 'mockPortalAction'])->name('billing.mock.portal.action');
+
         Route::get('customers', [StoreCustomerController::class, 'index'])->name('customers.index');
         Route::put('customers/{customer}', [StoreCustomerController::class, 'update'])->name('customers.update');
         Route::put('customers/{customer}/password', [StoreCustomerController::class, 'password'])->name('customers.password');

@@ -6,6 +6,7 @@ use App\Listeners\SyncTenantPlan;
 use App\Models\PlatformSetting;
 use App\Models\Tenant;
 use App\Services\Billing\BillingGateway;
+use App\Services\Billing\MockBillingGateway;
 use App\Services\Billing\StripeBillingGateway;
 use App\Services\Payments\PaymentGateway;
 use App\Services\Payments\StripePaymentGateway;
@@ -28,7 +29,20 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(TenantContext::class);
         $this->app->singleton(PaymentGateway::class, StripePaymentGateway::class);
-        $this->app->singleton(BillingGateway::class, StripeBillingGateway::class);
+
+        // `BILLING_MOCK=true` swaps in a local stand-in for Stripe subscription
+        // checkout, so the subscribe → pay → return flow is demonstrable without
+        // a Stripe account. Never in production.
+        $this->app->singleton(
+            BillingGateway::class,
+            $this->usesMockBilling() ? MockBillingGateway::class : StripeBillingGateway::class,
+        );
+    }
+
+    private function usesMockBilling(): bool
+    {
+        return ! $this->app->isProduction()
+            && filter_var(config('cashier.mock_checkout'), FILTER_VALIDATE_BOOL);
     }
 
     /**
@@ -68,6 +82,14 @@ class AppServiceProvider extends ServiceProvider
         $apply('cashier.webhook.secret', 'stripe_webhook_secret');
         $apply('plans.pro.stripe_price', 'stripe_price_pro');
         $apply('plans.business.stripe_price', 'stripe_price_business');
+
+        // Mock billing needs a price id per paid plan so they read as subscribable.
+        if ($this->usesMockBilling()) {
+            config([
+                'plans.pro.stripe_price' => config('plans.pro.stripe_price') ?: 'price_mock_pro',
+                'plans.business.stripe_price' => config('plans.business.stripe_price') ?: 'price_mock_business',
+            ]);
+        }
     }
 
     /**

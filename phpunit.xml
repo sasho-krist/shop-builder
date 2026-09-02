@@ -37,6 +37,7 @@
         <env name="STRIPE_STOREFRONT_WEBHOOK_SECRET" value=""/>
         <env name="STRIPE_CURRENCY" value=""/>
         <env name="STRIPE_DISABLE_LINK" value="false"/>
+        <env name="BILLING_MOCK" value="false"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>

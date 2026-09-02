@@ -46,9 +46,9 @@ The admin panel and the storefront are **entirely in Bulgarian**.
 | **Orders**      | List and detail (line items, customer, shipping address, notes, payments); change order status and payment status.                                                                                                                                                                                     |
 | **Customers**   | The store's account holders — list with search, edit name/email, reset password, delete (past orders are kept).                                                                                                                                                                                        |
 | **Owners**      | Store staff with full admin access — add an owner (new user or attach an existing one), edit name/email, remove (with "not yourself" / "not the last owner" guards). An owner's password can only be changed by that owner, from their own security settings.                                          |
-| **Billing**     | Current plan, usage bars (products, team members), plan cards with upgrade via Stripe Checkout, and a link to the Stripe billing portal.                                                                                                                                                               |
+| **Billing**     | Current plan, usage bars (products, team members), plan cards — "Choose plan" redirects to Stripe Checkout and returns to this page with a confirmation; "Manage subscription" opens the Stripe billing portal (cancel / resume). `BILLING_MOCK=true` swaps both for an in-app stand-in in local dev.  |
 | **Settings**    | Currency code & symbol, store notification email, flat shipping rate, free-shipping threshold, tax rate & tax-inclusive pricing, **the store's own Stripe connection** (secret + webhook secret + the webhook URL to paste into Stripe), and the custom-domain connection with CNAME instructions.     |
-| **Account**     | Profile (name/email), security (password, two-factor authentication, passkeys), and appearance (light/dark/system).                                                                                                                                                                                   |
+| **Account**     | Profile (name/email), security (password, two-factor authentication, passkeys), and appearance (light/dark/system).                                                                                                                                                                                    |
 
 ### For the shopper (storefront)
 
@@ -167,10 +167,16 @@ never falls through to the central marketing/admin routes.
   `https://{store}/stripe/webhook` (registered in the storefront route group, so
   the tenant resolves from the host); a central `POST /stripe/webhook` also exists.
 - `App\Services\Billing` — `BillingGateway` interface, `StripeBillingGateway`
-  (Cashier Checkout + billing portal) and `FakeBillingGateway`. Webhook at
-  `POST /billing/webhook`; `SyncTenantPlan` listener syncs `tenants.plan`. This is
-  the **platform's** Stripe (charging owners for their plan), configured from the
-  operator panel's Settings tab or `.env`.
+  (Cashier Checkout + billing portal), `FakeBillingGateway` (tests) and
+  `MockBillingGateway`. Webhook at `POST /billing/webhook`; `SyncTenantPlan`
+  listener syncs `tenants.plan`. This is the **platform's** Stripe (charging
+  owners for their plan), configured from the operator panel's Settings tab or
+  `.env`. `BillingController::checkout` redirects to the gateway's hosted checkout
+  (success → `/billing?checkout=success` with a flash toast); `portal` opens the
+  billing portal. `BILLING_MOCK=true` (local only, never production) binds
+  `MockBillingGateway`, which redirects to an in-app `/billing/mock-*` checkout
+  (a fake card form — only `4242 4242 4242 4242` succeeds) / portal that completes
+  the subscription without Stripe — the same subscribe → pay → return shape.
 - `PlanGate` enforces `config/plans.php` limits (a free-plan store can't take
   card payments even with keys set).
 
@@ -400,9 +406,11 @@ Key `.env` values beyond the Laravel defaults:
 | `STRIPE_WEBHOOK_SECRET`                      | Cashier billing webhook signing secret (`/billing/webhook`)                                                                                                                         |
 | `STRIPE_STOREFRONT_WEBHOOK_SECRET`           | Fallback storefront webhook secret for the central `/stripe/webhook` route (per-store secrets, set in each store's admin, take precedence)                                          |
 | `STRIPE_PRICE_PRO` / `STRIPE_PRICE_BUSINESS` | Cashier Price IDs for the paid plans                                                                                                                                                |
+| `BILLING_MOCK`                               | Local only — `true` replaces Stripe subscription checkout with an in-app mock so the subscribe flow is demonstrable without a Stripe account. Ignored in production.                |
 
 Everything Stripe is optional for local development — without keys, card payments
 and paid-plan checkout are simply hidden and the fake gateways drive the tests.
+Set `BILLING_MOCK=true` to click through the plan-subscription flow locally.
 
 ---
 
