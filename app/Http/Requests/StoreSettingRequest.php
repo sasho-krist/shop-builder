@@ -29,6 +29,8 @@ class StoreSettingRequest extends FormRequest
             'free_shipping_over' => ['nullable', 'numeric', 'min:0', 'max:99999'],
             'tax_rate' => ['required', 'numeric', 'between:0,100'],
             'tax_included' => ['boolean'],
+            'stripe_secret' => ['nullable', 'string', 'max:255'],
+            'stripe_webhook_secret' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

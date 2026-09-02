@@ -25,6 +25,12 @@ class StoreSettingController extends Controller
                 'tax_rate' => $settings->tax_rate,
                 'tax_included' => $settings->tax_included,
             ],
+            'stripe' => [
+                'connected' => $settings->stripeConnected(),
+                'webhook_secret_set' => is_string($settings->stripe_webhook_secret)
+                    && $settings->stripe_webhook_secret !== '',
+                'webhook_url' => $tenant->storefrontUrl().'/stripe/webhook',
+            ],
             'domain' => [
                 'subdomain' => $tenant->slug.'.'.(string) config('app.central_domain'),
                 'custom_domain' => $tenant->custom_domain,
@@ -35,9 +41,31 @@ class StoreSettingController extends Controller
 
     public function update(StoreSettingRequest $request): RedirectResponse
     {
-        Tenant::currentOrFail()->storeSettings()->update($request->validated());
+        $data = $request->validated();
+
+        // A blank Stripe field means "keep the stored value" — use the Disconnect
+        // action to clear it — so drop empty ones before writing.
+        foreach (['stripe_secret', 'stripe_webhook_secret'] as $key) {
+            if (($data[$key] ?? '') === '') {
+                unset($data[$key]);
+            }
+        }
+
+        Tenant::currentOrFail()->storeSettings()->update($data);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Settings saved.')]);
+
+        return back();
+    }
+
+    public function disconnectStripe(): RedirectResponse
+    {
+        Tenant::currentOrFail()->storeSettings()->update([
+            'stripe_secret' => null,
+            'stripe_webhook_secret' => null,
+        ]);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Stripe disconnected.')]);
 
         return back();
     }

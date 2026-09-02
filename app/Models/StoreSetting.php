@@ -17,12 +17,15 @@ use Illuminate\Support\Carbon;
  * @property numeric-string|null $free_shipping_over
  * @property numeric-string $tax_rate
  * @property bool $tax_included
+ * @property string|null $stripe_secret
+ * @property string|null $stripe_webhook_secret
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable([
     'currency', 'currency_symbol', 'store_email',
     'shipping_flat', 'free_shipping_over', 'tax_rate', 'tax_included',
+    'stripe_secret', 'stripe_webhook_secret',
 ])]
 class StoreSetting extends Model
 {
@@ -50,6 +53,14 @@ class StoreSetting extends Model
             'tax_rate' => 'decimal:2',
             'tax_included' => 'boolean',
         ];
+    }
+
+    /**
+     * Whether this store has connected its own Stripe account for card payments.
+     */
+    public function stripeConnected(): bool
+    {
+        return is_string($this->stripe_secret) && $this->stripe_secret !== '';
     }
 
     /**

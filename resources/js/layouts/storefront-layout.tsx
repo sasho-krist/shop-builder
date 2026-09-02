@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Globe, ShoppingBag, User } from 'lucide-react';
+import { ShoppingBag, User } from 'lucide-react';
 import type { ReactNode } from 'react';
 import StorefrontOwnerBar, {
     type ManageContext,
@@ -27,20 +27,6 @@ export type StorefrontShared = {
         };
     };
 };
-
-function LanguageSwitcher({ locale }: { locale: string }) {
-    const other = locale === 'bg' ? 'en' : 'bg';
-    return (
-        <a
-            href={`/locale/${other}`}
-            className="flex items-center gap-1"
-            title={other === 'bg' ? 'Български' : 'English'}
-        >
-            <Globe className="size-4" />
-            <span className="uppercase">{other}</span>
-        </a>
-    );
-}
 
 function NavAnchor({ link, className }: { link: NavLink; className?: string }) {
     if (link.href.startsWith('/')) {
@@ -70,16 +56,8 @@ export default function StorefrontLayout({
     ownerEdit?: { href: string; label: string };
 }) {
     const { storefront } = usePage<StorefrontShared>().props;
-    const {
-        theme,
-        storeName,
-        cartCount,
-        categories,
-        customer,
-        manage,
-        nav,
-        locale,
-    } = storefront;
+    const { theme, storeName, cartCount, categories, customer, manage, nav } =
+        storefront;
     const { t } = useT();
     const year = new Date().getFullYear();
 
@@ -133,7 +111,6 @@ export default function StorefrontLayout({
                                     {category.name}
                                 </Link>
                             ))}
-                        <LanguageSwitcher locale={locale} />
                         {manage ? (
                             <a
                                 href={manage.dashboard}

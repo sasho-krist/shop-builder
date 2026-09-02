@@ -5,8 +5,7 @@ a store on their own subdomain (or a connected custom domain), and runs the whol
 shop — catalogue, theme, pages, navigation, orders, staff — from a visual admin
 panel. No code required.
 
-The admin panel and the storefront are both fully localised; **Bulgarian is the
-default language**, with a one-click switch to English.
+The admin panel and the storefront are **entirely in Bulgarian**.
 
 > **Status:** feature-complete through the planned roadmap (phases 0–8, see
 > [`docs/PLAN.md`](docs/PLAN.md)). What remains before a public launch is
@@ -21,7 +20,7 @@ default language**, with a one-click switch to English.
 - [Architecture](#architecture)
 - [Data model](#data-model)
 - [Feature reference](#feature-reference)
-- [Internationalization](#internationalization)
+- [Localization](#localization)
 - [Project layout](#project-layout)
 - [Local setup](#local-setup)
 - [Configuration](#configuration)
@@ -48,8 +47,8 @@ default language**, with a one-click switch to English.
 | **Customers**   | The store's account holders — list with search, edit name/email, reset password, delete (past orders are kept).                                                                                                                                                                                        |
 | **Owners**      | Store staff with full admin access — add an owner (new user or attach an existing one), edit name/email, remove (with "not yourself" / "not the last owner" guards). An owner's password can only be changed by that owner, from their own security settings.                                          |
 | **Billing**     | Current plan, usage bars (products, team members), plan cards with upgrade via Stripe Checkout, and a link to the Stripe billing portal.                                                                                                                                                               |
-| **Settings**    | Currency code & symbol, store notification email, flat shipping rate, free-shipping threshold, tax rate & tax-inclusive pricing, and the custom-domain connection with CNAME instructions.                                                                                                             |
-| **Account**     | Profile (name/email), security (password, two-factor authentication, passkeys), appearance (light/dark/system), and the **admin language** switch.                                                                                                                                                     |
+| **Settings**    | Currency code & symbol, store notification email, flat shipping rate, free-shipping threshold, tax rate & tax-inclusive pricing, **the store's own Stripe connection** (secret + webhook secret + the webhook URL to paste into Stripe), and the custom-domain connection with CNAME instructions.     |
+| **Account**     | Profile (name/email), security (password, two-factor authentication, passkeys), and appearance (light/dark/system).                                                                                                                                                                                   |
 
 ### For the shopper (storefront)
 
@@ -62,7 +61,7 @@ default language**, with a one-click switch to English.
 - Checkout: contact + shipping address form, order summary, **pay on delivery** or
   **pay by card** (Stripe Checkout, shown only when the store's plan allows it and
   Stripe is configured). Public order-confirmation page by token.
-- Order-confirmation email rendered in the buyer's language.
+- Order-confirmation email (in Bulgarian).
 - Customer accounts: register / sign in / account page with order history
   (a per-store `customer` auth guard, separate from platform users).
 - Owner editing bar: a signed-in owner viewing their own storefront sees a
@@ -71,6 +70,18 @@ default language**, with a one-click switch to English.
 
 ### For the platform operator
 
+- **Operator panel** at `/super-admin` — a separate single sign-in (no `users`
+  row, no registration; credentials in `config/super-admin.php`, env-overridable).
+  Lists every store with owner / product / order counts and lets the operator
+  rename / re-slug / move plan, **suspend** a store (its storefront 404s while
+  suspended) or **delete** it (cascades the whole catalogue, orders and staff
+  links). Lists every platform account with edit, **force password reset** and
+  delete. A read-only **Subscriptions** view: plan breakdown across stores plus
+  whatever Cashier billing rows exist. A **Settings** tab holds the platform's
+  own Stripe credentials for **subscription billing only** (secret / `/billing/webhook`
+  secret / plan Price IDs) in a `platform_settings` table; `AppServiceProvider`
+  applies them over `cashier.*` at boot, so keys can be set without shell access.
+  Storefront payment keys are per-store, in each store's own admin.
 - Plan enforcement (`config/plans.php`): free / pro / business, each with limits on
   product count, staff count, custom domains and card payments.
 - Laravel Cashier subscriptions billed to the **tenant** (not the user); a webhook
@@ -122,6 +133,7 @@ never falls through to the central marketing/admin routes.
 | Host                                          | Routes                                          | Middleware                                                      |
 | --------------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------- |
 | `<central-domain>`                            | Marketing, auth, onboarding, admin panel        | `auth`, `verified`, `EnsureTenantSelected`                      |
+| `<central-domain>/super-admin`                | Operator panel                                  | `EnsureSuperAdmin` (own session flag, not a `users` login)      |
 | `{store}.<central-domain>` or a custom domain | Public storefront + `{store}/admin` owner entry | `SetStorefrontLocale`, `ResolveStorefrontTenant`, `ResolveCart` |
 
 - **`ResolveStorefrontTenant`** resolves the tenant from `$request->getHost()`
@@ -148,15 +160,22 @@ never falls through to the central marketing/admin routes.
 ### Payments & billing abstraction
 
 - `App\Services\Payments` — `PaymentGateway` interface, `StripePaymentGateway`
-  (Stripe Checkout for one-off orders) and `FakePaymentGateway`. Storefront webhook
-  at `POST /stripe/webhook` marks the order paid and sends the confirmation email.
+  (Stripe Checkout for one-off orders) and `FakePaymentGateway`. **Each store
+  connects its own Stripe account** in its admin Settings (`store_settings.stripe_secret`
+  / `stripe_webhook_secret`), so storefront payments land in the merchant's own
+  account — no platform fallback. The store points its Stripe webhook at
+  `https://{store}/stripe/webhook` (registered in the storefront route group, so
+  the tenant resolves from the host); a central `POST /stripe/webhook` also exists.
 - `App\Services\Billing` — `BillingGateway` interface, `StripeBillingGateway`
   (Cashier Checkout + billing portal) and `FakeBillingGateway`. Webhook at
-  `POST /billing/webhook`; `SyncTenantPlan` listener syncs `tenants.plan`.
-- `PlanGate` enforces `config/plans.php` limits.
+  `POST /billing/webhook`; `SyncTenantPlan` listener syncs `tenants.plan`. This is
+  the **platform's** Stripe (charging owners for their plan), configured from the
+  operator panel's Settings tab or `.env`.
+- `PlanGate` enforces `config/plans.php` limits (a free-plan store can't take
+  card payments even with keys set).
 
-Both real gateways are config-gated on `STRIPE_SECRET`; the card option simply
-disappears from the UI when Stripe is not configured.
+The card option disappears from checkout unless the store has connected Stripe
+_and_ its plan allows card payments.
 
 ---
 
@@ -260,28 +279,28 @@ the note, links and copyright. `App\Support\Storefront\NavLinks` turns
 the cart immediately; card orders keep the cart until Stripe confirms (so
 "cancel" on Stripe's page still leaves something to check out), and use
 `Inertia::location()` for the cross-origin redirect. The confirmation page clears
-the cart for a recent card order. `orders.locale` (set at checkout) lets the
-Stripe webhook render the confirmation email in the buyer's language.
+the cart for a recent card order. `orders.locale` is set at checkout (always `bg`)
+and applied by the Stripe webhook when it sends the confirmation email.
 
 ---
 
-## Internationalization
+## Localization
+
+The whole app — admin panel, marketing site and storefront — is **Bulgarian
+only**. There is no language switcher.
 
 - **One React hook** — `resources/js/lib/i18n.ts` `useT()`:
-  `t('English source string', { placeholder })`, reading the shared `i18n` map and
-  `locale`. A missing key renders as-is, so English is the source language.
-- **Dictionaries** — `lang/bg.json` (English key → Bulgarian, one file for the
-  whole app) and `lang/en.json` (only the namespaced enum keys like
-  `status.active`, `plan.pro`, `buttonStyle.solid` that must still read in
-  English). Backend flash and validation messages go through `__()`.
-- **Storefront language** — a Globe switcher in the header hits
-  `/locale/{bg|en}`, which stores an `sb_locale` cookie; `SetStorefrontLocale`
-  applies it per request.
-- **Admin language** — a per-user preference (`users.locale`, default `bg`),
-  switched from the account menu (`PATCH /settings/locale`) and applied by the
-  `SetUserLocale` middleware. `APP_LOCALE` stays `en`.
-- Owner-authored content (page blocks, product and category names) is never
-  translated.
+  `t('English source string', { placeholder })`, reading the shared `i18n` map.
+  English is the source language in code; every key is translated in `lang/bg.json`
+  (one file for the whole app). A missing key renders as-is.
+- `SetUserLocale` (admin / marketing) and `SetStorefrontLocale` (storefront) both
+  just `App::setLocale('bg')`. `APP_LOCALE` stays `en` as the `__()` source key.
+- Backend flash and validation messages go through `__()` → `lang/bg.json` /
+  `lang/bg/validation.php`.
+- The **Shop** system page's title is run through `__()` on the storefront, so the
+  seeded default shows as "Магазин" while a title the owner has changed passes through.
+- Owner-authored content (page blocks, navigation labels, product and category
+  names) is not translated — the owner writes it in Bulgarian.
 
 ---
 
@@ -306,6 +325,7 @@ app/
     Tenancy/                 # TenantContext, BelongsToTenant
 config/
   plans.php                  # SaaS plan limits
+  super-admin.php            # operator-panel credentials
   cashier.php  services.php  # Stripe (billing + storefront)
 lang/
   bg.json  en.json           # UI translations
@@ -325,6 +345,7 @@ resources/js/
 routes/
   web.php                    # marketing + admin (requires storefront.php first)
   storefront.php             # subdomain / custom-domain routes
+  super-admin.php            # operator panel (/super-admin)
   settings.php  console.php
 database/migrations/
 docs/PLAN.md                 # roadmap (Bulgarian)
@@ -369,16 +390,16 @@ php artisan db:seed --class=DemoCatalogSeeder
 
 Key `.env` values beyond the Laravel defaults:
 
-| Variable                                     | Purpose                                                                                |
-| -------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `APP_URL`                                    | Central app origin, e.g. `http://shop-builder.localhost:8000`                          |
-| `APP_CENTRAL_DOMAIN`                         | Bare central domain used to tell storefront hosts apart, e.g. `shop-builder.localhost` |
-| `SESSION_DOMAIN`                             | `.shop-builder.localhost` — shares the session across subdomains                       |
-| `SESSION_COOKIE`                             | `sb_session`                                                                           |
-| `STRIPE_KEY` / `STRIPE_SECRET`               | Stripe API keys (enable both storefront card payments and Cashier)                     |
-| `STRIPE_WEBHOOK_SECRET`                      | Cashier billing webhook signing secret (`/billing/webhook`)                            |
-| `STRIPE_STOREFRONT_WEBHOOK_SECRET`           | Storefront one-off payment webhook secret (`/stripe/webhook`)                          |
-| `STRIPE_PRICE_PRO` / `STRIPE_PRICE_BUSINESS` | Cashier Price IDs for the paid plans                                                   |
+| Variable                                     | Purpose                                                                                                                                                                             |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `APP_URL`                                    | Central app origin, e.g. `http://shop-builder.localhost:8000`                                                                                                                       |
+| `APP_CENTRAL_DOMAIN`                         | Bare central domain used to tell storefront hosts apart, e.g. `shop-builder.localhost`                                                                                              |
+| `SESSION_DOMAIN`                             | `.shop-builder.localhost` — shares the session across subdomains                                                                                                                    |
+| `SESSION_COOKIE`                             | `sb_session`                                                                                                                                                                        |
+| `STRIPE_KEY` / `STRIPE_SECRET`               | The **platform's** Stripe keys for subscription billing (Cashier). Storefront card payments use each store's own keys, set in the store admin. Overridable from the operator panel. |
+| `STRIPE_WEBHOOK_SECRET`                      | Cashier billing webhook signing secret (`/billing/webhook`)                                                                                                                         |
+| `STRIPE_STOREFRONT_WEBHOOK_SECRET`           | Fallback storefront webhook secret for the central `/stripe/webhook` route (per-store secrets, set in each store's admin, take precedence)                                          |
+| `STRIPE_PRICE_PRO` / `STRIPE_PRICE_BUSINESS` | Cashier Price IDs for the paid plans                                                                                                                                                |
 
 Everything Stripe is optional for local development — without keys, card payments
 and paid-plan checkout are simply hidden and the fake gateways drive the tests.

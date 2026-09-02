@@ -1,7 +1,9 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { Check, Copy } from 'lucide-react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
+import PasswordInput from '@/components/password-input';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -22,6 +24,11 @@ type Props = {
         free_shipping_over: string | null;
         tax_rate: string;
         tax_included: boolean;
+    };
+    stripe: {
+        connected: boolean;
+        webhook_secret_set: boolean;
+        webhook_url: string;
     };
     domain: {
         subdomain: string;
@@ -63,7 +70,7 @@ function CopyField({ value }: { value: string }) {
     );
 }
 
-export default function StoreSettings({ settings, domain }: Props) {
+export default function StoreSettings({ settings, stripe, domain }: Props) {
     const { t } = useT();
     const form = useForm({
         currency: settings.currency,
@@ -73,7 +80,14 @@ export default function StoreSettings({ settings, domain }: Props) {
         free_shipping_over: settings.free_shipping_over ?? '',
         tax_rate: settings.tax_rate,
         tax_included: settings.tax_included,
+        stripe_secret: '',
+        stripe_webhook_secret: '',
     });
+
+    function disconnectStripe() {
+        if (!confirm(t('Disconnect Stripe? Card payments will stop.'))) return;
+        router.delete('/store-settings/stripe', { preserveScroll: true });
+    }
 
     const domainForm = useForm({
         custom_domain: domain.custom_domain ?? '',
@@ -81,7 +95,11 @@ export default function StoreSettings({ settings, domain }: Props) {
 
     function submit(event: React.FormEvent) {
         event.preventDefault();
-        form.put(update().url, { preserveScroll: true });
+        form.put(update().url, {
+            preserveScroll: true,
+            onSuccess: () =>
+                form.reset('stripe_secret', 'stripe_webhook_secret'),
+        });
     }
 
     function submitDomain(event: React.FormEvent) {
@@ -249,6 +267,98 @@ export default function StoreSettings({ settings, domain }: Props) {
                             />
                             {t('Prices already include tax')}
                         </label>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            {t('Card payments (Stripe)')}
+                            {stripe.connected ? (
+                                <Badge variant="secondary">
+                                    {t('Connected')}
+                                </Badge>
+                            ) : (
+                                <Badge variant="outline">
+                                    {t('Not connected')}
+                                </Badge>
+                            )}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-4">
+                        <p className="text-muted-foreground text-sm">
+                            {t(
+                                'Connect your own Stripe account so card payments go straight to you. Find these in the Stripe dashboard under Developers → API keys.',
+                            )}
+                        </p>
+                        <div className="grid gap-2">
+                            <Label htmlFor="stripe_secret">
+                                {t('Secret key')}
+                            </Label>
+                            <PasswordInput
+                                id="stripe_secret"
+                                autoComplete="off"
+                                placeholder={
+                                    stripe.connected
+                                        ? t(
+                                              '•••••••• saved — leave blank to keep',
+                                          )
+                                        : 'sk_live_…'
+                                }
+                                value={form.data.stripe_secret}
+                                onChange={(e) =>
+                                    form.setData(
+                                        'stripe_secret',
+                                        e.target.value,
+                                    )
+                                }
+                            />
+                            <InputError message={form.errors.stripe_secret} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="stripe_webhook_secret">
+                                {t('Webhook signing secret')}
+                            </Label>
+                            <PasswordInput
+                                id="stripe_webhook_secret"
+                                autoComplete="off"
+                                placeholder={
+                                    stripe.webhook_secret_set
+                                        ? t(
+                                              '•••••••• saved — leave blank to keep',
+                                          )
+                                        : 'whsec_…'
+                                }
+                                value={form.data.stripe_webhook_secret}
+                                onChange={(e) =>
+                                    form.setData(
+                                        'stripe_webhook_secret',
+                                        e.target.value,
+                                    )
+                                }
+                            />
+                            <InputError
+                                message={form.errors.stripe_webhook_secret}
+                            />
+                            <p className="text-muted-foreground text-xs">
+                                {t(
+                                    'In Stripe → Developers → Webhooks, add an endpoint for the "checkout.session.completed" event pointing to:',
+                                )}
+                            </p>
+                            <CopyField value={stripe.webhook_url} />
+                        </div>
+                        {stripe.connected && (
+                            <div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={disconnectStripe}
+                                >
+                                    {t('Disconnect Stripe')}
+                                </Button>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </form>

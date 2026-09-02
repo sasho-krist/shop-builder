@@ -9,6 +9,7 @@ use App\Models\Page;
 use App\Models\Product;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Payments\StripePaymentGateway;
 use App\Support\Theme\ThemePresets;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -63,6 +64,53 @@ class StoreSettingsTest extends TestCase
         $this->assertSame('EUR', $settings->currency);
         $this->assertSame('4.99', $settings->shipping_flat);
         $this->assertFalse($settings->tax_included);
+    }
+
+    public function test_a_store_connects_its_own_stripe_keys(): void
+    {
+        $base = [
+            'currency' => 'EUR', 'currency_symbol' => '€', 'store_email' => null,
+            'shipping_flat' => '0', 'free_shipping_over' => null,
+            'tax_rate' => '0', 'tax_included' => true,
+        ];
+
+        $this->actingAs($this->user)
+            ->put(route('store-settings.update'), $base + [
+                'stripe_secret' => 'sk_live_store',
+                'stripe_webhook_secret' => 'whsec_store',
+            ])
+            ->assertRedirect();
+
+        $settings = $this->tenant->settings()->firstOrFail();
+        $this->assertSame('sk_live_store', $settings->stripe_secret);
+        $this->assertTrue($settings->stripeConnected());
+
+        // A blank secret on a later save keeps the stored key.
+        $this->actingAs($this->user)
+            ->put(route('store-settings.update'), $base + ['stripe_secret' => ''])
+            ->assertRedirect();
+        $this->assertSame('sk_live_store', $this->tenant->settings()->firstOrFail()->stripe_secret);
+
+        // Disconnect clears both.
+        $this->actingAs($this->user)
+            ->delete(route('store-settings.stripe.disconnect'))
+            ->assertRedirect();
+        $settings = $this->tenant->settings()->firstOrFail();
+        $this->assertNull($settings->stripe_secret);
+        $this->assertNull($settings->stripe_webhook_secret);
+    }
+
+    public function test_the_payment_gateway_uses_the_current_stores_keys(): void
+    {
+        config(['services.stripe.enabled' => true]);
+        $gateway = new StripePaymentGateway;
+
+        Tenant::setCurrent($this->tenant);
+        $this->tenant->settings()->update(['stripe_secret' => null]);
+        $this->assertFalse($gateway->enabled());
+
+        $this->tenant->settings()->update(['stripe_secret' => 'sk_live_x']);
+        $this->assertTrue($gateway->enabled());
     }
 
     public function test_invalid_settings_are_rejected(): void

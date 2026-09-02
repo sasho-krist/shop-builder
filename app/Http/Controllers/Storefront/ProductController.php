@@ -20,10 +20,13 @@ class ProductController extends Controller
     {
         $shop = Page::query()->where('type', 'shop')->first();
 
+        // The system-page title doubles as the storefront heading. Run it through
+        // the translator so the seeded default ("Shop") localises, while a title
+        // the owner has customised passes through untouched.
+        $title = $shop instanceof Page ? trim($shop->title) : '';
+
         return Inertia::render('storefront/listing', [
-            'heading' => $shop instanceof Page && $shop->title !== ''
-                ? $shop->title
-                : __('Shop'),
+            'heading' => $title !== '' ? __($title) : __('Shop'),
             'description' => $shop instanceof Page ? $shop->seo_description : null,
             'products' => $this->paginateProducts(Product::query()),
             'blocks' => $shop instanceof Page ? $shop->blocks : [],

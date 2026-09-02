@@ -8,23 +8,15 @@ use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Picks the storefront language from the `sb_locale` cookie. Bulgarian is the
- * default; English is available via the header switcher.
+ * The storefront is Bulgarian only.
  */
 class SetStorefrontLocale
 {
-    public const SUPPORTED = ['bg', 'en'];
-
-    public const DEFAULT = 'bg';
+    public const LOCALE = 'bg';
 
     public function handle(Request $request, Closure $next): Response
     {
-        $cookie = $request->cookie('sb_locale');
-        $locale = is_string($cookie) && in_array($cookie, self::SUPPORTED, true)
-            ? $cookie
-            : self::DEFAULT;
-
-        App::setLocale($locale);
+        App::setLocale(self::LOCALE);
 
         return $next($request);
     }

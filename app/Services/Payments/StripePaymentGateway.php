@@ -3,18 +3,25 @@
 namespace App\Services\Payments;
 
 use App\Models\Order;
+use App\Models\Tenant;
 use Stripe\Checkout\Session;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\StripeClient;
 use Stripe\Webhook;
 use UnexpectedValueException;
 
+/**
+ * Storefront card payments run on the *store's own* Stripe account, connected
+ * from the store's admin Settings — so funds go straight to the merchant. Keys
+ * are read from the current tenant's StoreSetting; there is no platform fallback
+ * for the secret (a store with no key simply cannot take card payments).
+ */
 class StripePaymentGateway implements PaymentGateway
 {
     public function enabled(): bool
     {
         return (bool) config('services.stripe.enabled', true)
-            && filled(config('services.stripe.secret'));
+            && $this->secret() !== '';
     }
 
     public function createCheckoutSession(Order $order, string $successUrl, string $cancelUrl): CheckoutSession
@@ -50,7 +57,7 @@ class StripePaymentGateway implements PaymentGateway
 
     public function parseWebhook(string $payload, ?string $signature): ?WebhookEvent
     {
-        $secret = (string) config('services.stripe.webhook_secret');
+        $secret = $this->webhookSecret();
 
         try {
             $event = Webhook::constructEvent($payload, (string) $signature, $secret);
@@ -65,8 +72,29 @@ class StripePaymentGateway implements PaymentGateway
         return new WebhookEvent((string) $event->type, $sessionId, $paid);
     }
 
+    /** The connected store's Stripe secret key (empty when not connected). */
+    private function secret(): string
+    {
+        $secret = Tenant::current()?->storeSettings()->stripe_secret;
+
+        return is_string($secret) ? $secret : '';
+    }
+
+    /**
+     * The connected store's webhook signing secret. Falls back to the platform
+     * secret so a single platform-operated Stripe account still works.
+     */
+    private function webhookSecret(): string
+    {
+        $secret = Tenant::current()?->storeSettings()->stripe_webhook_secret;
+
+        return is_string($secret) && $secret !== ''
+            ? $secret
+            : (string) config('services.stripe.webhook_secret');
+    }
+
     private function client(): StripeClient
     {
-        return new StripeClient((string) config('services.stripe.secret'));
+        return new StripeClient($this->secret());
     }
 }

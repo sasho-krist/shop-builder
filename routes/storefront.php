@@ -8,10 +8,10 @@ use App\Http\Controllers\Storefront\CollectionController;
 use App\Http\Controllers\Storefront\CustomerAuthController;
 use App\Http\Controllers\Storefront\FormSubmissionController;
 use App\Http\Controllers\Storefront\HomeController;
-use App\Http\Controllers\Storefront\LocaleController;
 use App\Http\Controllers\Storefront\PageController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\StoreAdminController;
+use App\Http\Controllers\StripeWebhookController;
 use App\Http\Middleware\ResolveCart;
 use App\Http\Middleware\ResolveStorefrontTenant;
 use App\Http\Middleware\SetStorefrontLocale;
@@ -29,8 +29,6 @@ Route::domain('{store}')
     ->group(function (): void {
         Route::get('/', HomeController::class)->name('storefront.home');
 
-        Route::get('locale/{locale}', LocaleController::class)->name('storefront.locale');
-
         Route::get('products', [ProductController::class, 'index'])->name('storefront.products');
         Route::get('p/{slug}', [ProductController::class, 'show'])->name('storefront.product');
         Route::get('c/{slug}', [CategoryController::class, 'show'])->name('storefront.category');
@@ -44,6 +42,11 @@ Route::domain('{store}')
         Route::post('forms', [FormSubmissionController::class, 'store'])
             ->middleware('throttle:20,1')
             ->name('storefront.form');
+
+        // Per-store Stripe webhook — the store points its Stripe account here
+        // (https://{store}/stripe/webhook), so the tenant resolves from the host
+        // and its own signing secret is used. CSRF-exempt via bootstrap/app.php.
+        Route::post('stripe/webhook', StripeWebhookController::class)->name('storefront.stripe.webhook');
 
         Route::get('checkout', [CheckoutController::class, 'show'])->name('storefront.checkout');
         Route::post('checkout', [CheckoutController::class, 'store'])->name('storefront.checkout.place');

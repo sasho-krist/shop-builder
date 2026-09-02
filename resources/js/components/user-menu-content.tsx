@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { Globe, LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings } from 'lucide-react';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -19,22 +19,11 @@ type Props = {
 
 export function UserMenuContent({ user }: Props) {
     const cleanup = useMobileNavigation();
-    const { t, locale } = useT();
+    const { t } = useT();
 
     const handleLogout = () => {
         cleanup();
         router.flushAll();
-    };
-
-    const switchTo = locale === 'bg' ? 'en' : 'bg';
-
-    const switchLanguage = () => {
-        cleanup();
-        router.patch(
-            '/settings/locale',
-            { locale: switchTo },
-            { preserveScroll: true },
-        );
     };
 
     return (
@@ -56,16 +45,6 @@ export function UserMenuContent({ user }: Props) {
                         <Settings className="mr-2" />
                         {t('Settings')}
                     </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                    className="cursor-pointer"
-                    onSelect={(event) => {
-                        event.preventDefault();
-                        switchLanguage();
-                    }}
-                >
-                    <Globe className="mr-2" />
-                    {switchTo === 'en' ? 'English' : 'Български'}
                 </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

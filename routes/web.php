@@ -26,6 +26,9 @@ use Illuminate\Support\Facades\Route;
 // to the central marketing/admin routes below.
 require __DIR__.'/storefront.php';
 
+// Platform operator panel — its own sign-in, only on the central domain.
+require __DIR__.'/super-admin.php';
+
 Route::inertia('/', 'welcome')->name('home');
 
 Route::post('stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
@@ -91,6 +94,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('store-settings', [StoreSettingController::class, 'edit'])->name('store-settings.edit');
         Route::put('store-settings', [StoreSettingController::class, 'update'])->name('store-settings.update');
+        Route::delete('store-settings/stripe', [StoreSettingController::class, 'disconnectStripe'])->name('store-settings.stripe.disconnect');
         Route::put('store-domain', [StoreDomainController::class, 'update'])->name('store-domain.update');
 
         Route::get('navigation', [StoreNavigationController::class, 'edit'])->name('navigation.edit');
