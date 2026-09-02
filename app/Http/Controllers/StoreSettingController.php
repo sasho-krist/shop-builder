@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreSettingRequest;
 use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -25,6 +27,7 @@ class StoreSettingController extends Controller
                 'tax_rate' => $settings->tax_rate,
                 'tax_included' => $settings->tax_included,
             ],
+            'logoUrl' => $settings->logoUrl(),
             'stripe' => [
                 'connected' => $settings->stripeConnected(),
                 'webhook_secret_set' => is_string($settings->stripe_webhook_secret)
@@ -66,6 +69,47 @@ class StoreSettingController extends Controller
         ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Stripe disconnected.')]);
+
+        return back();
+    }
+
+    public function uploadLogo(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'logo' => ['required', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
+        ]);
+
+        $tenant = Tenant::currentOrFail();
+        $settings = $tenant->storeSettings();
+
+        $old = $settings->logo_path;
+        $path = $request->file('logo')->store("tenants/{$tenant->id}/media", 'public');
+        abort_unless(is_string($path), 422);
+
+        $settings->logo_path = $path;
+        $settings->save();
+
+        if (is_string($old) && $old !== '') {
+            Storage::disk('public')->delete($old);
+        }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Logo updated.')]);
+
+        return back();
+    }
+
+    public function removeLogo(): RedirectResponse
+    {
+        $settings = Tenant::currentOrFail()->storeSettings();
+
+        if (is_string($settings->logo_path) && $settings->logo_path !== '') {
+            Storage::disk('public')->delete($settings->logo_path);
+        }
+
+        $settings->logo_path = null;
+        $settings->save();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Logo removed.')]);
 
         return back();
     }

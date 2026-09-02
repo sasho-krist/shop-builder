@@ -99,6 +99,7 @@ class HandleInertiaRequests extends Middleware
 
         return [
             'storeName' => $tenant->name,
+            'logoUrl' => $tenant->storeSettings()->logoUrl(),
             'customer' => $customer instanceof Customer
                 ? ['name' => $customer->name]
                 : null,

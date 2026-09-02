@@ -1,6 +1,6 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { Check, Copy } from 'lucide-react';
-import { useState } from 'react';
+import { Check, Copy, Upload } from 'lucide-react';
+import { useRef, useState } from 'react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +25,7 @@ type Props = {
         tax_rate: string;
         tax_included: boolean;
     };
+    logoUrl: string | null;
     stripe: {
         connected: boolean;
         webhook_secret_set: boolean;
@@ -70,8 +71,38 @@ function CopyField({ value }: { value: string }) {
     );
 }
 
-export default function StoreSettings({ settings, stripe, domain }: Props) {
+export default function StoreSettings({
+    settings,
+    logoUrl,
+    stripe,
+    domain,
+}: Props) {
     const { t } = useT();
+    const logoInput = useRef<HTMLInputElement>(null);
+    const [logoUploading, setLogoUploading] = useState(false);
+
+    function uploadLogo(file: File | undefined) {
+        if (!file) return;
+        router.post(
+            '/store-settings/logo',
+            { logo: file },
+            {
+                forceFormData: true,
+                preserveScroll: true,
+                onStart: () => setLogoUploading(true),
+                onFinish: () => {
+                    setLogoUploading(false);
+                    if (logoInput.current) logoInput.current.value = '';
+                },
+            },
+        );
+    }
+
+    function removeLogo() {
+        if (!confirm(t('Remove the logo?'))) return;
+        router.delete('/store-settings/logo', { preserveScroll: true });
+    }
+
     const form = useForm({
         currency: settings.currency,
         currency_symbol: settings.currency_symbol,
@@ -181,6 +212,70 @@ export default function StoreSettings({ settings, stripe, domain }: Props) {
                             />
                             <InputError message={form.errors.store_email} />
                         </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>{t('Logo')}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-4">
+                        <p className="text-muted-foreground text-sm">
+                            {t(
+                                'Shown in the storefront header instead of the store name. PNG, JPG or WebP, up to 2 MB.',
+                            )}
+                        </p>
+                        <div className="flex items-center gap-4">
+                            <div className="border-border bg-muted/40 flex h-16 w-40 items-center justify-center overflow-hidden rounded-md border">
+                                {logoUrl ? (
+                                    <img
+                                        src={logoUrl}
+                                        alt={t('Logo')}
+                                        className="max-h-full max-w-full object-contain"
+                                    />
+                                ) : (
+                                    <span className="text-muted-foreground text-xs">
+                                        {t('No logo')}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={logoUploading}
+                                    onClick={() => logoInput.current?.click()}
+                                >
+                                    {logoUploading ? (
+                                        <Spinner />
+                                    ) : (
+                                        <Upload className="size-4" />
+                                    )}
+                                    {logoUrl
+                                        ? t('Replace logo')
+                                        : t('Upload logo')}
+                                </Button>
+                                {logoUrl && (
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-destructive hover:text-destructive"
+                                        onClick={removeLogo}
+                                    >
+                                        {t('Remove')}
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                        <input
+                            ref={logoInput}
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            hidden
+                            onChange={(e) => uploadLogo(e.target.files?.[0])}
+                        />
                     </CardContent>
                 </Card>
 

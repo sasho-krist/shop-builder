@@ -47,7 +47,7 @@ The admin panel and the storefront are **entirely in Bulgarian**.
 | **Customers**   | The store's account holders — list with search, edit name/email, reset password, delete (past orders are kept).                                                                                                                                                                                                    |
 | **Owners**      | Store staff with full admin access — add an owner (new user or attach an existing one), edit name/email, remove (with "not yourself" / "not the last owner" guards). An owner's password can only be changed by that owner, from their own security settings.                                                      |
 | **Billing**     | Current plan, usage bars (products, team members), plan cards — "Choose plan" redirects to Stripe Checkout and returns to this page with a confirmation; "Manage subscription" opens the Stripe billing portal (cancel / resume). `BILLING_MOCK=true` swaps both for an in-app stand-in (used on the public demo). |
-| **Settings**    | Currency code & symbol, store notification email, flat shipping rate, free-shipping threshold, tax rate & tax-inclusive pricing, **the store's own Stripe connection** (secret + webhook secret + the webhook URL to paste into Stripe), and the custom-domain connection with CNAME instructions.                 |
+| **Settings**    | Currency code & symbol, store notification email, **store logo** (shown in the storefront header instead of the name), flat shipping rate, free-shipping threshold, tax rate & tax-inclusive pricing, **the store's own Stripe connection** (secret + webhook secret + the webhook URL to paste into Stripe), and the custom-domain connection with CNAME instructions. |
 | **Account**     | Profile (name/email), security (password, two-factor authentication, passkeys), and appearance (light/dark/system).                                                                                                                                                                                                |
 
 ### For the shopper (storefront)
@@ -197,7 +197,7 @@ _and_ its plan allows card payments.
 
 **Theme & content:** `themes` (`tokens` JSON, one active per store), `pages`
 (`type`, `blocks` JSON, `is_published`), `store_navigation` (header/footer links,
-footer note), `store_settings` (currency, email, shipping, tax).
+footer note), `store_settings` (currency, email, logo, shipping, tax, Stripe keys).
 
 **Shop & orders:** `customers` (per-tenant accounts), `carts` / `cart_items`
 (cookie-identified), `orders` (sequential `number` from 1001 per store, `token`,

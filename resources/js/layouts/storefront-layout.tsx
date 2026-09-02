@@ -12,6 +12,7 @@ type NavLink = { label: string; href: string };
 export type StorefrontShared = {
     storefront: {
         storeName: string;
+        logoUrl: string | null;
         theme: ThemeTokens;
         cartCount: number;
         currencySymbol: string;
@@ -56,8 +57,16 @@ export default function StorefrontLayout({
     ownerEdit?: { href: string; label: string };
 }) {
     const { storefront } = usePage<StorefrontShared>().props;
-    const { theme, storeName, cartCount, categories, customer, manage, nav } =
-        storefront;
+    const {
+        theme,
+        storeName,
+        logoUrl,
+        cartCount,
+        categories,
+        customer,
+        manage,
+        nav,
+    } = storefront;
     const { t } = useT();
     const year = new Date().getFullYear();
 
@@ -87,7 +96,15 @@ export default function StorefrontLayout({
                         }}
                         className="text-lg font-bold"
                     >
-                        {storeName}
+                        {logoUrl ? (
+                            <img
+                                src={logoUrl}
+                                alt={storeName}
+                                className="max-h-10 w-auto object-contain"
+                            />
+                        ) : (
+                            storeName
+                        )}
                     </Link>
                     <nav className="flex items-center gap-5 text-sm">
                         {nav.header.length > 0 ? (

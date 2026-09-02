@@ -12,7 +12,9 @@ use App\Models\User;
 use App\Services\Payments\StripePaymentGateway;
 use App\Support\Theme\ThemePresets;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class StoreSettingsTest extends TestCase
@@ -64,6 +66,48 @@ class StoreSettingsTest extends TestCase
         $this->assertSame('EUR', $settings->currency);
         $this->assertSame('4.99', $settings->shipping_flat);
         $this->assertFalse($settings->tax_included);
+    }
+
+    public function test_a_logo_can_be_uploaded_replaced_and_removed(): void
+    {
+        Storage::fake('public');
+
+        $this->actingAs($this->user)
+            ->post(route('store-settings.logo.upload'), [
+                'logo' => UploadedFile::fake()->image('logo.png', 200, 80),
+            ])
+            ->assertRedirect();
+
+        $first = $this->tenant->settings()->firstOrFail()->logo_path;
+        $this->assertNotNull($first);
+        Storage::disk('public')->assertExists($first);
+
+        // Storefront exposes it.
+        Tenant::forgetCurrent();
+        $this->get('http://acme.shop-builder.localhost/')
+            ->assertInertia(fn ($page) => $page->where('storefront.logoUrl', fn ($u) => is_string($u) && $u !== ''));
+        Tenant::setCurrent($this->tenant);
+
+        // Replacing deletes the old file.
+        $this->actingAs($this->user)->post(route('store-settings.logo.upload'), [
+            'logo' => UploadedFile::fake()->image('logo2.png', 200, 80),
+        ]);
+        Storage::disk('public')->assertMissing($first);
+
+        // Removing clears it.
+        $this->actingAs($this->user)
+            ->delete(route('store-settings.logo.remove'))
+            ->assertRedirect();
+        $this->assertNull($this->tenant->settings()->firstOrFail()->logo_path);
+    }
+
+    public function test_a_non_image_logo_upload_is_rejected(): void
+    {
+        $this->actingAs($this->user)
+            ->post(route('store-settings.logo.upload'), [
+                'logo' => UploadedFile::fake()->create('logo.pdf', 10, 'application/pdf'),
+            ])
+            ->assertSessionHasErrors('logo');
     }
 
     public function test_a_store_connects_its_own_stripe_keys(): void

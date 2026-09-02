@@ -6,6 +6,7 @@ use App\Support\Tenancy\BelongsToTenant;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @property int $id
@@ -13,6 +14,7 @@ use Illuminate\Support\Carbon;
  * @property string $currency
  * @property string $currency_symbol
  * @property string|null $store_email
+ * @property string|null $logo_path
  * @property numeric-string $shipping_flat
  * @property numeric-string|null $free_shipping_over
  * @property numeric-string $tax_rate
@@ -61,6 +63,16 @@ class StoreSetting extends Model
     public function stripeConnected(): bool
     {
         return is_string($this->stripe_secret) && $this->stripe_secret !== '';
+    }
+
+    /**
+     * Public URL of the store's logo, or null when none is set.
+     */
+    public function logoUrl(): ?string
+    {
+        return is_string($this->logo_path) && $this->logo_path !== ''
+            ? Storage::disk('public')->url($this->logo_path)
+            : null;
     }
 
     /**

@@ -94,6 +94,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('store-settings', [StoreSettingController::class, 'edit'])->name('store-settings.edit');
         Route::put('store-settings', [StoreSettingController::class, 'update'])->name('store-settings.update');
+        Route::post('store-settings/logo', [StoreSettingController::class, 'uploadLogo'])->name('store-settings.logo.upload');
+        Route::delete('store-settings/logo', [StoreSettingController::class, 'removeLogo'])->name('store-settings.logo.remove');
         Route::delete('store-settings/stripe', [StoreSettingController::class, 'disconnectStripe'])->name('store-settings.stripe.disconnect');
         Route::put('store-domain', [StoreDomainController::class, 'update'])->name('store-domain.update');
 
