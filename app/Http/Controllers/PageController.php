@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PageRequest;
+use App\Models\Category;
 use App\Models\Collection;
 use App\Models\Page;
 use App\Models\Product;
@@ -151,6 +152,20 @@ class PageController extends Controller
                     'id' => $collection->id,
                     'title' => $collection->title,
                     'products' => $collection->products->take(8)->map($mapProduct)->values()->all(),
+                ])
+                ->all(),
+            'categories' => Category::query()
+                ->orderBy('position')
+                ->orderBy('name')
+                ->with([
+                    'products.variants:id,product_id,price',
+                    'products.images:id,product_id,disk,path',
+                ])
+                ->get()
+                ->map(fn (Category $category): array => [
+                    'id' => $category->id,
+                    'title' => $category->name,
+                    'products' => $category->products->take(8)->map($mapProduct)->values()->all(),
                 ])
                 ->all(),
         ];

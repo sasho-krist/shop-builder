@@ -59,6 +59,12 @@ export type FieldDef =
           default: number | null;
       }
     | {
+          type: 'category';
+          key: string;
+          label: string;
+          default: number | null;
+      }
+    | {
           type: 'repeater';
           key: string;
           label: string;
@@ -82,10 +88,18 @@ export type PreviewCollection = {
     products: PreviewProduct[];
 };
 
+/** A category and a sample of its products, for the `category` picker / source. */
+export type PreviewCategory = {
+    id: number;
+    title: string;
+    products: PreviewProduct[];
+};
+
 export type PreviewContext = {
     products: PreviewProduct[];
     bestSelling: PreviewProduct[];
     collections: PreviewCollection[];
+    categories: PreviewCategory[];
     /** When set, product cards link to `${hrefBase}${slug}` (storefront only). */
     hrefBase?: string;
     /** POST endpoint for form sections. Only set on the live storefront; when

@@ -339,6 +339,30 @@ function FieldInput({
                     </SelectContent>
                 </Select>
             );
+        case 'category':
+            return (
+                <Select
+                    value={value ? String(value) : 'none'}
+                    onValueChange={(v) =>
+                        onChange(v === 'none' ? null : Number(v))
+                    }
+                >
+                    <SelectTrigger>
+                        <SelectValue placeholder={t('Choose a category')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="none">{t('None')}</SelectItem>
+                        {ctx.categories.map((category) => (
+                            <SelectItem
+                                key={category.id}
+                                value={String(category.id)}
+                            >
+                                {category.title}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            );
         default:
             return null;
     }

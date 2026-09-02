@@ -27,6 +27,10 @@ function resolveProducts(
         const id = prop<number | null>(props, 'collectionId', null);
         return ctx.collections.find((c) => c.id === id)?.products ?? [];
     }
+    if (source === 'category') {
+        const id = prop<number | null>(props, 'categoryId', null);
+        return ctx.categories.find((c) => c.id === id)?.products ?? [];
+    }
     if (source === 'bestSelling') {
         return ctx.bestSelling;
     }
@@ -259,6 +263,7 @@ export const COMMERCE_SECTIONS: SectionDef[] = [
                     { value: 'latest', label: 'Newest' },
                     { value: 'bestSelling', label: 'Best sellers' },
                     { value: 'collection', label: 'A collection' },
+                    { value: 'category', label: 'A category' },
                 ],
                 default: 'latest',
             },
@@ -266,6 +271,12 @@ export const COMMERCE_SECTIONS: SectionDef[] = [
                 type: 'collection',
                 key: 'collectionId',
                 label: 'Collection',
+                default: null,
+            },
+            {
+                type: 'category',
+                key: 'categoryId',
+                label: 'Category',
                 default: null,
             },
             {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Storefront\Concerns;
 
+use App\Models\Category;
 use App\Models\Collection;
 use App\Models\Product;
 use App\Models\Tenant;
@@ -11,7 +12,7 @@ trait BuildsSectionContext
     /**
      * Real catalogue data for rendering page sections on the storefront.
      *
-     * @return array{products: array<int, mixed>, bestSelling: array<int, mixed>, collections: array<int, mixed>}
+     * @return array{products: array<int, mixed>, bestSelling: array<int, mixed>, collections: array<int, mixed>, categories: array<int, mixed>}
      */
     protected function sectionContext(): array
     {
@@ -57,6 +58,25 @@ trait BuildsSectionContext
                     'id' => $collection->id,
                     'title' => $collection->title,
                     'products' => $collection->products
+                        ->where('status', 'active')
+                        ->take(12)
+                        ->map($map)
+                        ->values()
+                        ->all(),
+                ])
+                ->all(),
+            'categories' => Category::query()
+                ->orderBy('position')
+                ->orderBy('name')
+                ->with([
+                    'products.variants:id,product_id,price',
+                    'products.images:id,product_id,disk,path',
+                ])
+                ->get()
+                ->map(fn (Category $category): array => [
+                    'id' => $category->id,
+                    'title' => $category->name,
+                    'products' => $category->products
                         ->where('status', 'active')
                         ->take(12)
                         ->map($map)

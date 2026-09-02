@@ -392,6 +392,7 @@
     "Add a section to start building this page.": "Добавете секция, за да започнете да изграждате страницата.",
     "Upload": "Качи",
     "Choose a collection": "Изберете колекция",
+    "Choose a category": "Изберете категория",
     "None": "Без",
 
     "Hero": "Банер",
@@ -420,6 +421,7 @@
     "Newest": "Най-нови",
     "Best sellers": "Най-продавани",
     "A collection": "Колекция",
+    "A category": "Категория",
     "Columns": "Колони",
     "Max products": "Максимум продукти",
     "Layout": "Оформление",

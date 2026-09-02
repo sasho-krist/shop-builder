@@ -165,6 +165,37 @@ class StorefrontShopTest extends TestCase
             );
     }
 
+    public function test_a_product_grid_section_can_source_from_a_category(): void
+    {
+        $inCat = $this->product('In Category');
+        $this->product('Elsewhere');
+
+        Tenant::setCurrent($this->store);
+        $category = Category::factory()->for($this->store)->create(['slug' => 'teas', 'name' => 'Teas']);
+        $inCat->categories()->attach($category);
+
+        Page::factory()->for($this->store)->create([
+            'type' => 'page',
+            'slug' => 'shop-by-cat',
+            'is_published' => true,
+            'blocks' => [[
+                'id' => 'g1',
+                'type' => 'productGrid',
+                'props' => ['source' => 'category', 'categoryId' => $category->id],
+            ]],
+        ]);
+        Tenant::forgetCurrent();
+
+        $this->get($this->url('shop-by-cat'))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('storefront/page')
+                ->where('sections.categories', fn ($cats) => collect($cats)
+                    ->firstWhere('id', $category->id)['products'][0]['title'] === 'In Category'
+                    && count(collect($cats)->firstWhere('id', $category->id)['products']) === 1)
+            );
+    }
+
     public function test_a_collection_page_lists_its_products(): void
     {
         $product = $this->product('Featured Item');
