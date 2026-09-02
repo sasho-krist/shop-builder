@@ -22,7 +22,6 @@ class StoreNavigationController extends Controller
                 'header_links' => $nav->header_links ?? [],
                 'footer_links' => $nav->footer_links ?? [],
                 'footer_note' => $nav->footer_note ?? '',
-                'show_category_nav' => $nav->show_category_nav,
             ],
             'targets' => [
                 'categories' => Category::query()

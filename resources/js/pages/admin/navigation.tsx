@@ -1,9 +1,8 @@
 import { Head, useForm } from '@inertiajs/react';
-import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Plus, Tags, Trash2 } from 'lucide-react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -40,7 +39,6 @@ type Props = {
         header_links: NavRow[];
         footer_links: NavRow[];
         footer_note: string;
-        show_category_nav: boolean;
     };
     targets: {
         categories: Target[];
@@ -271,10 +269,30 @@ export default function NavigationEditor({ navigation, targets }: Props) {
         header_links: navigation.header_links,
         footer_links: navigation.footer_links,
         footer_note: navigation.footer_note,
-        show_category_nav: navigation.show_category_nav,
     });
 
     const errors = form.errors as Record<string, string>;
+
+    function addAllCategories() {
+        const present = new Set(
+            form.data.header_links
+                .filter((r) => r.type === 'category')
+                .map((r) => r.value),
+        );
+        const missing = targets.categories
+            .filter((c) => !present.has(c.value))
+            .map((c): NavRow => ({
+                label: c.label,
+                type: 'category',
+                value: c.value,
+            }));
+        if (missing.length > 0) {
+            form.setData('header_links', [
+                ...form.data.header_links,
+                ...missing,
+            ]);
+        }
+    }
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
@@ -317,18 +335,18 @@ export default function NavigationEditor({ navigation, targets }: Props) {
                                 form.setData('header_links', rows)
                             }
                         />
-                        <label className="flex items-center gap-2 text-sm">
-                            <Checkbox
-                                checked={form.data.show_category_nav}
-                                onCheckedChange={(c) =>
-                                    form.setData(
-                                        'show_category_nav',
-                                        c === true,
-                                    )
-                                }
-                            />
-                            {t('Also show top-level category links')}
-                        </label>
+                        {targets.categories.length > 0 && (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="text-muted-foreground self-start"
+                                onClick={addAllCategories}
+                            >
+                                <Tags className="size-4" />
+                                {t('Add all categories')}
+                            </Button>
+                        )}
                     </CardContent>
                 </Card>
 

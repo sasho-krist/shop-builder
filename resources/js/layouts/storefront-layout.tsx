@@ -16,7 +16,6 @@ export type StorefrontShared = {
         theme: ThemeTokens;
         cartCount: number;
         currencySymbol: string;
-        categories: { name: string; slug: string }[];
         customer: { name: string } | null;
         manage: ManageContext | null;
         locale: string;
@@ -24,7 +23,6 @@ export type StorefrontShared = {
             header: NavLink[];
             footer: NavLink[];
             footerNote: string | null;
-            showCategoryNav: boolean;
         };
     };
 };
@@ -57,16 +55,8 @@ export default function StorefrontLayout({
     ownerEdit?: { href: string; label: string };
 }) {
     const { storefront } = usePage<StorefrontShared>().props;
-    const {
-        theme,
-        storeName,
-        logoUrl,
-        cartCount,
-        categories,
-        customer,
-        manage,
-        nav,
-    } = storefront;
+    const { theme, storeName, logoUrl, cartCount, customer, manage, nav } =
+        storefront;
     const { t } = useT();
     const year = new Date().getFullYear();
 
@@ -118,16 +108,6 @@ export default function StorefrontLayout({
                         ) : (
                             <Link href="/products">{t('Shop')}</Link>
                         )}
-                        {nav.showCategoryNav &&
-                            categories.map((category) => (
-                                <Link
-                                    key={category.slug}
-                                    href={`/c/${category.slug}`}
-                                    className="hidden sm:inline"
-                                >
-                                    {category.name}
-                                </Link>
-                            ))}
                         {manage ? (
                             <a
                                 href={manage.dashboard}

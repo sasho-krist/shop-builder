@@ -52,7 +52,6 @@ class StoreNavigationTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('admin/navigation')
-                ->where('navigation.show_category_nav', true)
                 ->where('targets.categories.0.value', 'tea')
                 // every custom page is offered as a direct link target
                 ->where('targets.pages', fn ($rows) => collect($rows)->contains(
@@ -72,13 +71,11 @@ class StoreNavigationTest extends TestCase
                 ['label' => 'Terms', 'type' => 'url', 'value' => 'https://acme.test/terms'],
             ],
             'footer_note' => 'Small-batch wellness since 2020.',
-            'show_category_nav' => false,
         ])->assertRedirect();
 
         $nav = $this->store->storeNavigation()->fresh();
         $this->assertCount(1, $nav->header_links);
         $this->assertSame('About', $nav->header_links[0]['label']);
-        $this->assertFalse($nav->show_category_nav);
         $this->assertSame('Small-batch wellness since 2020.', $nav->footer_note);
     }
 
@@ -100,6 +97,26 @@ class StoreNavigationTest extends TestCase
                 ->where('storefront.nav.header.0.href', 'https://acme.test/blog')
                 ->where('storefront.nav.footer.0.label', 'Contact')
                 ->where('storefront.nav.footerNote', 'Made in Sofia.')
+            );
+    }
+
+    public function test_category_links_added_to_the_menu_render_on_the_storefront(): void
+    {
+        Category::create(['name' => 'Tyres', 'slug' => 'tyres', 'position' => 0]);
+        Category::create(['name' => 'Parts', 'slug' => 'parts', 'position' => 1]);
+
+        $this->store->storeNavigation()->update([
+            'header_links' => [
+                ['label' => 'Tyres', 'type' => 'category', 'value' => 'tyres'],
+                ['label' => 'Parts', 'type' => 'category', 'value' => 'parts'],
+            ],
+        ]);
+
+        $this->get($this->storefront())
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->count('storefront.nav.header', 2)
+                ->where('storefront.nav.header.0.href', '/c/tyres')
+                ->where('storefront.nav.header.1.href', '/c/parts')
             );
     }
 

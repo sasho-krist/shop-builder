@@ -36,7 +36,6 @@ class StoreNavigationRequest extends FormRequest
             'footer_links.*.type' => ['required', Rule::in(NavLinks::TYPES)],
             'footer_links.*.value' => ['nullable', 'string', 'max:255'],
             'footer_note' => ['nullable', 'string', 'max:500'],
-            'show_category_nav' => ['boolean'],
         ];
     }
 

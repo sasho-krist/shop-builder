@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use App\Models\Cart;
-use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Page;
 use App\Models\Tenant;
@@ -106,22 +105,10 @@ class HandleInertiaRequests extends Middleware
             'theme' => $activeTheme instanceof Theme ? $activeTheme->tokens : ThemePresets::minimal(),
             'cartCount' => $cart?->loadMissing('items')->itemCount() ?? 0,
             'currencySymbol' => $tenant->storeSettings()->currency_symbol,
-            'categories' => Category::query()
-                ->whereNull('parent_id')
-                ->orderBy('position')
-                ->orderBy('name')
-                ->limit(8)
-                ->get(['id', 'name', 'slug'])
-                ->map(fn (Category $category): array => [
-                    'name' => $category->name,
-                    'slug' => $category->slug,
-                ])
-                ->all(),
             'nav' => [
                 'header' => NavLinks::resolve($nav->header_links),
                 'footer' => NavLinks::resolve($nav->footer_links),
                 'footerNote' => $nav->footer_note,
-                'showCategoryNav' => $nav->show_category_nav,
             ],
             'locale' => App::getLocale(),
             'manage' => $this->manageContext($request, $tenant, $activeTheme),

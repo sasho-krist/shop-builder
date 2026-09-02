@@ -15,23 +15,15 @@ use Illuminate\Support\Carbon;
  * @property array<int, array{label: string, type: string, value: string|null}>|null $header_links
  * @property array<int, array{label: string, type: string, value: string|null}>|null $footer_links
  * @property string|null $footer_note
- * @property bool $show_category_nav
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['header_links', 'footer_links', 'footer_note', 'show_category_nav'])]
+#[Fillable(['header_links', 'footer_links', 'footer_note'])]
 class StoreNavigation extends Model
 {
     use BelongsToTenant;
 
     protected $table = 'store_navigation';
-
-    /**
-     * @var array<string, mixed>
-     */
-    protected $attributes = [
-        'show_category_nav' => true,
-    ];
 
     /**
      * @return array<string, string>
@@ -41,7 +33,6 @@ class StoreNavigation extends Model
         return [
             'header_links' => 'array',
             'footer_links' => 'array',
-            'show_category_nav' => 'boolean',
         ];
     }
 }
