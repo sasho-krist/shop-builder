@@ -8,8 +8,10 @@ panel. No code required.
 The admin panel and the storefront are **entirely in Bulgarian**.
 
 > **Status:** feature-complete through the planned roadmap (phases 0–8, see
-> [`docs/PLAN.md`](docs/PLAN.md)). What remains before a public launch is
-> operational: real Stripe keys + Price IDs, and production wildcard DNS/TLS.
+> [`docs/PLAN.md`](docs/PLAN.md)), plus an operator panel (`/super-admin`),
+> per-store Stripe connections and a store-logo / category-menu polish pass.
+> Live demo at `shop.sasho-dev.com` (subscription checkout runs in mock mode).
+> A real launch still needs production Stripe keys/Price IDs and wildcard DNS/TLS.
 
 ---
 
@@ -102,8 +104,8 @@ The admin panel and the storefront are **entirely in Bulgarian**.
 | Database       | MySQL 8 / MariaDB — database `shop_builder`, InnoDB                         |
 | Auth           | Laravel Fortify — registration, email verification, 2FA, passkeys           |
 | Multi-tenancy  | Single database + `tenant_id` scoping; subdomain / custom-domain resolution |
-| Store payments | Stripe Checkout (one provider for now, behind an interface)                 |
-| SaaS billing   | Laravel Cashier                                                             |
+| Store payments | Stripe Checkout on each store's own connected account, behind an interface  |
+| SaaS billing   | Laravel Cashier (platform account) — real or an in-app mock                 |
 | Typed routes   | Laravel Wayfinder (generated on `npm run build`)                            |
 | Build          | Vite 8                                                                      |
 | Quality        | Pest 4, Larastan (PHPStan), Pint                                            |
@@ -153,9 +155,9 @@ never falls through to the central marketing/admin routes.
 
 - `locale` and `i18n` (the translation map) as **lazy** props — they must resolve
   _after_ route middleware so the storefront locale middleware has run.
-- `storefront` (lazy) — store name, active theme tokens, cart count, currency
-  symbol, categories, resolved navigation, and `manage` (admin deep-links) when
-  the visitor is an owner of that store.
+- `storefront` (lazy) — store name, store logo URL, active theme tokens, cart
+  count, currency symbol, resolved navigation, and `manage` (admin deep-links)
+  when the visitor is an owner of that store.
 
 ### Payments & billing abstraction
 
@@ -189,7 +191,8 @@ _and_ its plan allows card payments.
 ## Data model
 
 **Platform:** `tenants`, `tenant_user`, `subscriptions`, `subscription_items`
-(Cashier). `users` carry a `locale` preference.
+(Cashier), `platform_settings` (operator-panel key/value — the platform Stripe
+keys). `users` carry a `locale` column (unused now the app is Bulgarian-only).
 
 **Catalogue** (all `tenant_id`-scoped): `products` (+ `options` JSON),
 `product_variants`, `product_images` (public disk), `categories` (nested),
@@ -225,8 +228,8 @@ custom properties, shared by the editor preview and the storefront.
 - `resources/js/sections/*` — each `SectionDef` has a `fields` schema and a
   `Render` component. Field types: `text`, `textarea`, `html`, `image`, `color`,
   `icon` (curated icon set), `select`, `number` (buttons for short ranges,
-  slider otherwise), `boolean`, `collection`, and `repeater` (arrays of
-  sub-rows — used by lists, tabs, galleries, etc.).
+  slider otherwise), `boolean`, `collection`, `category`, and `repeater` (arrays
+  of sub-rows — used by lists, tabs, galleries, etc.).
 - ~40 sections, grouped in the "Add" menu, roughly matching a page-builder
   widget library:
     - **Layout** — Columns: a container block that splits into 2–4 columns
@@ -276,10 +279,12 @@ custom properties, shared by the editor preview and the storefront.
 
 ### Storefront
 
-`storefront-layout.tsx` wraps everything in `themeToCssVars(active theme)`; header
-uses the resolved navigation (falling back to a single "Shop" link), footer shows
-the note, links and copyright. `App\Support\Storefront\NavLinks` turns
-`{label, type, value}` rows into hrefs and drops anything unresolvable.
+`storefront-layout.tsx` wraps everything in `themeToCssVars(active theme)`; the
+header shows the store logo (or the store name when none is set) and the resolved
+navigation (falling back to a single "Shop" link); the footer shows the note,
+links and copyright. `App\Support\Storefront\NavLinks` turns `{label, type, value}`
+rows into hrefs and drops anything unresolvable — the menu shows exactly the rows
+saved in the nav editor, category links included.
 
 ### Checkout & orders
 
@@ -319,13 +324,14 @@ app/
   Http/
     Controllers/            # admin panel controllers
       Storefront/            # public storefront + {store}/admin entry
-      Settings/              # profile, security, locale
-    Middleware/              # tenancy, cart, locale resolution
+      SuperAdmin/            # operator panel (/super-admin)
+      Settings/              # profile, security
+    Middleware/              # tenancy, cart, locale, EnsureSuperAdmin
     Requests/                # form-request validation
   Models/
   Services/
     Payments/                # PaymentGateway + Stripe/Fake
-    Billing/                 # BillingGateway + Stripe/Fake, PlanGate
+    Billing/                 # BillingGateway + Stripe/Fake/Mock, PlanGate
   Support/
     Theme/ThemePresets.php
     Blocks/BlockRegistry.php
@@ -336,19 +342,20 @@ config/
   super-admin.php            # operator-panel credentials
   cashier.php  services.php  # Stripe (billing + storefront)
 lang/
-  bg.json  en.json           # UI translations
+  bg.json                    # every UI string (en.json kept but unused)
   bg/validation.php
 resources/js/
   pages/
     admin/                   # admin panel screens
+    super-admin/             # operator panel screens
     storefront/              # storefront screens
     auth/  settings/
   sections/                  # page-builder + storefront sections
     registry.tsx             #   aggregates every SectionDef
     commerce.tsx basic.tsx boxes.tsx interactive.tsx
-    shared.tsx icons.tsx
+    forms.tsx layout.tsx shared.tsx icons.tsx
   components/                # shared React components
-  layouts/                   # app, auth, settings, storefront
+  layouts/                   # app, auth, settings, storefront, super-admin
   lib/                       # i18n, theme, blocks, money
 routes/
   web.php                    # marketing + admin (requires storefront.php first)
@@ -398,17 +405,18 @@ php artisan db:seed --class=DemoCatalogSeeder
 
 Key `.env` values beyond the Laravel defaults:
 
-| Variable                                     | Purpose                                                                                                                                                                                        |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `APP_URL`                                    | Central app origin, e.g. `http://shop-builder.localhost:8000`                                                                                                                                  |
-| `APP_CENTRAL_DOMAIN`                         | Bare central domain used to tell storefront hosts apart, e.g. `shop-builder.localhost`                                                                                                         |
-| `SESSION_DOMAIN`                             | `.shop-builder.localhost` — shares the session across subdomains                                                                                                                               |
-| `SESSION_COOKIE`                             | `sb_session`                                                                                                                                                                                   |
-| `STRIPE_KEY` / `STRIPE_SECRET`               | The **platform's** Stripe keys for subscription billing (Cashier). Storefront card payments use each store's own keys, set in the store admin. Overridable from the operator panel.            |
-| `STRIPE_WEBHOOK_SECRET`                      | Cashier billing webhook signing secret (`/billing/webhook`)                                                                                                                                    |
-| `STRIPE_STOREFRONT_WEBHOOK_SECRET`           | Fallback storefront webhook secret for the central `/stripe/webhook` route (per-store secrets, set in each store's admin, take precedence)                                                     |
-| `STRIPE_PRICE_PRO` / `STRIPE_PRICE_BUSINESS` | Cashier Price IDs for the paid plans                                                                                                                                                           |
-| `BILLING_MOCK`                               | `true` replaces Stripe subscription checkout with an in-app mock so the subscribe flow works without a Stripe account (used on the public demo). Opt-in, off by default; never charges a card. |
+| Variable                                                                      | Purpose                                                                                                                                                                                        |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `APP_URL`                                                                     | Central app origin, e.g. `http://shop-builder.localhost:8000`                                                                                                                                  |
+| `APP_CENTRAL_DOMAIN`                                                          | Bare central domain used to tell storefront hosts apart, e.g. `shop-builder.localhost`                                                                                                         |
+| `SESSION_DOMAIN`                                                              | `.shop-builder.localhost` — shares the session across subdomains                                                                                                                               |
+| `SESSION_COOKIE`                                                              | `sb_session`                                                                                                                                                                                   |
+| `SUPER_ADMIN_USERNAME` / `SUPER_ADMIN_PASSWORD` / `SUPER_ADMIN_PASSWORD_HASH` | Operator-panel sign-in (`/super-admin`). Ships with a working default; set a plain `PASSWORD` or a bcrypt `PASSWORD_HASH` for production.                                                      |
+| `STRIPE_KEY` / `STRIPE_SECRET`                                                | The **platform's** Stripe keys for subscription billing (Cashier). Storefront card payments use each store's own keys, set in the store admin. Overridable from the operator panel.            |
+| `STRIPE_WEBHOOK_SECRET`                                                       | Cashier billing webhook signing secret (`/billing/webhook`)                                                                                                                                    |
+| `STRIPE_STOREFRONT_WEBHOOK_SECRET`                                            | Fallback storefront webhook secret for the central `/stripe/webhook` route (per-store secrets, set in each store's admin, take precedence)                                                     |
+| `STRIPE_PRICE_PRO` / `STRIPE_PRICE_BUSINESS`                                  | Cashier Price IDs for the paid plans                                                                                                                                                           |
+| `BILLING_MOCK`                                                                | `true` replaces Stripe subscription checkout with an in-app mock so the subscribe flow works without a Stripe account (used on the public demo). Opt-in, off by default; never charges a card. |
 
 Everything Stripe is optional for local development — without keys, card payments
 and paid-plan checkout are simply hidden and the fake gateways drive the tests.
@@ -428,8 +436,9 @@ vendor/bin/phpstan analyse --memory-limit=1G
 ```
 
 PHPStan needs `--memory-limit=1G` (already wired into `composer types:check`).
-There are ~35 Pest feature test files covering tenancy isolation, the full
-merchant + shopper flow, payments/billing (via fakes), and localisation.
+~27 Pest feature test files (~225 tests) cover tenancy isolation, the full
+merchant + shopper flow, payments/billing (via the fake and mock gateways), the
+operator panel, and the page builder.
 
 ---
 
@@ -446,8 +455,11 @@ merchant + shopper flow, payments/billing (via fakes), and localisation.
   connected custom domains always need their own cert.
 - No queue worker or scheduler is required (no queued jobs, no scheduled tasks);
   `QUEUE_CONNECTION=sync` is fine.
-- Provide real Stripe keys, webhook secrets and Price IDs to enable payments and
-  subscriptions.
+- **Subscription billing:** provide the platform's Stripe keys + webhook secret +
+  Price IDs (`.env` or the operator panel's Settings tab), or set `BILLING_MOCK=true`
+  to run the in-app mock instead. **Storefront card payments:** each store owner
+  connects their own Stripe from that store's admin Settings — nothing to set here.
+- Change the operator credentials (`SUPER_ADMIN_*`); the bundled default is public.
 - **Full step-by-step cPanel walkthrough + gotchas (`proc_open` disabled →
   run `package:discover` manually and never `route:cache`; new-domain vhost
   rebuilds; DNS cache): [`DEPLOY.md`](DEPLOY.md).**
