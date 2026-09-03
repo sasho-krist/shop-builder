@@ -392,7 +392,8 @@ export default function StoreSettings({
                             </Label>
                             <PasswordInput
                                 id="stripe_secret"
-                                autoComplete="off"
+                                name="sb_stripe_secret"
+                                noAutofill
                                 placeholder={
                                     stripe.connected
                                         ? t(
@@ -416,7 +417,8 @@ export default function StoreSettings({
                             </Label>
                             <PasswordInput
                                 id="stripe_webhook_secret"
-                                autoComplete="off"
+                                name="sb_stripe_webhook_secret"
+                                noAutofill
                                 placeholder={
                                     stripe.webhook_secret_set
                                         ? t(

@@ -848,6 +848,8 @@
     "Disconnect Stripe": "Разкачи Stripe",
     "Disconnect Stripe? Card payments will stop.": "Да разкача ли Stripe? Плащанията с карта ще спрат.",
     "Stripe disconnected.": "Stripe е разкачен.",
+    "That does not look like a Stripe secret key (it starts with sk_live_ or sk_test_).": "Това не прилича на таен ключ от Stripe (започва със sk_live_ или sk_test_).",
+    "That does not look like a Stripe webhook signing secret (it starts with whsec_).": "Това не прилича на подписващ webhook secret от Stripe (започва с whsec_).",
 
     "Plan updated. Thanks!": "Планът е обновен. Благодарим!",
     "Checkout cancelled — your plan is unchanged.": "Плащането е отказано — планът ви остава непроменен.",

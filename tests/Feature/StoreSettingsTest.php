@@ -144,6 +144,24 @@ class StoreSettingsTest extends TestCase
         $this->assertNull($settings->stripe_webhook_secret);
     }
 
+    public function test_a_value_that_is_not_a_stripe_key_is_rejected(): void
+    {
+        $base = [
+            'currency' => 'EUR', 'currency_symbol' => '€', 'store_email' => null,
+            'shipping_flat' => '0', 'free_shipping_over' => null,
+            'tax_rate' => '0', 'tax_included' => true,
+        ];
+
+        $this->actingAs($this->user)
+            ->put(route('store-settings.update'), $base + [
+                'stripe_secret' => 'Jana009@secret',
+                'stripe_webhook_secret' => 'not-a-secret',
+            ])
+            ->assertSessionHasErrors(['stripe_secret', 'stripe_webhook_secret']);
+
+        $this->assertNull($this->tenant->settings()->firstOrFail()->stripe_secret);
+    }
+
     public function test_the_payment_gateway_uses_the_current_stores_keys(): void
     {
         config(['services.stripe.enabled' => true]);
@@ -155,6 +173,11 @@ class StoreSettingsTest extends TestCase
 
         $this->tenant->settings()->update(['stripe_secret' => 'sk_live_x']);
         $this->assertTrue($gateway->enabled());
+
+        // A stored value that is not a Stripe key disables card payments
+        // rather than 500-ing at checkout.
+        $this->tenant->settings()->update(['stripe_secret' => 'Jana009@nonsense']);
+        $this->assertFalse($gateway->enabled());
     }
 
     public function test_invalid_settings_are_rejected(): void

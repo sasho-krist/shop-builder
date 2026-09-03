@@ -18,6 +18,9 @@ use UnexpectedValueException;
  */
 class StripePaymentGateway implements PaymentGateway
 {
+    /** Fixed BGN→EUR conversion rate (Bulgaria's euro adoption). */
+    private const BGN_TO_EUR = 1.95583;
+
     public function enabled(): bool
     {
         return (bool) config('services.stripe.enabled', true)
@@ -26,8 +29,9 @@ class StripePaymentGateway implements PaymentGateway
 
     public function createCheckoutSession(Order $order, string $successUrl, string $cancelUrl): CheckoutSession
     {
-        $currency = config('services.stripe.currency');
-        $currency = is_string($currency) && $currency !== '' ? $currency : $order->currency;
+        $override = config('services.stripe.currency');
+        $currency = is_string($override) && $override !== '' ? $override : $order->currency;
+        ['currency' => $currency, 'amount' => $amount] = self::stripeAmount($currency, (string) $order->total);
 
         $params = [
             'mode' => 'payment',
@@ -39,8 +43,8 @@ class StripePaymentGateway implements PaymentGateway
             'line_items' => [[
                 'quantity' => 1,
                 'price_data' => [
-                    'currency' => strtolower($currency),
-                    'unit_amount' => (int) round(((float) $order->total) * 100),
+                    'currency' => $currency,
+                    'unit_amount' => $amount,
                     'product_data' => ['name' => "Order #{$order->number}"],
                 ],
             ]],
@@ -53,6 +57,24 @@ class StripePaymentGateway implements PaymentGateway
         $session = $this->client()->checkout->sessions->create($params);
 
         return new CheckoutSession((string) $session->id, (string) $session->url);
+    }
+
+    /**
+     * Stripe stopped accepting BGN when Bulgaria adopted the euro. Orders still
+     * priced in BGN are charged the fixed-rate euro equivalent instead.
+     *
+     * @return array{currency: string, amount: int}
+     */
+    public static function stripeAmount(string $currency, string $total): array
+    {
+        $currency = strtolower($currency);
+        $amount = (int) round(((float) $total) * 100);
+
+        if ($currency === 'bgn') {
+            return ['currency' => 'eur', 'amount' => (int) round($amount / self::BGN_TO_EUR)];
+        }
+
+        return ['currency' => $currency, 'amount' => $amount];
     }
 
     public function parseWebhook(string $payload, ?string $signature): ?WebhookEvent
@@ -72,12 +94,14 @@ class StripePaymentGateway implements PaymentGateway
         return new WebhookEvent((string) $event->type, $sessionId, $paid);
     }
 
-    /** The connected store's Stripe secret key (empty when not connected). */
+    /** The connected store's Stripe secret key (empty when not connected or malformed). */
     private function secret(): string
     {
         $secret = Tenant::current()?->storeSettings()->stripe_secret;
 
-        return is_string($secret) ? $secret : '';
+        return is_string($secret) && preg_match('/^(sk|rk)_(test|live)_[A-Za-z0-9]+$/', $secret) === 1
+            ? $secret
+            : '';
     }
 
     /**

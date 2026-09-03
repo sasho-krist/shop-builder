@@ -62,7 +62,8 @@ class StoreSetting extends Model
      */
     public function stripeConnected(): bool
     {
-        return is_string($this->stripe_secret) && $this->stripe_secret !== '';
+        return is_string($this->stripe_secret)
+            && preg_match('/^(sk|rk)_(test|live)_[A-Za-z0-9]+$/', $this->stripe_secret) === 1;
     }
 
     /**

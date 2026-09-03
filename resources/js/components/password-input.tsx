@@ -4,12 +4,40 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
+type Props = Omit<ComponentProps<'input'>, 'type'> & {
+    ref?: Ref<HTMLInputElement>;
+    /**
+     * Keep browser password managers away from this field. Needed for values
+     * like API keys that must never be replaced by a saved login password.
+     */
+    noAutofill?: boolean;
+};
+
 export default function PasswordInput({
     className,
     ref,
+    noAutofill,
     ...props
-}: Omit<ComponentProps<'input'>, 'type'> & { ref?: Ref<HTMLInputElement> }) {
+}: Props) {
     const [showPassword, setShowPassword] = useState(false);
+    // Password managers skip readonly fields; drop it on first focus so the
+    // user can still type.
+    const [readOnly, setReadOnly] = useState(noAutofill ?? false);
+
+    const guard = noAutofill
+        ? {
+              autoComplete: 'new-password' as const,
+              autoCorrect: 'off',
+              autoCapitalize: 'off',
+              spellCheck: false,
+              'data-1p-ignore': '',
+              'data-lpignore': 'true',
+              'data-bwignore': '',
+              'data-form-type': 'other',
+              readOnly,
+              onFocus: () => setReadOnly(false),
+          }
+        : {};
 
     return (
         <div className="relative">
@@ -17,6 +45,7 @@ export default function PasswordInput({
                 type={showPassword ? 'text' : 'password'}
                 className={cn('pr-10', className)}
                 ref={ref}
+                {...guard}
                 {...props}
             />
             <button
