@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\OrderPlaced;
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Services\Payments\PaymentGateway;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Mail;
 
 class StripeWebhookController extends Controller
 {
@@ -50,7 +48,7 @@ class StripeWebhookController extends Controller
         $order->update(['payment_status' => 'paid', 'status' => 'paid']);
 
         App::setLocale($order->locale);
-        Mail::to($order->email)->send(new OrderPlaced($order, $tenant->storeSettings()));
+        $order->sendConfirmation($tenant->storeSettings());
 
         Tenant::forgetCurrent();
     }

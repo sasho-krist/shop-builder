@@ -10,6 +10,7 @@ use App\Models\ProductVariant;
 use App\Models\Tenant;
 use App\Support\Theme\ThemePresets;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
@@ -114,6 +115,20 @@ class CheckoutTest extends TestCase
         Tenant::setCurrent($this->store);
         $this->assertSame(0, Cart::firstWhere('token', 'cart-token')->items()->count());
         Tenant::forgetCurrent();
+    }
+
+    public function test_a_failing_confirmation_email_does_not_break_the_order(): void
+    {
+        Mail::shouldReceive('to')
+            ->andThrow(new \RuntimeException('mail server said no'));
+
+        $this->seedCartWithItem(1);
+
+        $response = $this->post($this->url('checkout'), $this->validPayload());
+
+        $order = Order::query()->firstOrFail();
+        $response->assertRedirect($this->url("order/{$order->token}"));
+        $this->assertSame('9.90', $order->subtotal);
     }
 
     public function test_order_line_snapshot_survives_product_deletion(): void

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Storefront;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Storefront\Concerns\BuildsSectionContext;
 use App\Http\Requests\CheckoutRequest;
-use App\Mail\OrderPlaced;
 use App\Models\Cart;
 use App\Models\Customer;
 use App\Models\Order;
@@ -19,7 +18,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -125,7 +123,7 @@ class CheckoutController extends Controller
             return $this->startCardPayment($request, $order);
         }
 
-        Mail::to($order->email)->send(new OrderPlaced($order, $settings));
+        $order->sendConfirmation($settings);
 
         return redirect("/order/{$order->token}");
     }

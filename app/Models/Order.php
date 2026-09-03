@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Mail\OrderPlaced;
 use App\Support\Tenancy\BelongsToTenant;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * @property int $id
@@ -69,5 +71,18 @@ class Order extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Email the buyer their confirmation. A mail-server failure is logged but
+     * never bubbles up — the order is already placed.
+     */
+    public function sendConfirmation(StoreSetting $settings): void
+    {
+        try {
+            Mail::to($this->email)->send(new OrderPlaced($this, $settings));
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 }
