@@ -240,7 +240,9 @@ custom properties, shared by the editor preview and the storefront.
       recursively by `PageRequest`, edited via `ColumnsEditor` (per-column
       add / reorder / delete), rendered by the shared block renderer with a
       `NestedContext` that drops section gutters inside a column.
-    - **Store** — Hero, Text block, Image + text, Product grid (2–6 columns,
+    - **Store** — Hero (background image, alignment, and a "full-width background"
+      toggle — off = the banner is constrained to the content width with rounded
+      corners), Text block, Image + text, Product grid (2–6 columns,
       small / medium / large card size, source = _Newest_ / _Best sellers_ /
       a collection / a category), Featured collection (same column and card-size
       options).

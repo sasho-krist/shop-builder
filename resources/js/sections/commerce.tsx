@@ -75,6 +75,12 @@ export const COMMERCE_SECTIONS: SectionDef[] = [
                 default: '',
             },
             {
+                type: 'boolean',
+                key: 'fullWidth',
+                label: 'Full-width background',
+                default: true,
+            },
+            {
                 type: 'select',
                 key: 'align',
                 label: 'Alignment',
@@ -88,14 +94,20 @@ export const COMMERCE_SECTIONS: SectionDef[] = [
         Render: ({ props }) => {
             const align = String(prop(props, 'align', 'left'));
             const bg = String(prop(props, 'background', ''));
+            const fullWidth = Boolean(prop(props, 'fullWidth', true));
             return (
                 <div
                     style={{
+                        maxWidth: fullWidth ? undefined : 'var(--sb-container)',
                         backgroundImage: bg ? `url(${bg})` : undefined,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         color: bg ? '#fff' : 'var(--sb-foreground)',
+                        borderRadius: fullWidth
+                            ? undefined
+                            : 'var(--sb-radius)',
                     }}
+                    className="mx-auto w-full overflow-hidden"
                 >
                     <SectionShell
                         py={4}
