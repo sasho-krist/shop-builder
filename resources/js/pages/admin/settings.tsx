@@ -383,9 +383,61 @@ export default function StoreSettings({
                     <CardContent className="flex flex-col gap-4">
                         <p className="text-muted-foreground text-sm">
                             {t(
-                                'Connect your own Stripe account so card payments go straight to you. Find these in the Stripe dashboard under Developers → API keys.',
+                                'Connect your own Stripe account so card payments go straight to you.',
                             )}
                         </p>
+
+                        <details
+                            className="bg-muted/40 rounded-md border px-4 py-3 text-sm"
+                            open={!stripe.connected}
+                        >
+                            <summary className="cursor-pointer font-medium">
+                                {t('How to connect Stripe (step by step)')}
+                            </summary>
+                            <ol className="text-muted-foreground mt-3 list-decimal space-y-2 pl-5">
+                                <li>
+                                    {t(
+                                        'Open dashboard.stripe.com and sign in (or create an account). New accounts open a Sandbox — a test environment where you can try everything with no real money.',
+                                    )}
+                                </li>
+                                <li>
+                                    {t(
+                                        'In the top search bar type "API keys". Copy the Secret key — it starts with sk_test_ (Sandbox) or sk_live_. Do not use the Publishable key (pk_…).',
+                                    )}
+                                </li>
+                                <li>
+                                    {t(
+                                        'Paste it into the "Secret key" field below.',
+                                    )}
+                                </li>
+                                <li>
+                                    {t(
+                                        'In the search bar type "Webhooks" and click Add endpoint (or Add destination).',
+                                    )}
+                                </li>
+                                <li>
+                                    {t(
+                                        'Endpoint URL: paste the address shown below. Events: select only "checkout.session.completed". API version: pick the newest one offered.',
+                                    )}
+                                </li>
+                                <li>
+                                    {t(
+                                        'Open the created endpoint, reveal its Signing secret (starts with whsec_) and paste it into "Webhook signing secret" below.',
+                                    )}
+                                </li>
+                                <li>
+                                    {t(
+                                        'Press Save. Test a purchase with card 4242 4242 4242 4242, any future date and any CVC — the order should turn "paid" within a few seconds.',
+                                    )}
+                                </li>
+                                <li>
+                                    {t(
+                                        'Going live: deactivate Sandbox / activate your account, then repeat with the live sk_live_ key and a new live webhook secret.',
+                                    )}
+                                </li>
+                            </ol>
+                        </details>
+
                         <div className="grid gap-2">
                             <Label htmlFor="stripe_secret">
                                 {t('Secret key')}
