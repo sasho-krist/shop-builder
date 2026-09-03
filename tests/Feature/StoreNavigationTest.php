@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Page;
+use App\Models\Product;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\Theme\ThemePresets;
@@ -77,6 +78,56 @@ class StoreNavigationTest extends TestCase
         $this->assertCount(1, $nav->header_links);
         $this->assertSame('About', $nav->header_links[0]['label']);
         $this->assertSame('Small-batch wellness since 2020.', $nav->footer_note);
+    }
+
+    public function test_the_header_center_can_be_configured_and_reaches_the_storefront(): void
+    {
+        $this->actingAs($this->owner)->put(route('navigation.update'), [
+            'header_links' => [],
+            'footer_links' => [],
+            'footer_note' => '',
+            'header_center' => [
+                'type' => 'contact',
+                'phone' => '+359 88 123 4567',
+                'email' => 'hi@acme.test',
+                'text' => '',
+            ],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $this->get($this->storefront())
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('storefront.nav.center.type', 'contact')
+                ->where('storefront.nav.center.phone', '+359 88 123 4567')
+                ->where('storefront.nav.center.email', 'hi@acme.test')
+            );
+    }
+
+    public function test_the_header_center_rejects_a_bad_email_and_hides_empty_contact(): void
+    {
+        $this->actingAs($this->owner)->put(route('navigation.update'), [
+            'header_links' => [], 'footer_links' => [], 'footer_note' => '',
+            'header_center' => ['type' => 'contact', 'email' => 'not-an-email'],
+        ])->assertSessionHasErrors('header_center.email');
+
+        $this->store->storeNavigation()->update(['header_center' => ['type' => 'contact']]);
+        $this->get($this->storefront())
+            ->assertInertia(fn (AssertableInertia $page) => $page->where('storefront.nav.center', null));
+    }
+
+    public function test_the_header_search_filters_the_product_listing(): void
+    {
+        $tea = Product::factory()->for($this->store)->create(['title' => 'Green Tea', 'status' => 'active']);
+        $tea->variants()->create(['name' => 'D', 'price' => '5.00', 'stock_quantity' => 3, 'sku' => 'T1']);
+        $mug = Product::factory()->for($this->store)->create(['title' => 'Ceramic Mug', 'status' => 'active']);
+        $mug->variants()->create(['name' => 'D', 'price' => '9.00', 'stock_quantity' => 3, 'sku' => 'M1']);
+
+        $this->get($this->storefront('products?q=tea'))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('storefront/listing')
+                ->count('products.data', 1)
+                ->where('products.data.0.title', 'Green Tea')
+            );
     }
 
     public function test_the_storefront_renders_the_custom_header_and_footer(): void

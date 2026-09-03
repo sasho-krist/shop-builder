@@ -1,6 +1,6 @@
-import { Link, usePage } from '@inertiajs/react';
-import { ShoppingBag, User } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { Mail, Phone, Search, ShoppingBag, User } from 'lucide-react';
+import { type FormEvent, type ReactNode, useState } from 'react';
 import StorefrontOwnerBar, {
     type ManageContext,
 } from '@/components/storefront-owner-bar';
@@ -8,6 +8,12 @@ import { useT } from '@/lib/i18n';
 import { fontStack, type ThemeTokens, themeToCssVars } from '@/lib/theme';
 
 type NavLink = { label: string; href: string };
+
+type HeaderCenter =
+    | { type: 'search' }
+    | { type: 'contact'; phone: string | null; email: string | null }
+    | { type: 'text'; text: string }
+    | null;
 
 export type StorefrontShared = {
     storefront: {
@@ -23,9 +29,77 @@ export type StorefrontShared = {
             header: NavLink[];
             footer: NavLink[];
             footerNote: string | null;
+            center: HeaderCenter;
         };
     };
 };
+
+function HeaderCenterSlot({ center }: { center: HeaderCenter }) {
+    const { t } = useT();
+    const [q, setQ] = useState('');
+
+    if (!center) return null;
+
+    if (center.type === 'search') {
+        function submit(e: FormEvent) {
+            e.preventDefault();
+            router.get('/products', q.trim() ? { q: q.trim() } : {});
+        }
+        return (
+            <form
+                onSubmit={submit}
+                className="relative hidden flex-1 justify-center px-6 md:flex"
+            >
+                <div className="relative w-full max-w-xs">
+                    <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
+                    <input
+                        type="search"
+                        value={q}
+                        onChange={(e) => setQ(e.target.value)}
+                        placeholder={t('Search products')}
+                        aria-label={t('Search products')}
+                        style={{
+                            borderColor: 'var(--sb-border)',
+                            borderRadius: 'var(--sb-radius)',
+                        }}
+                        className="w-full border bg-transparent py-1.5 pr-3 pl-8 text-sm outline-none focus:border-[color:var(--sb-primary)]"
+                    />
+                </div>
+            </form>
+        );
+    }
+
+    if (center.type === 'contact') {
+        return (
+            <div className="text-muted-foreground hidden flex-1 items-center justify-center gap-5 px-6 text-sm md:flex">
+                {center.phone && (
+                    <a
+                        href={`tel:${center.phone.replace(/\s+/g, '')}`}
+                        className="flex items-center gap-1.5 hover:text-[color:var(--sb-foreground)]"
+                    >
+                        <Phone className="size-4" />
+                        {center.phone}
+                    </a>
+                )}
+                {center.email && (
+                    <a
+                        href={`mailto:${center.email}`}
+                        className="flex items-center gap-1.5 hover:text-[color:var(--sb-foreground)]"
+                    >
+                        <Mail className="size-4" />
+                        {center.email}
+                    </a>
+                )}
+            </div>
+        );
+    }
+
+    return (
+        <div className="text-muted-foreground hidden flex-1 justify-center px-6 text-center text-sm md:flex">
+            {center.text}
+        </div>
+    );
+}
 
 function NavAnchor({ link, className }: { link: NavLink; className?: string }) {
     if (link.href.startsWith('/')) {
@@ -96,6 +170,7 @@ export default function StorefrontLayout({
                             storeName
                         )}
                     </Link>
+                    <HeaderCenterSlot center={nav.center} />
                     <nav className="flex items-center gap-5 text-sm">
                         {nav.header.length > 0 ? (
                             nav.header.map((link, i) => (

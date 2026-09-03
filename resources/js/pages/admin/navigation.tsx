@@ -34,11 +34,21 @@ type NavRow = { label: string; type: LinkType; value: string };
 
 type Target = { label: string; value: string };
 
+type CenterType = 'none' | 'search' | 'contact' | 'text';
+
+type HeaderCenter = {
+    type: CenterType;
+    text: string;
+    phone: string;
+    email: string;
+};
+
 type Props = {
     navigation: {
         header_links: NavRow[];
         footer_links: NavRow[];
         footer_note: string;
+        header_center: HeaderCenter;
     };
     targets: {
         categories: Target[];
@@ -269,7 +279,13 @@ export default function NavigationEditor({ navigation, targets }: Props) {
         header_links: navigation.header_links,
         footer_links: navigation.footer_links,
         footer_note: navigation.footer_note,
+        header_center: navigation.header_center,
     });
+
+    const center = form.data.header_center;
+    function patchCenter(patch: Partial<HeaderCenter>) {
+        form.setData('header_center', { ...center, ...patch });
+    }
 
     const errors = form.errors as Record<string, string>;
 
@@ -346,6 +362,105 @@ export default function NavigationEditor({ navigation, targets }: Props) {
                                 <Tags className="size-4" />
                                 {t('Add all categories')}
                             </Button>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>{t('Header center')}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-4">
+                        <p className="text-muted-foreground text-sm">
+                            {t(
+                                'What to show in the middle of the storefront header, between the logo and the menu.',
+                            )}
+                        </p>
+                        <div className="grid gap-2 sm:max-w-xs">
+                            <Label>{t('Show')}</Label>
+                            <Select
+                                value={center.type}
+                                onValueChange={(v) =>
+                                    patchCenter({ type: v as CenterType })
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">
+                                        {t('Nothing')}
+                                    </SelectItem>
+                                    <SelectItem value="search">
+                                        {t('Product search box')}
+                                    </SelectItem>
+                                    <SelectItem value="contact">
+                                        {t('Phone & email')}
+                                    </SelectItem>
+                                    <SelectItem value="text">
+                                        {t('Free text')}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {center.type === 'contact' && (
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="center-phone">
+                                        {t('Phone')}
+                                    </Label>
+                                    <Input
+                                        id="center-phone"
+                                        value={center.phone}
+                                        placeholder="+359 88 123 4567"
+                                        onChange={(e) =>
+                                            patchCenter({
+                                                phone: e.target.value,
+                                            })
+                                        }
+                                    />
+                                    <InputError
+                                        message={errors['header_center.phone']}
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="center-email">
+                                        {t('Email')}
+                                    </Label>
+                                    <Input
+                                        id="center-email"
+                                        type="email"
+                                        value={center.email}
+                                        placeholder="shop@example.com"
+                                        onChange={(e) =>
+                                            patchCenter({
+                                                email: e.target.value,
+                                            })
+                                        }
+                                    />
+                                    <InputError
+                                        message={errors['header_center.email']}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {center.type === 'text' && (
+                            <div className="grid gap-2">
+                                <Label htmlFor="center-text">{t('Text')}</Label>
+                                <Input
+                                    id="center-text"
+                                    value={center.text}
+                                    placeholder={t('Free shipping over 50 €')}
+                                    onChange={(e) =>
+                                        patchCenter({ text: e.target.value })
+                                    }
+                                />
+                                <InputError
+                                    message={errors['header_center.text']}
+                                />
+                            </div>
                         )}
                     </CardContent>
                 </Card>

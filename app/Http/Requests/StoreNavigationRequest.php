@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\Storefront\HeaderCenter;
 use App\Support\Storefront\NavLinks;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -36,6 +37,11 @@ class StoreNavigationRequest extends FormRequest
             'footer_links.*.type' => ['required', Rule::in(NavLinks::TYPES)],
             'footer_links.*.value' => ['nullable', 'string', 'max:255'],
             'footer_note' => ['nullable', 'string', 'max:500'],
+            'header_center' => ['nullable', 'array'],
+            'header_center.type' => ['nullable', Rule::in(HeaderCenter::TYPES)],
+            'header_center.text' => ['nullable', 'string', 'max:120'],
+            'header_center.phone' => ['nullable', 'string', 'max:40'],
+            'header_center.email' => ['nullable', 'string', 'email', 'max:120'],
         ];
     }
 

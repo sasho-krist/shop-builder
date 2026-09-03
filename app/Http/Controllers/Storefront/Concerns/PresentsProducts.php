@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Storefront\Concerns;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Request;
 
 trait PresentsProducts
 {
@@ -14,8 +15,15 @@ trait PresentsProducts
      */
     protected function paginateProducts(Builder $query): LengthAwarePaginator
     {
+        $term = trim((string) Request::query('q', ''));
+
         return $query
             ->where('products.status', 'active')
+            ->when($term !== '', fn (Builder $q) => $q->where(
+                fn (Builder $w) => $w
+                    ->where('products.title', 'like', "%{$term}%")
+                    ->orWhere('products.description', 'like', "%{$term}%")
+            ))
             ->with(['variants:id,product_id,price', 'images:id,product_id,disk,path'])
             ->latest('products.created_at')
             ->paginate(12)

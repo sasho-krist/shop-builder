@@ -16,12 +16,19 @@ class StoreNavigationController extends Controller
     public function edit(): Response
     {
         $nav = Tenant::currentOrFail()->storeNavigation();
+        $center = is_array($nav->header_center) ? $nav->header_center : [];
 
         return Inertia::render('admin/navigation', [
             'navigation' => [
                 'header_links' => $nav->header_links ?? [],
                 'footer_links' => $nav->footer_links ?? [],
                 'footer_note' => $nav->footer_note ?? '',
+                'header_center' => [
+                    'type' => $center['type'] ?? 'none',
+                    'text' => $center['text'] ?? '',
+                    'phone' => $center['phone'] ?? '',
+                    'email' => $center['email'] ?? '',
+                ],
             ],
             'targets' => [
                 'categories' => Category::query()

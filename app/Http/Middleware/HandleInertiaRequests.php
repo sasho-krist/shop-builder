@@ -8,6 +8,7 @@ use App\Models\Page;
 use App\Models\Tenant;
 use App\Models\Theme;
 use App\Models\User;
+use App\Support\Storefront\HeaderCenter;
 use App\Support\Storefront\NavLinks;
 use App\Support\Theme\ThemePresets;
 use Illuminate\Http\Request;
@@ -109,6 +110,7 @@ class HandleInertiaRequests extends Middleware
                 'header' => NavLinks::resolve($nav->header_links),
                 'footer' => NavLinks::resolve($nav->footer_links),
                 'footerNote' => $nav->footer_note,
+                'center' => HeaderCenter::resolve($nav->header_center),
             ],
             'locale' => App::getLocale(),
             'manage' => $this->manageContext($request, $tenant, $activeTheme),

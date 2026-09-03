@@ -9,6 +9,7 @@ use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -16,7 +17,7 @@ class ProductController extends Controller
 {
     use BuildsSectionContext, PresentsProducts;
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $shop = Page::query()->where('type', 'shop')->first();
 
@@ -24,12 +25,15 @@ class ProductController extends Controller
         // the translator so the seeded default ("Shop") localises, while a title
         // the owner has customised passes through untouched.
         $title = $shop instanceof Page ? trim($shop->title) : '';
+        $search = trim((string) $request->query('q', ''));
 
         return Inertia::render('storefront/listing', [
-            'heading' => $title !== '' ? __($title) : __('Shop'),
-            'description' => $shop instanceof Page ? $shop->seo_description : null,
+            'heading' => $search !== ''
+                ? __('Results for “:q”', ['q' => $search])
+                : ($title !== '' ? __($title) : __('Shop')),
+            'description' => $search !== '' ? null : ($shop instanceof Page ? $shop->seo_description : null),
             'products' => $this->paginateProducts(Product::query()),
-            'blocks' => $shop instanceof Page ? $shop->blocks : [],
+            'blocks' => $search !== '' ? [] : ($shop instanceof Page ? $shop->blocks : []),
             'sections' => $this->sectionContext(),
         ]);
     }
